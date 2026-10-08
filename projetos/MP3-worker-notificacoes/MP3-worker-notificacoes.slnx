@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MP3.Contratos/MP3.Contratos.csproj" />
+    <Project Path="src/MP3.Notificacoes.Worker/MP3.Notificacoes.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MP3.Notificacoes.Tests/MP3.Notificacoes.Tests.csproj" />
+  </Folder>
+</Solution>

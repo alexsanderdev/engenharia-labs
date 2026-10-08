@@ -66,11 +66,20 @@ dotnet test EngenhariaLabs.slnx
 | `F5-M04-authn-authz` | Autenticação e autorização (JWT, políticas, recurso) | 40 |
 | `F5-M05-rate-limit-idempotencia` | Rate limiting, Idempotency-Key e output cache | 30 |
 | `F5-M06-httpclient-resiliencia` | HttpClient e resiliência (WireMock) | 37 |
+| `F6-M01-fundamentos-mensageria` | Fundamentos de mensageria (RabbitMQ) | 31 |
+| `F6-M02-azure-service-bus` | Azure Service Bus (emulador) | 20 |
+| `F6-M03-kafka` | Kafka | 24 |
+| `F6-M04-outbox-inbox` | Outbox, Inbox e idempotência | 22 |
+| `F6-M05-retries-dlq-sagas` | Retries, DLQ e Sagas | 48 |
+| `F6-M06-workers` | Workers e BackgroundService | 14 |
+| `F6-M07-redis` | Redis e HybridCache | 19 |
+| `F6-M08-consistencia-eventual` | Consistência eventual | 32 |
 
 ## Projetos abertos
 
 | Projeto | Mini-projeto |
 |---|---|
 | `projetos/MP2-ordercalc-legado` | MP2 — Refatoração de Legado (testes de exemplo já passam; meta é caracterizar e refatorar) |
+| `projetos/MP3-worker-notificacoes` | MP3 — Worker de Notificações (Service Bus emulador + inbox; critérios de aceite viram seus testes) |
 
 A tabela cresce a cada onda de produção. Veja `CONVENCOES.md`.

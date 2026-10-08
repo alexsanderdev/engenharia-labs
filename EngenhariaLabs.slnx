@@ -287,6 +287,63 @@
   <Folder Name="/labs/F5-M06-httpclient-resiliencia/tests/">
     <Project Path="labs/F5-M06-httpclient-resiliencia/tests/F5M06.Pagamentos.Tests/F5M06.Pagamentos.Tests.csproj" />
   </Folder>
+  <Folder Name="/labs/F6-M01-fundamentos-mensageria/" />
+  <Folder Name="/labs/F6-M01-fundamentos-mensageria/src/">
+    <Project Path="labs/F6-M01-fundamentos-mensageria/src/F6M01.Mensageria/F6M01.Mensageria.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M01-fundamentos-mensageria/tests/">
+    <Project Path="labs/F6-M01-fundamentos-mensageria/tests/F6M01.Mensageria.Tests/F6M01.Mensageria.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M02-azure-service-bus/" />
+  <Folder Name="/labs/F6-M02-azure-service-bus/src/">
+    <Project Path="labs/F6-M02-azure-service-bus/src/F6M02.ServiceBus/F6M02.ServiceBus.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M02-azure-service-bus/tests/">
+    <Project Path="labs/F6-M02-azure-service-bus/tests/F6M02.ServiceBus.Tests/F6M02.ServiceBus.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M03-kafka/" />
+  <Folder Name="/labs/F6-M03-kafka/src/">
+    <Project Path="labs/F6-M03-kafka/src/F6M03.Kafka/F6M03.Kafka.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M03-kafka/tests/">
+    <Project Path="labs/F6-M03-kafka/tests/F6M03.Kafka.Tests/F6M03.Kafka.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M04-outbox-inbox/" />
+  <Folder Name="/labs/F6-M04-outbox-inbox/src/">
+    <Project Path="labs/F6-M04-outbox-inbox/src/F6M04.Notificacoes/F6M04.Notificacoes.csproj" />
+    <Project Path="labs/F6-M04-outbox-inbox/src/F6M04.Pedidos/F6M04.Pedidos.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M04-outbox-inbox/tests/">
+    <Project Path="labs/F6-M04-outbox-inbox/tests/F6M04.Tests/F6M04.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M05-retries-dlq-sagas/" />
+  <Folder Name="/labs/F6-M05-retries-dlq-sagas/src/">
+    <Project Path="labs/F6-M05-retries-dlq-sagas/src/F6M05.Sagas/F6M05.Sagas.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M05-retries-dlq-sagas/tests/">
+    <Project Path="labs/F6-M05-retries-dlq-sagas/tests/F6M05.Tests/F6M05.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M06-workers/" />
+  <Folder Name="/labs/F6-M06-workers/src/">
+    <Project Path="labs/F6-M06-workers/src/F6M06.Worker/F6M06.Worker.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M06-workers/tests/">
+    <Project Path="labs/F6-M06-workers/tests/F6M06.Worker.Tests/F6M06.Worker.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M07-redis/" />
+  <Folder Name="/labs/F6-M07-redis/src/">
+    <Project Path="labs/F6-M07-redis/src/F6M07.Cache/F6M07.Cache.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M07-redis/tests/">
+    <Project Path="labs/F6-M07-redis/tests/F6M07.Cache.Tests/F6M07.Cache.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M08-consistencia-eventual/" />
+  <Folder Name="/labs/F6-M08-consistencia-eventual/src/">
+    <Project Path="labs/F6-M08-consistencia-eventual/src/F6M08.Consistencia/F6M08.Consistencia.csproj" />
+  </Folder>
+  <Folder Name="/labs/F6-M08-consistencia-eventual/tests/">
+    <Project Path="labs/F6-M08-consistencia-eventual/tests/F6M08.Consistencia.Tests/F6M08.Consistencia.Tests.csproj" />
+  </Folder>
   <Folder Name="/labs/P-M01-estruturas-de-dados/" />
   <Folder Name="/labs/P-M01-estruturas-de-dados/src/">
     <Project Path="labs/P-M01-estruturas-de-dados/src/PM01.Estruturas/PM01.Estruturas.csproj" />
@@ -308,5 +365,13 @@
   </Folder>
   <Folder Name="/projetos/MP2-ordercalc-legado/tests/">
     <Project Path="projetos/MP2-ordercalc-legado/tests/MP2.OrderCalc.Tests/MP2.OrderCalc.Tests.csproj" />
+  </Folder>
+  <Folder Name="/projetos/MP3-worker-notificacoes/" />
+  <Folder Name="/projetos/MP3-worker-notificacoes/src/">
+    <Project Path="projetos/MP3-worker-notificacoes/src/MP3.Contratos/MP3.Contratos.csproj" />
+    <Project Path="projetos/MP3-worker-notificacoes/src/MP3.Notificacoes.Worker/MP3.Notificacoes.Worker.csproj" />
+  </Folder>
+  <Folder Name="/projetos/MP3-worker-notificacoes/tests/">
+    <Project Path="projetos/MP3-worker-notificacoes/tests/MP3.Notificacoes.Tests/MP3.Notificacoes.Tests.csproj" />
   </Folder>
 </Solution>

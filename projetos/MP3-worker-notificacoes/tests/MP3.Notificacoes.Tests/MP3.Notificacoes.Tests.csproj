@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Esperas em teste de broker têm timeout explícito (Esperas.cs); não poluímos cada chamada com o token do xUnit. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.ServiceBus" />
+    <PackageReference Include="Testcontainers.MsSql" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\MP3.Contratos\MP3.Contratos.csproj" />
+    <ProjectReference Include="..\..\src\MP3.Notificacoes.Worker\MP3.Notificacoes.Worker.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- A mesma topologia usada no docker compose de desenvolvimento. -->
+    <None Include="..\..\infra\servicebus\Config.json" Link="Infra\servicebus\Config.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

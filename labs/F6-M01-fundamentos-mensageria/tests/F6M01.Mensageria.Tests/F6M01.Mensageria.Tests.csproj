@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Os testes limitam cada espera com timeouts curtos (Infra/Eventualmente e Sinal);
+         passar TestContext.Current.CancellationToken em cada chamada só poluiria o roteiro. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.RabbitMq" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F6M01.Mensageria\F6M01.Mensageria.csproj" />
+  </ItemGroup>
+</Project>
