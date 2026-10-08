@@ -14,7 +14,18 @@ public static class LongestSubstringWithoutRepeatingCharacters
 {
     public static int Resolver(string s)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Longest Substring — janela [inicio, fim] + Dictionary com a última posição de cada caractere; o início nunca volta.");
+        var ultimaPosicao = new Dictionary<char, int>();
+        int inicio = 0, melhor = 0;
+
+        for (var fim = 0; fim < s.Length; fim++)
+        {
+            if (ultimaPosicao.TryGetValue(s[fim], out var anterior) && anterior >= inicio)
+                inicio = anterior + 1;
+
+            ultimaPosicao[s[fim]] = fim;
+            melhor = Math.Max(melhor, fim - inicio + 1);
+        }
+
+        return melhor;
     }
 }

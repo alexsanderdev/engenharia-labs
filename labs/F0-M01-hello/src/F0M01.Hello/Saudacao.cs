@@ -9,9 +9,6 @@ public static class Saudacao
     /// Retorna "Olá, {nome}!". Se o nome for nulo ou vazio, retorna "Olá, mundo!".
     /// O nome deve ser usado sem espaços nas pontas.
     /// </summary>
-    public static string Para(string? nome)
-    {
-        // TODO: implemente a regra descrita acima até todos os testes passarem.
-        throw new NotImplementedException("TODO: implemente Saudacao.Para");
-    }
+    public static string Para(string? nome) =>
+        string.IsNullOrWhiteSpace(nome) ? "Olá, mundo!" : $"Olá, {nome.Trim()}!";
 }

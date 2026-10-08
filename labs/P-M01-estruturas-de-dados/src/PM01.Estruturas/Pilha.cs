@@ -14,24 +14,41 @@ public sealed class Pilha<T>
     /// <summary>Coloca o item no topo. Dobra o array interno quando enche.</summary>
     public void Empilhar(T item)
     {
-        throw new NotImplementedException("TODO: igual ao Adicionar da ListaDinamica: dobre se cheio e grave em _itens[Count++].");
+        if (Count == _itens.Length)
+            Array.Resize(ref _itens, _itens.Length * 2);
+
+        _itens[Count++] = item;
     }
 
     /// <summary>Remove e devolve o item do topo. Pilha vazia: <see cref="InvalidOperationException"/>.</summary>
     public T Desempilhar()
     {
-        throw new NotImplementedException("TODO: reutilize TentarDesempilhar e lance InvalidOperationException se ela devolver false.");
+        if (!TentarDesempilhar(out var item))
+            throw new InvalidOperationException("A pilha está vazia.");
+
+        return item;
     }
 
     /// <summary>Versão sem exceção: devolve false se a pilha estiver vazia.</summary>
     public bool TentarDesempilhar(out T item)
     {
-        throw new NotImplementedException("TODO: se vazia, item = default e false; senão devolva _itens[--Count] e limpe a posição.");
+        if (Count == 0)
+        {
+            item = default!;
+            return false;
+        }
+
+        item = _itens[--Count];
+        _itens[Count] = default!;
+        return true;
     }
 
     /// <summary>Devolve o item do topo sem remover. Pilha vazia: <see cref="InvalidOperationException"/>.</summary>
     public T Topo()
     {
-        throw new NotImplementedException("TODO: devolva _itens[Count - 1] ou lance InvalidOperationException se vazia.");
+        if (Count == 0)
+            throw new InvalidOperationException("A pilha está vazia.");
+
+        return _itens[Count - 1];
     }
 }

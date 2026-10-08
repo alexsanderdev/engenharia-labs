@@ -22,9 +22,32 @@ public static class ParserCodigoPedido
     /// </summary>
     public static bool TryParse(ReadOnlySpan<char> texto, out CodigoPedido codigo)
     {
-        // Dicas: texto.Trim(), texto[..3].Equals("PED", StringComparison.OrdinalIgnoreCase),
-        // texto.Slice(4, 4) e int.TryParse(span, NumberStyles.None, CultureInfo.InvariantCulture, out var n).
-        throw new NotImplementedException("TODO: valide tamanho, separadores, prefixo, ano e sequencial usando só fatias (slices) do span");
+        codigo = default;
+        texto = texto.Trim();
+
+        if (texto.Length != CodigoPedido.Tamanho || texto[3] != '-' || texto[8] != '-')
+            return false;
+
+        TipoCodigo tipo;
+        var prefixo = texto[..3];
+        if (prefixo.Equals("PED", StringComparison.OrdinalIgnoreCase))
+            tipo = TipoCodigo.Pedido;
+        else if (prefixo.Equals("DEV", StringComparison.OrdinalIgnoreCase))
+            tipo = TipoCodigo.Devolucao;
+        else
+            return false;
+
+        // NumberStyles.None: só dígitos (sem sinal, sem espaços, sem separador de milhar).
+        if (!int.TryParse(texto.Slice(4, 4), NumberStyles.None, CultureInfo.InvariantCulture, out var ano)
+            || ano is < AnoMinimo or > AnoMaximo)
+            return false;
+
+        if (!int.TryParse(texto.Slice(9, 6), NumberStyles.None, CultureInfo.InvariantCulture, out var sequencial)
+            || sequencial <= 0)
+            return false;
+
+        codigo = new CodigoPedido(tipo, ano, sequencial);
+        return true;
     }
 
     /// <summary>
@@ -32,7 +55,9 @@ public static class ParserCodigoPedido
     /// </summary>
     public static CodigoPedido Parse(ReadOnlySpan<char> texto)
     {
-        throw new NotImplementedException("TODO: reutilize TryParse e lance FormatException quando falhar");
+        return TryParse(texto, out var codigo)
+            ? codigo
+            : throw new FormatException($"Código de pedido inválido: '{texto}'.");
     }
 
     /// <summary>
@@ -42,8 +67,18 @@ public static class ParserCodigoPedido
     /// </summary>
     public static bool TryFormat(CodigoPedido codigo, Span<char> destino, out int escritos)
     {
-        // Dica: int.TryFormat(destino.Slice(...), out _, "D6", CultureInfo.InvariantCulture) escreve com zeros à esquerda.
-        throw new NotImplementedException("TODO: copie o prefixo, os '-' e formate ano (D4) e sequencial (D6) direto no destino");
+        escritos = 0;
+        if (destino.Length < CodigoPedido.Tamanho)
+            return false;
+
+        codigo.Prefixo.AsSpan().CopyTo(destino);
+        destino[3] = '-';
+        codigo.Ano.TryFormat(destino.Slice(4, 4), out _, "D4", CultureInfo.InvariantCulture);
+        destino[8] = '-';
+        codigo.Sequencial.TryFormat(destino.Slice(9, 6), out _, "D6", CultureInfo.InvariantCulture);
+
+        escritos = CodigoPedido.Tamanho;
+        return true;
     }
 
     /// <summary>
@@ -53,6 +88,19 @@ public static class ParserCodigoPedido
     /// </summary>
     public static int ContarValidos(ReadOnlySpan<char> linha, char separador = ';')
     {
-        throw new NotImplementedException("TODO: laço com linha.IndexOf(separador), TryParse de cada campo e avance a fatia");
+        var validos = 0;
+
+        while (!linha.IsEmpty)
+        {
+            var posicao = linha.IndexOf(separador);
+            var campo = posicao < 0 ? linha : linha[..posicao];
+
+            if (TryParse(campo, out _))
+                validos++;
+
+            linha = posicao < 0 ? ReadOnlySpan<char>.Empty :linha[(posicao + 1)..];
+        }
+
+        return validos;
     }
 }

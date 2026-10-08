@@ -19,11 +19,16 @@ public static class LeitorPaginado
         Func<int, CancellationToken, Task<IReadOnlyList<T>>> buscarPagina,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        // TODO: laço pagina = 1, 2, 3...: await buscarPagina(pagina, cancellationToken);
-        //       página vazia -> yield break; senão, yield return de cada item.
-        await Task.CompletedTask.ConfigureAwait(false);
-        if (buscarPagina is not null)
-            throw new NotImplementedException("TODO: implemente LerTodosAsync com yield return");
-        yield break;
+        ArgumentNullException.ThrowIfNull(buscarPagina);
+
+        for (var pagina = 1; ; pagina++)
+        {
+            var itens = await buscarPagina(pagina, cancellationToken).ConfigureAwait(false);
+            if (itens.Count == 0)
+                yield break;
+
+            foreach (var item in itens)
+                yield return item;
+        }
     }
 }

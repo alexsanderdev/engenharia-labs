@@ -14,7 +14,20 @@ public static class DailyTemperatures
 {
     public static int[] Resolver(int[] temperaturas)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Daily Temperatures — pilha de índices com temperaturas decrescentes; um dia mais quente responde os do topo.");
+        var resposta = new int[temperaturas.Length];
+        var pendentes = new Stack<int>();
+
+        for (var hoje = 0; hoje < temperaturas.Length; hoje++)
+        {
+            while (pendentes.Count > 0 && temperaturas[pendentes.Peek()] < temperaturas[hoje])
+            {
+                var dia = pendentes.Pop();
+                resposta[dia] = hoje - dia;
+            }
+
+            pendentes.Push(hoje);
+        }
+
+        return resposta;
     }
 }

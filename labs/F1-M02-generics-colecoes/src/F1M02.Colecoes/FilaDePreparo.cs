@@ -10,19 +10,18 @@ namespace F1M02.Colecoes;
 /// </remarks>
 public sealed class FilaDePreparo
 {
-    // TODO: declare aqui a PriorityQueue e um contador de sequência.
+    private readonly PriorityQueue<Guid, (int Prioridade, long Sequencia)> _fila = new();
+    private long _sequencia;
 
     /// <summary>Quantidade de pedidos aguardando.</summary>
-    public int Quantidade =>
-        throw new NotImplementedException("TODO: retorne a quantidade de itens da fila");
+    public int Quantidade => _fila.Count;
 
     /// <summary>Enfileira um pedido com a prioridade informada.</summary>
     public void Enfileirar(Guid pedidoId, PrioridadeDePreparo prioridade) =>
-        throw new NotImplementedException("TODO: enfileire com prioridade composta ((int)prioridade, sequencia++)");
+        _fila.Enqueue(pedidoId, ((int)prioridade, _sequencia++));
 
     /// <summary>
     /// Retira o próximo pedido. Retorna <c>false</c> se a fila estiver vazia.
     /// </summary>
-    public bool TentarRetirar(out Guid pedidoId) =>
-        throw new NotImplementedException("TODO: use TryDequeue");
+    public bool TentarRetirar(out Guid pedidoId) => _fila.TryDequeue(out pedidoId, out _);
 }

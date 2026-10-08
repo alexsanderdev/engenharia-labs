@@ -9,15 +9,16 @@ namespace F1M05.Memoria;
 /// </summary>
 public sealed class BufferDeEtiquetas : IDisposable
 {
-    // Sugestão de estado: o pool, o array alugado (null depois do Dispose) e a posição de escrita.
-    // private readonly ArrayPool<char> _pool;
-    // private char[]? _buffer;
-    // private int _posicao;
+    private readonly ArrayPool<char> _pool;
+    private char[]? _buffer;
+    private int _posicao;
 
     /// <summary>Aluga o buffer inicial do pool (padrão: <see cref="ArrayPool{T}.Shared"/>).</summary>
     public BufferDeEtiquetas(int capacidadeInicial = 64, ArrayPool<char>? pool = null)
     {
-        throw new NotImplementedException("TODO: valide a capacidade, guarde o pool e alugue o buffer inicial");
+        ArgumentOutOfRangeException.ThrowIfLessThan(capacidadeInicial, 1);
+        _pool = pool ?? ArrayPool<char>.Shared;
+        _buffer = _pool.Rent(capacidadeInicial);
     }
 
     /// <summary>Quantidade de códigos adicionados.</summary>
@@ -27,8 +28,14 @@ public sealed class BufferDeEtiquetas : IDisposable
     /// Conteúdo acumulado até agora, sem copiar. Não guarde esse span depois do Dispose:
     /// o array volta ao pool e pode ser reutilizado por outro código.
     /// </summary>
-    public ReadOnlySpan<char> Conteudo =>
-        throw new NotImplementedException("TODO: devolva a parte preenchida do buffer (ObjectDisposedException se já liberado)");
+    public ReadOnlySpan<char> Conteudo
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_buffer is null, this);
+            return _buffer.AsSpan(0, _posicao);
+        }
+    }
 
     /// <summary>
     /// Escreve o código + '\n'. Se não couber, aluga um array com o dobro do tamanho (ou o necessário),
@@ -37,7 +44,21 @@ public sealed class BufferDeEtiquetas : IDisposable
     /// </summary>
     public void Adicionar(CodigoPedido codigo)
     {
-        throw new NotImplementedException("TODO: garanta espaço (crescendo via pool), formate com ParserCodigoPedido.TryFormat e acrescente '\\n'");
+        ObjectDisposedException.ThrowIf(_buffer is null, this);
+
+        var necessario = _posicao + CodigoPedido.Tamanho + 1;
+        if (necessario > _buffer.Length)
+        {
+            var novo = _pool.Rent(Math.Max(_buffer.Length * 2, necessario));
+            _buffer.AsSpan(0, _posicao).CopyTo(novo);
+            _pool.Return(_buffer);
+            _buffer = novo;
+        }
+
+        ParserCodigoPedido.TryFormat(codigo, _buffer.AsSpan(_posicao), out var escritos);
+        _posicao += escritos;
+        _buffer[_posicao++] = '\n';
+        Quantidade++;
     }
 
     /// <summary>
@@ -46,6 +67,10 @@ public sealed class BufferDeEtiquetas : IDisposable
     /// </summary>
     public void Dispose()
     {
-        throw new NotImplementedException("TODO: devolva o buffer ao pool uma única vez e marque como liberado");
+        if (_buffer is null)
+            return;
+
+        _pool.Return(_buffer);
+        _buffer = null;
     }
 }

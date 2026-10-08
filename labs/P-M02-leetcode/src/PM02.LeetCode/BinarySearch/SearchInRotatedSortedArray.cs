@@ -14,7 +14,32 @@ public static class SearchInRotatedSortedArray
 {
     public static int Resolver(int[] numeros, int alvo)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Search in Rotated Sorted Array — a cada passo descubra qual metade está ordenada e se o alvo cai nela.");
+        int esquerda = 0, direita = numeros.Length - 1;
+
+        while (esquerda <= direita)
+        {
+            var meio = esquerda + (direita - esquerda) / 2;
+            if (numeros[meio] == alvo)
+                return meio;
+
+            if (numeros[esquerda] <= numeros[meio])
+            {
+                // Metade esquerda [esquerda..meio] está ordenada.
+                if (numeros[esquerda] <= alvo && alvo < numeros[meio])
+                    direita = meio - 1;
+                else
+                    esquerda = meio + 1;
+            }
+            else
+            {
+                // Metade direita [meio..direita] está ordenada.
+                if (numeros[meio] < alvo && alvo <= numeros[direita])
+                    esquerda = meio + 1;
+                else
+                    direita = meio - 1;
+            }
+        }
+
+        return -1;
     }
 }

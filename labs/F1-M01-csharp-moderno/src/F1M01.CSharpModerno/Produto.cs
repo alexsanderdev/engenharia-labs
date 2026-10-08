@@ -18,9 +18,8 @@ public sealed record Produto
         get;
         init
         {
-            // TODO: valide (nulo/em branco lança ArgumentException) e guarde o nome sem espaços nas pontas.
-            // A palavra-chave `field` (C# 14) é o backing field gerado pelo compilador.
-            field = value;
+            ArgumentException.ThrowIfNullOrWhiteSpace(value, nameof(Nome));
+            field = value.Trim();
         }
     }
 
@@ -34,16 +33,15 @@ public sealed record Produto
     public bool Ativo { get; init; } = true;
 
     /// <summary>Retorna uma cópia com o novo preço; o original não muda.</summary>
-    public Produto ComPreco(Dinheiro novoPreco) =>
-        throw new NotImplementedException("TODO: retorne uma cópia com o novo preço usando with");
+    public Produto ComPreco(Dinheiro novoPreco) => this with { Preco = novoPreco };
 
     /// <summary>Retorna uma cópia inativa; o original não muda.</summary>
-    public Produto Desativar() =>
-        throw new NotImplementedException("TODO: retorne uma cópia inativa usando with");
+    public Produto Desativar() => this with { Ativo = false };
 
     /// <summary>
     /// "Nome — Descrição" quando há descrição não vazia; senão, apenas "Nome".
     /// </summary>
-    public string Resumo() =>
-        throw new NotImplementedException("TODO: use um property pattern (Descricao is { Length: > 0 }) para montar o resumo");
+    public string Resumo() => Descricao is { Length: > 0 } descricao
+        ? $"{Nome} — {descricao}"
+        : Nome;
 }

@@ -13,7 +13,29 @@ public static class ValidPalindrome
 {
     public static bool Resolver(string s)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Valid Palindrome — dois ponteiros nas pontas, pulando o que não for char.IsLetterOrDigit e comparando em minúsculas.");
+        int esquerda = 0, direita = s.Length - 1;
+
+        while (esquerda < direita)
+        {
+            if (!char.IsLetterOrDigit(s[esquerda]))
+            {
+                esquerda++;
+                continue;
+            }
+
+            if (!char.IsLetterOrDigit(s[direita]))
+            {
+                direita--;
+                continue;
+            }
+
+            if (char.ToLowerInvariant(s[esquerda]) != char.ToLowerInvariant(s[direita]))
+                return false;
+
+            esquerda++;
+            direita--;
+        }
+
+        return true;
     }
 }

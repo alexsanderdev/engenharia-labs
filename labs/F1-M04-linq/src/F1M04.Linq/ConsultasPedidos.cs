@@ -8,7 +8,7 @@ public static class ConsultasPedidos
     /// <summary>Soma dos subtotais dos itens do pedido.</summary>
     public static decimal Total(Pedido pedido)
     {
-        throw new NotImplementedException("TODO: some os Subtotal dos itens");
+        return pedido.Itens.Sum(i => i.Subtotal);
     }
 
     /// <summary>
@@ -17,7 +17,10 @@ public static class ConsultasPedidos
     /// </summary>
     public static IReadOnlyDictionary<int, decimal> FaturamentoPorCliente(IEnumerable<Pedido> pedidos)
     {
-        throw new NotImplementedException("TODO: Where(não cancelado) + AggregateBy(ClienteId, 0m, ...) + ToDictionary");
+        return pedidos
+            .Where(p => p.Status != StatusPedido.Cancelado)
+            .AggregateBy(p => p.ClienteId, 0m, (acumulado, p) => acumulado + Total(p))
+            .ToDictionary();
     }
 
     /// <summary>
@@ -27,7 +30,14 @@ public static class ConsultasPedidos
     /// </summary>
     public static IReadOnlyList<ResumoCliente> ResumoPorCliente(IEnumerable<Pedido> pedidos, IEnumerable<Cliente> clientes)
     {
-        throw new NotImplementedException("TODO: Join pedidos x clientes, GroupBy cliente, projete ResumoCliente e ordene");
+        return pedidos
+            .Where(p => p.Status != StatusPedido.Cancelado)
+            .Join(clientes, p => p.ClienteId, c => c.Id, (p, c) => new { Cliente = c, Pedido = p })
+            .GroupBy(x => x.Cliente)
+            .Select(g => new ResumoCliente(g.Key.Nome, g.Count(), g.Sum(x => Total(x.Pedido))))
+            .OrderByDescending(r => r.TotalGasto)
+            .ThenBy(r => r.NomeCliente, StringComparer.Ordinal)
+            .ToList();
     }
 
     /// <summary>
@@ -37,6 +47,14 @@ public static class ConsultasPedidos
     /// </summary>
     public static IReadOnlyList<ProdutoVendido> MaisVendidos(IEnumerable<Pedido> pedidos, IEnumerable<Produto> produtos, int top)
     {
-        throw new NotImplementedException("TODO: SelectMany(Itens) + GroupBy(ProdutoId) + Join(produtos) + OrderByDescending + ThenBy + Take");
+        return pedidos
+            .Where(p => p.Status != StatusPedido.Cancelado)
+            .SelectMany(p => p.Itens)
+            .GroupBy(i => i.ProdutoId, (produtoId, itens) => new { ProdutoId = produtoId, Quantidade = itens.Sum(i => i.Quantidade) })
+            .Join(produtos, v => v.ProdutoId, p => p.Id, (v, p) => new ProdutoVendido(p.Nome, v.Quantidade))
+            .OrderByDescending(v => v.Quantidade)
+            .ThenBy(v => v.Nome, StringComparer.Ordinal)
+            .Take(top)
+            .ToList();
     }
 }

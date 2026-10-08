@@ -1,11 +1,11 @@
+using System.Collections.Concurrent;
+using System.Threading.Channels;
+
 namespace F1M03.Async;
 
-// Dica: using System.Threading.Channels; e System.Collections.Concurrent para juntar os resultados.
-
 /// <summary>
-/// Produtor/consumidor com <see cref="System.Threading.Channels.Channel{T}"/>: um produtor escreve os pedidos
-/// num canal LIMITADO (backpressure) e N consumidores processam em paralelo
-/// (ex.: enviar notificação de pedido criado).
+/// Produtor/consumidor com <see cref="Channel{T}"/>: um produtor escreve os pedidos num canal LIMITADO
+/// (backpressure) e N consumidores processam em paralelo (ex.: enviar notificação de pedido criado).
 /// </summary>
 public static class PipelineComChannel
 {
@@ -21,19 +21,57 @@ public static class PipelineComChannel
     /// <item>Cancelamento do chamador gera <see cref="OperationCanceledException"/>.</item>
     /// </list>
     /// </summary>
-    public static Task<IReadOnlyList<TSaida>> ProcessarAsync<TEntrada, TSaida>(
+    public static async Task<IReadOnlyList<TSaida>> ProcessarAsync<TEntrada, TSaida>(
         IEnumerable<TEntrada> entrada,
         Func<TEntrada, CancellationToken, ValueTask<TSaida>> etapa,
         int capacidade,
         int consumidores,
         CancellationToken cancellationToken = default)
     {
-        // TODO: transforme este método em async.
-        // 1. Channel.CreateBounded<TEntrada>(new BoundedChannelOptions(capacidade) { FullMode = Wait }).
-        // 2. Um CTS linkado ao token do chamador.
-        // 3. Produtor: WriteAsync de cada item; no finally, Writer.TryComplete().
-        // 4. N consumidores: await foreach em Reader.ReadAllAsync(token); se a etapa falhar, cancele o CTS e relance.
-        // 5. await Task.WhenAll(produtor + consumidores) e retorne os resultados.
-        throw new NotImplementedException("TODO: implemente o pipeline produtor/consumidor com Channel<T>");
+        ArgumentNullException.ThrowIfNull(entrada);
+        ArgumentNullException.ThrowIfNull(etapa);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacidade);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(consumidores);
+
+        var canal = Channel.CreateBounded<TEntrada>(new BoundedChannelOptions(capacidade)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleWriter = true,
+            SingleReader = consumidores == 1
+        });
+        var resultados = new ConcurrentQueue<TSaida>();
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        async Task Produzir()
+        {
+            try
+            {
+                foreach (var item in entrada)
+                    await canal.Writer.WriteAsync(item, cts.Token).ConfigureAwait(false);
+            }
+            finally
+            {
+                canal.Writer.TryComplete();
+            }
+        }
+
+        async Task Consumir()
+        {
+            try
+            {
+                await foreach (var item in canal.Reader.ReadAllAsync(cts.Token).ConfigureAwait(false))
+                    resultados.Enqueue(await etapa(item, cts.Token).ConfigureAwait(false));
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Sem isto, o produtor pode ficar preso para sempre em WriteAsync com o canal cheio.
+                await cts.CancelAsync().ConfigureAwait(false);
+                throw;
+            }
+        }
+
+        Task[] tarefas = [Produzir(), .. Enumerable.Range(0, consumidores).Select(_ => Consumir())];
+        await Task.WhenAll(tarefas).ConfigureAwait(false);
+        return [.. resultados];
     }
 }

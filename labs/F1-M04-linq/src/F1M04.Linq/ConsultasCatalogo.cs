@@ -13,7 +13,10 @@ public static class ConsultasCatalogo
     /// </summary>
     public static IReadOnlyList<Produto> AtivosDaCategoria(IEnumerable<Produto> produtos, string categoria)
     {
-        throw new NotImplementedException("TODO: Where (Ativo + categoria com OrdinalIgnoreCase) + OrderBy(Nome) + ToList");
+        return produtos
+            .Where(p => p.Ativo && string.Equals(p.Categoria, categoria, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(p => p.Nome, StringComparer.Ordinal)
+            .ToList();
     }
 
     /// <summary>
@@ -25,7 +28,32 @@ public static class ConsultasCatalogo
     /// </summary>
     public static Pagina<Produto> Buscar(IEnumerable<Produto> produtos, FiltroCatalogo filtro)
     {
-        throw new NotImplementedException("TODO: valide a paginação, componha os Where opcionais, ordene, materialize UMA vez e só então conte e pagine (Skip/Take)");
+        ArgumentOutOfRangeException.ThrowIfLessThan(filtro.Pagina, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(filtro.TamanhoPagina, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(filtro.TamanhoPagina, 100);
+
+        var consulta = produtos;
+        if (filtro.ApenasAtivos)
+            consulta = consulta.Where(p => p.Ativo);
+        if (!string.IsNullOrWhiteSpace(filtro.Termo))
+            consulta = consulta.Where(p => p.Nome.Contains(filtro.Termo, StringComparison.OrdinalIgnoreCase));
+        if (filtro.PrecoMinimo is { } min)
+            consulta = consulta.Where(p => p.Preco >= min);
+        if (filtro.PrecoMaximo is { } max)
+            consulta = consulta.Where(p => p.Preco <= max);
+
+        // Materializa uma vez: Count e Skip/Take trabalham sobre a lista, não sobre a fonte.
+        var filtrados = consulta
+            .OrderBy(p => p.Preco)
+            .ThenBy(p => p.Nome, StringComparer.Ordinal)
+            .ToList();
+
+        var itens = filtrados
+            .Skip((filtro.Pagina - 1) * filtro.TamanhoPagina)
+            .Take(filtro.TamanhoPagina)
+            .ToList();
+
+        return new Pagina<Produto>(itens, filtro.Pagina, filtro.TamanhoPagina, filtrados.Count);
     }
 
     /// <summary>
@@ -33,7 +61,7 @@ public static class ConsultasCatalogo
     /// </summary>
     public static IReadOnlyDictionary<string, int> ContarPorCategoria(IEnumerable<Produto> produtos)
     {
-        throw new NotImplementedException("TODO: produtos.CountBy(...).ToDictionary()");
+        return produtos.CountBy(p => p.Categoria).ToDictionary();
     }
 
     /// <summary>
@@ -42,7 +70,7 @@ public static class ConsultasCatalogo
     /// </summary>
     public static ILookup<string, Produto> IndicePorCategoria(IEnumerable<Produto> produtos)
     {
-        throw new NotImplementedException("TODO: ToLookup por categoria, com comparer que ignora maiúsculas/minúsculas");
+        return produtos.ToLookup(p => p.Categoria, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -51,7 +79,8 @@ public static class ConsultasCatalogo
     /// </summary>
     public static IReadOnlyList<string[]> SkusEmLotes(IEnumerable<Produto> produtos, int tamanhoLote)
     {
-        throw new NotImplementedException("TODO: Select(Sku) + Chunk(tamanhoLote) + ToList");
+        ArgumentOutOfRangeException.ThrowIfLessThan(tamanhoLote, 1);
+        return produtos.Select(p => p.Sku).Chunk(tamanhoLote).ToList();
     }
 
     /// <summary>
@@ -61,6 +90,6 @@ public static class ConsultasCatalogo
     /// </summary>
     public static Expression<Func<Produto, bool>> FaixaDePreco(decimal minimo, decimal maximo)
     {
-        throw new NotImplementedException("TODO: devolva uma lambda p => ... (o compilador gera a árvore de expressão)");
+        return p => p.Preco >= minimo && p.Preco <= maximo;
     }
 }

@@ -24,7 +24,15 @@ public static class ConfigurationFactory
         string envVarPrefix,
         IEnumerable<KeyValuePair<string, string?>>? overrides = null)
     {
-        throw new NotImplementedException(
-            "TODO: use new ConfigurationBuilder() com SetBasePath, AddJsonFile (2x), AddEnvironmentVariables(prefix) e AddInMemoryCollection, NESSA ordem.");
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(basePath)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile($"appsettings.{environmentName}.json", optional: true, reloadOnChange: false)
+            .AddEnvironmentVariables(prefix: envVarPrefix);
+
+        if (overrides is not null)
+            builder.AddInMemoryCollection(overrides);
+
+        return builder.Build();
     }
 }

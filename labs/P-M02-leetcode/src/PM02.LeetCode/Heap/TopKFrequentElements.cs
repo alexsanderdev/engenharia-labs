@@ -12,7 +12,23 @@ public static class TopKFrequentElements
 {
     public static int[] Resolver(int[] numeros, int k)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Top K Frequent — conte frequências e mantenha um PriorityQueue (min-heap) com no máximo k itens.");
+        var frequencia = new Dictionary<int, int>();
+        foreach (var n in numeros)
+            frequencia[n] = frequencia.GetValueOrDefault(n) + 1;
+
+        // Min-heap por frequência: o topo é o "menos frequente entre os k melhores".
+        var heap = new PriorityQueue<int, int>(k + 1);
+        foreach (var (valor, vezes) in frequencia)
+        {
+            heap.Enqueue(valor, vezes);
+            if (heap.Count > k)
+                heap.Dequeue(); // descarta o menos frequente: o heap nunca passa de k itens
+        }
+
+        var resposta = new int[heap.Count];
+        for (var i = 0; heap.Count > 0; i++)
+            resposta[i] = heap.Dequeue();
+
+        return resposta;
     }
 }

@@ -18,17 +18,41 @@ public static class ProcessadorEmLote
     /// <item>Se só houver cancelamento, lança <see cref="OperationCanceledException"/>.</item>
     /// </list>
     /// </summary>
-    public static Task<TSaida[]> ProcessarAsync<TEntrada, TSaida>(
+    public static async Task<TSaida[]> ProcessarAsync<TEntrada, TSaida>(
         IEnumerable<TEntrada> itens,
         Func<TEntrada, CancellationToken, Task<TSaida>> acao,
         int maxConcorrencia,
         CancellationToken cancellationToken = default)
     {
-        // TODO: transforme este método em async.
-        // 1. Valide os argumentos.
-        // 2. Use um SemaphoreSlim(maxConcorrencia) — WaitAsync(token) antes da ação, Release() no finally.
-        // 3. Crie todas as tarefas, guarde o Task.WhenAll numa variável e, no catch, relance
-        //    a AggregateException da Task (todas.Exception) quando ela existir.
-        throw new NotImplementedException("TODO: implemente ProcessarAsync com SemaphoreSlim + Task.WhenAll");
+        ArgumentNullException.ThrowIfNull(itens);
+        ArgumentNullException.ThrowIfNull(acao);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxConcorrencia);
+
+        using var semaforo = new SemaphoreSlim(maxConcorrencia, maxConcorrencia);
+
+        async Task<TSaida> ExecutarUm(TEntrada item)
+        {
+            await semaforo.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await acao(item, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                semaforo.Release();
+            }
+        }
+
+        var tarefas = itens.Select(ExecutarUm).ToArray();
+        var todas = Task.WhenAll(tarefas);
+        try
+        {
+            return await todas.ConfigureAwait(false);
+        }
+        catch when (todas.Exception is not null)
+        {
+            // O await só relança a PRIMEIRA exceção; a Task guarda todas.
+            throw todas.Exception;
+        }
     }
 }

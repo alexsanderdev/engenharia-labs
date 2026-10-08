@@ -15,7 +15,19 @@ public static class ContainerWithMostWater
 {
     public static int Resolver(int[] alturas)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Container With Most Water — dois ponteiros nas pontas; calcule a área e mova sempre o lado mais baixo.");
+        int esquerda = 0, direita = alturas.Length - 1, melhor = 0;
+
+        while (esquerda < direita)
+        {
+            var altura = Math.Min(alturas[esquerda], alturas[direita]);
+            melhor = Math.Max(melhor, altura * (direita - esquerda));
+
+            if (alturas[esquerda] < alturas[direita])
+                esquerda++;
+            else
+                direita--;
+        }
+
+        return melhor;
     }
 }

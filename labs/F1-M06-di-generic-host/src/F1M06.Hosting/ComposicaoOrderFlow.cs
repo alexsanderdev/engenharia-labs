@@ -22,7 +22,13 @@ public static class ComposicaoOrderFlow
     /// </summary>
     public static IServiceCollection AddCatalogo(this IServiceCollection services)
     {
-        throw new NotImplementedException("TODO: registre repositório (Singleton), contexto (Scoped) e o decorator de preços (Scoped, via factory)");
+        services.AddSingleton<IRepositorioProdutos, RepositorioProdutosEmMemoria>();
+        services.AddScoped<IContextoDaOperacao, ContextoDaOperacao>();
+
+        services.AddScoped<ServicoDePrecos>();
+        services.AddScoped<IServicoDePrecos>(sp => new ServicoDePrecosComCache(sp.GetRequiredService<ServicoDePrecos>()));
+
+        return services;
     }
 
     /// <summary>
@@ -32,7 +38,10 @@ public static class ComposicaoOrderFlow
     /// </summary>
     public static IServiceCollection AddFrete(this IServiceCollection services)
     {
-        throw new NotImplementedException("TODO: AddKeyedSingleton<ICalculadoraDeFrete, ...>(chave) para cada frete e AddScoped<ServicoDeCheckout>()");
+        services.AddKeyedSingleton<ICalculadoraDeFrete, FretePadrao>(ChavesFrete.Padrao);
+        services.AddKeyedSingleton<ICalculadoraDeFrete, FreteExpresso>(ChavesFrete.Expresso);
+        services.AddScoped<ServicoDeCheckout>();
+        return services;
     }
 
     /// <summary>
@@ -47,7 +56,18 @@ public static class ComposicaoOrderFlow
     /// </summary>
     public static IServiceCollection AddPedidos(this IServiceCollection services, IConfiguration configuration)
     {
-        throw new NotImplementedException("TODO: Options (Bind), TryAddSingleton(TimeProvider.System), gerador via factory, repositório, serviço e AddHostedService");
+        services.AddOptions<OpcoesPedidos>().Bind(configuration.GetSection(OpcoesPedidos.Secao));
+        services.TryAddSingleton(TimeProvider.System);
+
+        services.AddSingleton<IGeradorDeCodigoPedido>(sp => new GeradorDeCodigoPedido(
+            sp.GetRequiredService<IOptions<OpcoesPedidos>>().Value.Prefixo,
+            sp.GetRequiredService<TimeProvider>()));
+
+        services.AddSingleton<IRepositorioPedidos, RepositorioPedidosEmMemoria>();
+        services.AddScoped<IServicoDePedidos, ServicoDePedidos>();
+        services.AddHostedService<LimpezaDePedidosExpirados>();
+
+        return services;
     }
 
     /// <summary>Registra tudo: logging, catálogo, frete e pedidos.</summary>

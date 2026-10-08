@@ -1,6 +1,6 @@
-namespace F1M01.CSharpModerno;
+using System.Globalization;
 
-// Dica: no ToString você vai precisar de System.Globalization.CultureInfo.InvariantCulture.
+namespace F1M01.CSharpModerno;
 
 /// <summary>
 /// Value object de dinheiro do OrderFlow. Igualdade por valor (record), imutável,
@@ -22,8 +22,11 @@ public sealed record Dinheiro
     /// </summary>
     public Dinheiro(decimal valor, string moeda = "BRL")
     {
-        // TODO: valide (negativo e moeda vazia), arredonde para 2 casas e normalize a moeda.
-        throw new NotImplementedException("TODO: implemente o construtor de Dinheiro (validação, arredondamento AwayFromZero e moeda em maiúsculas)");
+        ArgumentOutOfRangeException.ThrowIfNegative(valor);
+        ArgumentException.ThrowIfNullOrWhiteSpace(moeda);
+
+        Valor = decimal.Round(valor, 2, MidpointRounding.AwayFromZero);
+        Moeda = moeda.Trim().ToUpperInvariant();
     }
 
     /// <summary>Atalho para valores em reais.</summary>
@@ -33,25 +36,38 @@ public sealed record Dinheiro
     public static Dinheiro Zero(string moeda = "BRL") => new(0m, moeda);
 
     /// <summary>Soma dois valores. Moedas diferentes lançam <see cref="InvalidOperationException"/>.</summary>
-    public static Dinheiro operator +(Dinheiro a, Dinheiro b) =>
-        throw new NotImplementedException("TODO: some os valores; moedas diferentes devem lançar InvalidOperationException");
+    public static Dinheiro operator +(Dinheiro a, Dinheiro b)
+    {
+        GarantirMesmaMoeda(a, b);
+        return new(a.Valor + b.Valor, a.Moeda);
+    }
 
     /// <summary>
     /// Subtrai dois valores. Moedas diferentes lançam <see cref="InvalidOperationException"/>;
     /// resultado negativo lança <see cref="InvalidOperationException"/>.
     /// </summary>
-    public static Dinheiro operator -(Dinheiro a, Dinheiro b) =>
-        throw new NotImplementedException("TODO: subtraia os valores; moedas diferentes ou resultado negativo lançam InvalidOperationException");
+    public static Dinheiro operator -(Dinheiro a, Dinheiro b)
+    {
+        GarantirMesmaMoeda(a, b);
+        var resultado = a.Valor - b.Valor;
+        if (resultado < 0)
+            throw new InvalidOperationException("O resultado da subtração não pode ser negativo.");
+        return new(resultado, a.Moeda);
+    }
 
     /// <summary>Multiplica pelo fator (ex.: quantidade). O resultado é arredondado.</summary>
-    public static Dinheiro operator *(Dinheiro dinheiro, decimal fator) =>
-        throw new NotImplementedException("TODO: multiplique o valor pelo fator, mantendo a moeda");
+    public static Dinheiro operator *(Dinheiro dinheiro, decimal fator) => new(dinheiro.Valor * fator, dinheiro.Moeda);
 
     /// <summary>Retorna o percentual do valor (0.10m = 10%).</summary>
-    public Dinheiro Percentual(decimal percentual) =>
-        throw new NotImplementedException("TODO: retorne o percentual do valor (reaproveite o operador *)");
+    public Dinheiro Percentual(decimal percentual) => this * percentual;
 
     /// <summary>Formato invariável: "BRL 15.50".</summary>
     public override string ToString() =>
-        throw new NotImplementedException("TODO: formate como \"BRL 15.50\" usando CultureInfo.InvariantCulture");
+        $"{Moeda} {Valor.ToString("0.00", CultureInfo.InvariantCulture)}";
+
+    private static void GarantirMesmaMoeda(Dinheiro a, Dinheiro b)
+    {
+        if (a.Moeda != b.Moeda)
+            throw new InvalidOperationException($"Não é possível operar {a.Moeda} com {b.Moeda}.");
+    }
 }

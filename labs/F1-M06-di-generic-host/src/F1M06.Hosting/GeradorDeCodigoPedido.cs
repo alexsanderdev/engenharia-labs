@@ -16,7 +16,8 @@ public sealed class GeradorDeCodigoPedido(string prefixo, TimeProvider tempo) : 
     /// </summary>
     public string Proximo()
     {
-        // Dica: string.Create(CultureInfo.InvariantCulture, $"...{numero:D6}") evita depender da cultura da máquina.
-        throw new NotImplementedException("TODO: Interlocked.Increment(ref _sequencial) + ano de tempo.GetUtcNow() + formato {prefixo}-AAAA-NNNNNN");
+        var numero = Interlocked.Increment(ref _sequencial);
+        var ano = tempo.GetUtcNow().Year;
+        return string.Create(CultureInfo.InvariantCulture, $"{prefixo}-{ano:D4}-{numero:D6}");
     }
 }

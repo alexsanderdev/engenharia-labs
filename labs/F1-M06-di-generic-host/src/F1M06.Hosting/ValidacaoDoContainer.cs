@@ -12,6 +12,18 @@ public static class ValidacaoDoContainer
     /// </summary>
     public static IReadOnlyList<string> EncontrarProblemas(IServiceCollection services)
     {
-        throw new NotImplementedException("TODO: BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true }); capture AggregateException e devolva as mensagens das InnerExceptions");
+        try
+        {
+            using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+            {
+                ValidateOnBuild = true,
+                ValidateScopes = true,
+            });
+            return [];
+        }
+        catch (AggregateException ex)
+        {
+            return [.. ex.InnerExceptions.Select(e => e.Message)];
+        }
     }
 }

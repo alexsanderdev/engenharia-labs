@@ -23,7 +23,17 @@ public sealed class MinHeap<T>
     /// <summary>Coloca o item no fim do array e o "sobe" (sift-up) enquanto for menor que o pai.</summary>
     public void Inserir(T item)
     {
-        throw new NotImplementedException("TODO: _itens.Add(item) e troque com o pai ((i - 1) / 2) enquanto for menor.");
+        _itens.Add(item);
+        var i = _itens.Count - 1;
+        while (i > 0)
+        {
+            var pai = (i - 1) / 2;
+            if (_comparador.Compare(_itens[i], _itens[pai]) >= 0)
+                break;
+
+            (_itens[i], _itens[pai]) = (_itens[pai], _itens[i]);
+            i = pai;
+        }
     }
 
     /// <summary>
@@ -32,12 +42,38 @@ public sealed class MinHeap<T>
     /// </summary>
     public T Remover()
     {
-        throw new NotImplementedException("TODO: guarde _itens[0], mova o último para a raiz, remova o último e faça o sift-down com o MENOR filho.");
+        var menor = Espiar();
+        var ultimo = _itens.Count - 1;
+        _itens[0] = _itens[ultimo];
+        _itens.RemoveAt(ultimo);
+
+        var i = 0;
+        while (true)
+        {
+            var esquerdo = 2 * i + 1;
+            var direito = esquerdo + 1;
+            var alvo = i;
+
+            if (esquerdo < _itens.Count && _comparador.Compare(_itens[esquerdo], _itens[alvo]) < 0)
+                alvo = esquerdo;
+            if (direito < _itens.Count && _comparador.Compare(_itens[direito], _itens[alvo]) < 0)
+                alvo = direito;
+            if (alvo == i)
+                break;
+
+            (_itens[i], _itens[alvo]) = (_itens[alvo], _itens[i]);
+            i = alvo;
+        }
+
+        return menor;
     }
 
     /// <summary>Devolve o menor item sem remover. Heap vazio: <see cref="InvalidOperationException"/>.</summary>
     public T Espiar()
     {
-        throw new NotImplementedException("TODO: devolva _itens[0] ou lance InvalidOperationException se vazio.");
+        if (_itens.Count == 0)
+            throw new InvalidOperationException("O heap está vazio.");
+
+        return _itens[0];
     }
 }

@@ -13,7 +13,21 @@ public static class BinarySearch
 {
     public static int Resolver(int[] numeros, int alvo)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Binary Search — esquerda/direita, meio = esquerda + (direita - esquerda) / 2, laço enquanto esquerda <= direita.");
+        int esquerda = 0, direita = numeros.Length - 1;
+
+        while (esquerda <= direita)
+        {
+            var meio = esquerda + (direita - esquerda) / 2;
+
+            if (numeros[meio] == alvo)
+                return meio;
+
+            if (numeros[meio] < alvo)
+                esquerda = meio + 1;
+            else
+                direita = meio - 1;
+        }
+
+        return -1;
     }
 }

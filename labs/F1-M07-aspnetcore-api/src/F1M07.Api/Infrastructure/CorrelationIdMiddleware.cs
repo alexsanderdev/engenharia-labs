@@ -15,10 +15,24 @@ public sealed class CorrelationIdMiddleware(RequestDelegate next, ILogger<Correl
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // TODO: leia/gere o correlation id, guarde em Items e TraceIdentifier,
-        //       registre context.Response.OnStarting(...) para escrever o header na resposta
-        //       e envolva a chamada abaixo em logger.BeginScope(...).
-        _ = logger;
-        await next(context);
+        var correlationId = context.Request.Headers[HeaderName].ToString();
+        if (string.IsNullOrWhiteSpace(correlationId))
+            correlationId = Guid.NewGuid().ToString("N");
+
+        context.Items[ItemKey] = correlationId;
+        context.TraceIdentifier = correlationId;
+
+        // OnStarting: o header é escrito imediatamente antes de a resposta começar,
+        // mesmo que outro middleware mais adiante limpe/reescreva a resposta (ex.: exception handler).
+        context.Response.OnStarting(() =>
+        {
+            context.Response.Headers[HeaderName] = correlationId;
+            return Task.CompletedTask;
+        });
+
+        using (logger.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlationId }))
+        {
+            await next(context);
+        }
     }
 }

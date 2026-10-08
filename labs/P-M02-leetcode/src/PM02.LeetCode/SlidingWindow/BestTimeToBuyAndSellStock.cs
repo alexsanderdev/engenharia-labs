@@ -13,7 +13,17 @@ public static class BestTimeToBuyAndSellStock
 {
     public static int Resolver(int[] precos)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Best Time to Buy and Sell Stock — uma passada guardando o menor preço até agora e o melhor lucro.");
+        var menorPreco = int.MaxValue;
+        var melhorLucro = 0;
+
+        foreach (var preco in precos)
+        {
+            if (preco < menorPreco)
+                menorPreco = preco;
+            else
+                melhorLucro = Math.Max(melhorLucro, preco - menorPreco);
+        }
+
+        return melhorLucro;
     }
 }

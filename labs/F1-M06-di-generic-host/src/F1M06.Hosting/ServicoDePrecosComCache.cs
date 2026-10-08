@@ -14,6 +14,11 @@ public sealed class ServicoDePrecosComCache(IServicoDePrecos interno) : IServico
     /// </summary>
     public decimal ObterPreco(string sku)
     {
-        throw new NotImplementedException("TODO: procure no _cache; se não achar, chame interno.ObterPreco, guarde e devolva");
+        if (_cache.TryGetValue(sku, out var preco))
+            return preco;
+
+        preco = interno.ObterPreco(sku);
+        _cache[sku] = preco;
+        return preco;
     }
 }

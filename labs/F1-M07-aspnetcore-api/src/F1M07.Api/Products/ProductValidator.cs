@@ -15,7 +15,17 @@ public static class ProductValidator
     /// </summary>
     public static Dictionary<string, string[]> Validate(ProductRequest request)
     {
-        throw new NotImplementedException(
-            "TODO: valide Name (obrigatório, máx. 100 após Trim) e Price (> 0) e devolva os erros por campo.");
+        var errors = new Dictionary<string, string[]>();
+
+        var name = request.Name?.Trim();
+        if (string.IsNullOrEmpty(name))
+            errors["Name"] = ["O nome é obrigatório."];
+        else if (name.Length > NameMaxLength)
+            errors["Name"] = [$"O nome deve ter no máximo {NameMaxLength} caracteres."];
+
+        if (request.Price <= 0)
+            errors["Price"] = ["O preço deve ser maior que zero."];
+
+        return errors;
     }
 }

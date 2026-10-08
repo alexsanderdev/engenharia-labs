@@ -13,7 +13,19 @@ public static class TwoSum
 {
     public static int[] Resolver(int[] numeros, int alvo)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Two Sum — use um Dictionary<valor, índice> e procure o complemento (alvo - atual) antes de registrar o atual.");
+        // valor já visto -> índice onde ele apareceu
+        var vistos = new Dictionary<int, int>(numeros.Length);
+
+        for (var j = 0; j < numeros.Length; j++)
+        {
+            var complemento = alvo - numeros[j];
+            if (vistos.TryGetValue(complemento, out var i))
+                return [i, j];
+
+            // Só registra DEPOIS de procurar: assim o elemento não casa consigo mesmo.
+            vistos.TryAdd(numeros[j], j);
+        }
+
+        return [];
     }
 }

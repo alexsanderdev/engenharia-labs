@@ -20,9 +20,16 @@ public sealed class CacheDePrecos(Func<Guid, CancellationToken, Task<decimal>> c
     /// </summary>
     public ValueTask<decimal> ObterPrecoAsync(Guid produtoId, CancellationToken cancellationToken = default)
     {
-        // TODO: acerto -> ValueTask.FromResult(preco) (caminho síncrono, sem alocar Task).
-        //       falha  -> new ValueTask<decimal>(um método async privado que chama _carregar e guarda em _cache).
-        _ = (_carregar, _cache);
-        throw new NotImplementedException("TODO: implemente ObterPrecoAsync com caminho síncrono no acerto do cache");
+        if (_cache.TryGetValue(produtoId, out var preco))
+            return ValueTask.FromResult(preco);
+
+        return new ValueTask<decimal>(CarregarEGuardarAsync(produtoId, cancellationToken));
+    }
+
+    private async Task<decimal> CarregarEGuardarAsync(Guid produtoId, CancellationToken cancellationToken)
+    {
+        var preco = await _carregar(produtoId, cancellationToken).ConfigureAwait(false);
+        _cache[produtoId] = preco;
+        return preco;
     }
 }

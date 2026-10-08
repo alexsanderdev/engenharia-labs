@@ -23,10 +23,20 @@ public sealed partial class LimpezaDePedidosExpirados(
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Dica: do { ciclo } while (await timer.WaitForNextTickAsync(stoppingToken));
-        // e trate OperationCanceledException quando stoppingToken estiver cancelado.
-        await Task.CompletedTask;
-        throw new NotImplementedException("TODO: crie o PeriodicTimer com o TimeProvider, rode um ciclo já e depois a cada tick");
+        using var timer = new PeriodicTimer(opcoes.Value.IntervaloLimpeza, tempo);
+
+        try
+        {
+            do
+            {
+                await ExecutarCicloAsync(stoppingToken);
+            }
+            while (await timer.WaitForNextTickAsync(stoppingToken));
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Parada normal do host.
+        }
     }
 
     /// <summary>
@@ -36,9 +46,17 @@ public sealed partial class LimpezaDePedidosExpirados(
     /// </summary>
     private async Task ExecutarCicloAsync(CancellationToken stoppingToken)
     {
-        // Use LogCicloConcluido(cancelados) e LogCicloFalhou(ex), já declarados abaixo.
-        await Task.CompletedTask;
-        throw new NotImplementedException("TODO: CreateAsyncScope, resolva IServicoDePedidos, chame CancelarExpiradosAsync; logue exceções sem relançar");
+        try
+        {
+            await using var escopo = scopeFactory.CreateAsyncScope();
+            var servico = escopo.ServiceProvider.GetRequiredService<IServicoDePedidos>();
+            var cancelados = await servico.CancelarExpiradosAsync(stoppingToken);
+            LogCicloConcluido(cancelados);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            LogCicloFalhou(ex);
+        }
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Ciclo de limpeza concluído: {Cancelados} pedidos cancelados")]

@@ -17,16 +17,24 @@ public sealed class ExecutorComTimeout(TimeProvider tempo)
     /// <para>Se veio do CHAMADOR, deixa a <see cref="OperationCanceledException"/> subir.</para>
     /// Os <see cref="CancellationTokenSource"/> criados devem ser descartados (using).
     /// </summary>
-    public Task<T> ExecutarAsync<T>(
+    public async Task<T> ExecutarAsync<T>(
         Func<CancellationToken, Task<T>> operacao,
         TimeSpan timeout,
         CancellationToken cancellationToken = default)
     {
-        // TODO: transforme este método em async.
-        // 1. new CancellationTokenSource(timeout, _tempo)  -> o prazo "anda" no relógio do TimeProvider.
-        // 2. CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token).
-        // 3. catch (OperationCanceledException) when (foi o timeout e NÃO o chamador) -> TimeoutException.
-        _ = _tempo;
-        throw new NotImplementedException("TODO: implemente ExecutarAsync com CTS + TimeProvider + linked token");
+        ArgumentNullException.ThrowIfNull(operacao);
+
+        using var timeoutCts = new CancellationTokenSource(timeout, _tempo);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+        try
+        {
+            return await operacao(linkedCts.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException ex)
+            when (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException($"A operação excedeu o limite de {timeout.TotalSeconds:0.##}s.", ex);
+        }
     }
 }

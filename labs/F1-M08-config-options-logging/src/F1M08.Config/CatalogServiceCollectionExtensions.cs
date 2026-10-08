@@ -16,7 +16,13 @@ public static class CatalogServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddCatalog(this IServiceCollection services, IConfiguration configuration)
     {
-        throw new NotImplementedException(
-            "TODO: services.AddOptions<CatalogOptions>().Bind(...).ValidateDataAnnotations().Validate(...).ValidateOnStart() e AddSingleton<ProductPriceService>().");
+        services.AddOptions<CatalogOptions>()
+            .Bind(configuration.GetSection(CatalogOptions.SectionName))
+            .ValidateDataAnnotations()
+            .Validate(o => o.DefaultPageSize <= o.MaxPageSize, PageSizeRuleMessage)
+            .ValidateOnStart();
+
+        services.AddSingleton<ProductPriceService>();
+        return services;
     }
 }

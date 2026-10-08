@@ -12,7 +12,7 @@ public static class ExecucaoAdiada
     /// </summary>
     public static IEnumerable<Produto> AcimaDe(IEnumerable<Produto> produtos, decimal limite)
     {
-        throw new NotImplementedException("TODO: devolva a consulta SEM materializar (nada de ToList aqui)");
+        return produtos.Where(p => p.Preco > limite);
     }
 
     /// <summary>
@@ -22,6 +22,27 @@ public static class ExecucaoAdiada
     /// </summary>
     public static EstatisticasCatalogo Estatisticas(IEnumerable<Produto> produtos)
     {
-        throw new NotImplementedException("TODO: um único foreach acumulando contagem, soma, mínimo e máximo (Count()+Min()+Max()+Average() = 4 enumerações)");
+        var quantidade = 0;
+        decimal soma = 0, minimo = 0, maximo = 0;
+
+        foreach (var produto in produtos)
+        {
+            if (quantidade == 0)
+            {
+                minimo = maximo = produto.Preco;
+            }
+            else
+            {
+                minimo = Math.Min(minimo, produto.Preco);
+                maximo = Math.Max(maximo, produto.Preco);
+            }
+
+            soma += produto.Preco;
+            quantidade++;
+        }
+
+        return quantidade == 0
+            ? new EstatisticasCatalogo(0, 0, 0, 0)
+            : new EstatisticasCatalogo(quantidade, minimo, maximo, Math.Round(soma / quantidade, 2));
     }
 }

@@ -42,30 +42,38 @@ public sealed class RepositorioEmMemoria<TEntidade, TId> : IRepositorioLeitura<T
     /// Adiciona a entidade. Retorna <c>false</c> (sem lançar e sem sobrescrever) se o id já existir.
     /// Entidade nula lança <see cref="ArgumentNullException"/>.
     /// </summary>
-    public bool Adicionar(TEntidade entidade) =>
-        throw new NotImplementedException("TODO: valide nulo e use _itens.TryAdd(entidade.Id, entidade)");
+    public bool Adicionar(TEntidade entidade)
+    {
+        ArgumentNullException.ThrowIfNull(entidade);
+        return _itens.TryAdd(entidade.Id, entidade);
+    }
 
     /// <summary>
     /// Substitui uma entidade existente. Id inexistente lança <see cref="KeyNotFoundException"/>.
     /// </summary>
-    public void Atualizar(TEntidade entidade) =>
-        throw new NotImplementedException("TODO: lance KeyNotFoundException se o id não existir; senão, substitua");
+    public void Atualizar(TEntidade entidade)
+    {
+        ArgumentNullException.ThrowIfNull(entidade);
+        if (!_itens.ContainsKey(entidade.Id))
+            throw new KeyNotFoundException($"Entidade {entidade.Id} não encontrada.");
+        _itens[entidade.Id] = entidade;
+    }
 
     /// <summary>Remove pelo id. Retorna <c>true</c> se removeu.</summary>
-    public bool Remover(TId id) =>
-        throw new NotImplementedException("TODO: remova do dicionário");
+    public bool Remover(TId id) => _itens.Remove(id);
 
     /// <inheritdoc />
-    public TEntidade? ObterPorId(TId id) =>
-        throw new NotImplementedException("TODO: retorne a entidade ou null (GetValueOrDefault ajuda)");
+    public TEntidade? ObterPorId(TId id) => _itens.GetValueOrDefault(id);
 
     /// <summary>
     /// Snapshot: uma cópia. Adicionar/remover depois NÃO altera a coleção já retornada.
     /// </summary>
-    public IReadOnlyCollection<TEntidade> Listar() =>
-        throw new NotImplementedException("TODO: retorne uma CÓPIA dos valores (cuidado: _itens.Values é uma visão viva)");
+    public IReadOnlyCollection<TEntidade> Listar() => [.. _itens.Values];
 
     /// <summary>Snapshot filtrado pelo predicado.</summary>
-    public IReadOnlyCollection<TEntidade> Buscar(Func<TEntidade, bool> filtro) =>
-        throw new NotImplementedException("TODO: retorne uma cópia filtrada");
+    public IReadOnlyCollection<TEntidade> Buscar(Func<TEntidade, bool> filtro)
+    {
+        ArgumentNullException.ThrowIfNull(filtro);
+        return [.. _itens.Values.Where(filtro)];
+    }
 }

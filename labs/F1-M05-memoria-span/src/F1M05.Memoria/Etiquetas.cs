@@ -23,8 +23,34 @@ public static class Etiquetas
     /// </summary>
     public static string MontarEtiqueta(CodigoPedido codigo, ReadOnlySpan<char> nomeCliente, ArrayPool<char>? pool = null)
     {
-        // Dicas: nomeCliente.Trim(); MemoryExtensions.ToUpperInvariant(origem, destino);
-        // pool.Rent pode devolver um array MAIOR que o pedido: use alugado.AsSpan(0, tamanho).
-        throw new NotImplementedException("TODO: calcule o tamanho, escolha stackalloc ou ArrayPool, escreva no buffer e crie a string final");
+        nomeCliente = nomeCliente.Trim();
+        var tamanho = CodigoPedido.Tamanho + 3 + nomeCliente.Length;
+
+        if (tamanho <= LimiteStackalloc)
+        {
+            Span<char> buffer = stackalloc char[tamanho];
+            Escrever(codigo, nomeCliente, buffer);
+            return new string(buffer);
+        }
+
+        pool ??= ArrayPool<char>.Shared;
+        var alugado = pool.Rent(tamanho); // pode vir MAIOR do que o pedido
+        try
+        {
+            var buffer = alugado.AsSpan(0, tamanho);
+            Escrever(codigo, nomeCliente, buffer);
+            return new string(buffer);
+        }
+        finally
+        {
+            pool.Return(alugado);
+        }
+    }
+
+    private static void Escrever(CodigoPedido codigo, ReadOnlySpan<char> nome, Span<char> destino)
+    {
+        ParserCodigoPedido.TryFormat(codigo, destino, out var escritos);
+        " | ".AsSpan().CopyTo(destino[escritos..]);
+        nome.ToUpperInvariant(destino[(escritos + 3)..]);
     }
 }

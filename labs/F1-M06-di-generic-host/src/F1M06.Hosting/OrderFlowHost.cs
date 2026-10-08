@@ -23,6 +23,20 @@ public static class OrderFlowHost
         IDictionary<string, string?>? configuracao = null,
         Action<IServiceCollection>? configurarServicos = null)
     {
-        throw new NotImplementedException("TODO: siga os 4 passos do comentário acima e devolva builder.Build()");
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { DisableDefaults = true });
+
+        if (configuracao is not null)
+            builder.Configuration.AddInMemoryCollection(configuracao);
+
+        builder.Services.AddOrderFlow(builder.Configuration);
+        configurarServicos?.Invoke(builder.Services);
+
+        builder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true,
+        }));
+
+        return builder.Build();
     }
 }

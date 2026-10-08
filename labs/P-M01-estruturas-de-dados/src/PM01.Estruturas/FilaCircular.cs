@@ -31,26 +31,52 @@ public sealed class FilaCircular<T> : IEnumerable<T>
     /// </summary>
     public void Enfileirar(T item)
     {
-        throw new NotImplementedException("TODO: se cheia, cresça (copiando a partir de _cabeca, com %, e zerando _cabeca); grave em (_cabeca + Count) % Capacity.");
+        if (Count == _itens.Length)
+            Crescer();
+
+        var cauda = (_cabeca + Count) % _itens.Length;
+        _itens[cauda] = item;
+        Count++;
     }
 
     /// <summary>Remove e devolve o primeiro da fila. Fila vazia: <see cref="InvalidOperationException"/>.</summary>
     public T Desenfileirar()
     {
-        throw new NotImplementedException("TODO: leia _itens[_cabeca], limpe a posição, avance _cabeca com % Capacity e decremente Count.");
+        if (Count == 0)
+            throw new InvalidOperationException("A fila está vazia.");
+
+        var item = _itens[_cabeca];
+        _itens[_cabeca] = default!;
+        _cabeca = (_cabeca + 1) % _itens.Length;
+        Count--;
+        return item;
     }
 
     /// <summary>Devolve o primeiro da fila sem remover. Fila vazia: <see cref="InvalidOperationException"/>.</summary>
     public T Espiar()
     {
-        throw new NotImplementedException("TODO: devolva _itens[_cabeca] ou lance InvalidOperationException se vazia.");
+        if (Count == 0)
+            throw new InvalidOperationException("A fila está vazia.");
+
+        return _itens[_cabeca];
     }
 
     /// <summary>Percorre da cabeça até a cauda (ordem FIFO).</summary>
     public IEnumerator<T> GetEnumerator()
     {
-        throw new NotImplementedException("TODO: yield return _itens[(_cabeca + i) % Capacity] para i de 0 até Count - 1.");
+        for (var i = 0; i < Count; i++)
+            yield return _itens[(_cabeca + i) % _itens.Length];
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    private void Crescer()
+    {
+        var novo = new T[_itens.Length * 2];
+        for (var i = 0; i < Count; i++)
+            novo[i] = _itens[(_cabeca + i) % _itens.Length];
+
+        _itens = novo;
+        _cabeca = 0;
+    }
 }

@@ -14,7 +14,23 @@ public static class GroupAnagrams
 {
     public static IList<IList<string>> Resolver(string[] palavras)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Group Anagrams — gere uma assinatura canônica por palavra (letras ordenadas) e agrupe num Dictionary<string, IList<string>>.");
+        var grupos = new Dictionary<string, IList<string>>();
+
+        foreach (var palavra in palavras)
+        {
+            var letras = palavra.ToCharArray();
+            Array.Sort(letras);
+            var assinatura = new string(letras);
+
+            if (!grupos.TryGetValue(assinatura, out var grupo))
+            {
+                grupo = new List<string>();
+                grupos[assinatura] = grupo;
+            }
+
+            grupo.Add(palavra);
+        }
+
+        return [.. grupos.Values];
     }
 }

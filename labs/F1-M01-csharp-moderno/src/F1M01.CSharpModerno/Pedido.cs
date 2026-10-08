@@ -27,8 +27,7 @@ public sealed class Pedido(Cliente cliente)
     public IReadOnlyList<ItemPedido> Itens => _itens;
 
     /// <summary>Soma dos subtotais dos itens (zero em reais se não houver itens).</summary>
-    public Dinheiro Subtotal =>
-        throw new NotImplementedException("TODO: some os subtotais dos itens partindo de Dinheiro.Zero()");
+    public Dinheiro Subtotal => _itens.Aggregate(Dinheiro.Zero(), (total, item) => total + item.Subtotal);
 
     /// <summary>
     /// Adiciona um item. Regras: quantidade &lt;= 0 lança <see cref="ArgumentOutOfRangeException"/>;
@@ -37,8 +36,15 @@ public sealed class Pedido(Cliente cliente)
     /// </summary>
     public void AdicionarItem(Produto produto, int quantidade)
     {
-        // TODO: valide quantidade, status e produto ativo; depois adicione o item em _itens.
-        throw new NotImplementedException("TODO: implemente Pedido.AdicionarItem");
+        ArgumentNullException.ThrowIfNull(produto);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantidade);
+
+        if (Status is not StatusPedido.Criado)
+            throw new InvalidOperationException("Só é possível adicionar itens a pedidos com status Criado.");
+        if (!produto.Ativo)
+            throw new InvalidOperationException($"Produto inativo não entra em pedido: {produto.Nome}.");
+
+        _itens.Add(new ItemPedido(produto, quantidade));
     }
 
     /// <summary>
@@ -47,7 +53,8 @@ public sealed class Pedido(Cliente cliente)
     /// </summary>
     public void AlterarStatus(StatusPedido novo)
     {
-        // TODO: use TransicoesDePedido.PodeTransicionar e atualize Status.
-        throw new NotImplementedException("TODO: implemente Pedido.AlterarStatus");
+        if (!TransicoesDePedido.PodeTransicionar(Status, novo))
+            throw new InvalidOperationException($"Transição inválida: {Status} → {novo}.");
+        Status = novo;
     }
 }

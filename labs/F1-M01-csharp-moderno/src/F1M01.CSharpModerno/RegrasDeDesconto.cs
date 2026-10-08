@@ -17,10 +17,21 @@ public static class RegrasDeDesconto
     /// <item>Qualquer outro caso → 0%.</item>
     /// </list>
     /// </summary>
-    public static decimal PercentualPara(Pedido pedido) =>
-        throw new NotImplementedException("TODO: escreva uma switch expression com property, relational e list patterns (ex.: { Itens: [] }, { Cliente.Vip: true }, { Subtotal.Valor: >= 500m })");
+    public static decimal PercentualPara(Pedido pedido) => pedido switch
+    {
+        { Itens: [] } => 0m,
+        { Cliente.Vip: true, Subtotal.Valor: >= 500m } => 0.15m,
+        { Cliente.Vip: true } => 0.10m,
+        { Subtotal.Valor: >= 500m } => 0.05m,
+        { Itens: [{ Quantidade: >= 10 }] } => 0.08m,
+        { Itens: [_, _, _, ..] } => 0.03m,
+        _ => 0m
+    };
 
     /// <summary>Subtotal menos o desconto calculado por <see cref="PercentualPara"/>.</summary>
-    public static Dinheiro TotalComDesconto(Pedido pedido) =>
-        throw new NotImplementedException("TODO: subtotal menos subtotal.Percentual(PercentualPara(pedido))");
+    public static Dinheiro TotalComDesconto(Pedido pedido)
+    {
+        var subtotal = pedido.Subtotal;
+        return subtotal - subtotal.Percentual(PercentualPara(pedido));
+    }
 }

@@ -13,7 +13,28 @@ public static class ValidParentheses
 {
     public static bool Resolver(string s)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Valid Parentheses — empilhe aberturas; em cada fechamento, desempilhe e confira o par; no fim a pilha deve estar vazia.");
+        var abertos = new Stack<char>();
+
+        foreach (var c in s)
+        {
+            if (c is '(' or '[' or '{')
+            {
+                abertos.Push(c);
+                continue;
+            }
+
+            var esperado = c switch
+            {
+                ')' => '(',
+                ']' => '[',
+                '}' => '{',
+                _ => throw new ArgumentException($"Caractere inválido: '{c}'.", nameof(s)),
+            };
+
+            if (!abertos.TryPop(out var topo) || topo != esperado)
+                return false;
+        }
+
+        return abertos.Count == 0;
     }
 }

@@ -25,8 +25,16 @@ public sealed class ListaDinamica<T> : IEnumerable<T>
     /// </summary>
     public T this[int indice]
     {
-        get => throw new NotImplementedException("TODO: valide o índice contra Count (não contra Capacity) e devolva _itens[indice].");
-        set => throw new NotImplementedException("TODO: valide o índice contra Count e grave em _itens[indice].");
+        get
+        {
+            ValidarIndice(indice);
+            return _itens[indice];
+        }
+        set
+        {
+            ValidarIndice(indice);
+            _itens[indice] = value;
+        }
     }
 
     /// <summary>
@@ -35,7 +43,10 @@ public sealed class ListaDinamica<T> : IEnumerable<T>
     /// </summary>
     public void Adicionar(T item)
     {
-        throw new NotImplementedException("TODO: se Count == Capacity, dobre o array (Array.Resize); depois grave em _itens[Count] e incremente Count.");
+        if (Count == _itens.Length)
+            Array.Resize(ref _itens, _itens.Length * 2);
+
+        _itens[Count++] = item;
     }
 
     /// <summary>
@@ -44,20 +55,37 @@ public sealed class ListaDinamica<T> : IEnumerable<T>
     /// </summary>
     public void RemoverEm(int indice)
     {
-        throw new NotImplementedException("TODO: valide o índice, desloque os itens seguintes (Array.Copy), decremente Count e limpe a última posição.");
+        ValidarIndice(indice);
+        Array.Copy(_itens, indice + 1, _itens, indice, Count - indice - 1);
+        Count--;
+        _itens[Count] = default!;
     }
 
     /// <summary>Retorna o índice da primeira ocorrência do item ou -1. Busca linear O(n).</summary>
     public int IndiceDe(T item)
     {
-        throw new NotImplementedException("TODO: percorra de 0 até Count - 1 comparando com EqualityComparer<T>.Default.");
+        var comparador = EqualityComparer<T>.Default;
+        for (var i = 0; i < Count; i++)
+        {
+            if (comparador.Equals(_itens[i], item))
+                return i;
+        }
+
+        return -1;
     }
 
     /// <summary>Percorre os itens na ordem de inserção (apenas os Count primeiros).</summary>
     public IEnumerator<T> GetEnumerator()
     {
-        throw new NotImplementedException("TODO: use yield return para devolver _itens[0..Count).");
+        for (var i = 0; i < Count; i++)
+            yield return _itens[i];
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    private void ValidarIndice(int indice)
+    {
+        if ((uint)indice >= (uint)Count)
+            throw new ArgumentOutOfRangeException(nameof(indice), indice, $"Índice deve estar entre 0 e {Count - 1}.");
+    }
 }

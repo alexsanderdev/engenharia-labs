@@ -13,7 +13,22 @@ public static class ValidAnagram
 {
     public static bool Resolver(string s, string t)
     {
-        // TODO: implemente até os testes deste problema passarem. Registre complexidade, padrão e alternativa.
-        throw new NotImplementedException("TODO: Valid Anagram — compare tamanhos e conte a frequência de cada caractere com um Dictionary<char, int>.");
+        if (s.Length != t.Length)
+            return false;
+
+        var contagem = new Dictionary<char, int>();
+        foreach (var c in s)
+            contagem[c] = contagem.GetValueOrDefault(c) + 1;
+
+        foreach (var c in t)
+        {
+            var restante = contagem.GetValueOrDefault(c) - 1;
+            if (restante < 0)
+                return false;
+
+            contagem[c] = restante;
+        }
+
+        return true;
     }
 }
