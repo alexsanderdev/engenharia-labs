@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F2M01.CleanCode\F2M01.CleanCode.csproj" />
+  </ItemGroup>
+</Project>

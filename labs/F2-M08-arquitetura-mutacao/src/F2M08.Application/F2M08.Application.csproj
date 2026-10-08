@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\F2M08.Domain\F2M08.Domain.csproj" />
+    <!--
+      Violação de propósito (Passo 2): Application conhece a Infrastructure.
+      Depois de trocar as classes concretas pelas interfaces do domínio, apague esta referência.
+    -->
+    <ProjectReference Include="..\F2M08.Infrastructure\F2M08.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

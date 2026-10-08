@@ -66,6 +66,65 @@
   <Folder Name="/labs/F1-M08-config-options-logging/tests/">
     <Project Path="labs/F1-M08-config-options-logging/tests/F1M08.Config.Tests/F1M08.Config.Tests.csproj" />
   </Folder>
+  <Folder Name="/labs/F2-M01-clean-code/" />
+  <Folder Name="/labs/F2-M01-clean-code/src/">
+    <Project Path="labs/F2-M01-clean-code/src/F2M01.CleanCode/F2M01.CleanCode.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M01-clean-code/tests/">
+    <Project Path="labs/F2-M01-clean-code/tests/F2M01.CleanCode.Tests/F2M01.CleanCode.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M02-solid/" />
+  <Folder Name="/labs/F2-M02-solid/src/">
+    <Project Path="labs/F2-M02-solid/src/F2M02.Solid/F2M02.Solid.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M02-solid/tests/">
+    <Project Path="labs/F2-M02-solid/tests/F2M02.Solid.Tests/F2M02.Solid.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M03-code-smells/" />
+  <Folder Name="/labs/F2-M03-code-smells/src/">
+    <Project Path="labs/F2-M03-code-smells/src/F2M03.CodeSmells/F2M03.CodeSmells.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M03-code-smells/tests/">
+    <Project Path="labs/F2-M03-code-smells/tests/F2M03.CodeSmells.Tests/F2M03.CodeSmells.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M04-refatoracao/" />
+  <Folder Name="/labs/F2-M04-refatoracao/src/">
+    <Project Path="labs/F2-M04-refatoracao/src/F2M04.Refatoracao/F2M04.Refatoracao.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M04-refatoracao/tests/">
+    <Project Path="labs/F2-M04-refatoracao/tests/F2M04.Refatoracao.Tests/F2M04.Refatoracao.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M05-tdd/" />
+  <Folder Name="/labs/F2-M05-tdd/src/">
+    <Project Path="labs/F2-M05-tdd/src/F2M05.Tdd/F2M05.Tdd.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M05-tdd/tests/">
+    <Project Path="labs/F2-M05-tdd/tests/F2M05.Tdd.Tests/F2M05.Tdd.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M06-testes-unitarios/" />
+  <Folder Name="/labs/F2-M06-testes-unitarios/src/">
+    <Project Path="labs/F2-M06-testes-unitarios/src/F2M06.TestesUnitarios/F2M06.TestesUnitarios.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M06-testes-unitarios/tests/">
+    <Project Path="labs/F2-M06-testes-unitarios/tests/F2M06.TestesUnitarios.Tests/F2M06.TestesUnitarios.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M07-testes-integracao/" />
+  <Folder Name="/labs/F2-M07-testes-integracao/src/">
+    <Project Path="labs/F2-M07-testes-integracao/src/F2M07.Api/F2M07.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M07-testes-integracao/tests/">
+    <Project Path="labs/F2-M07-testes-integracao/tests/F2M07.Api.Tests/F2M07.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M08-arquitetura-mutacao/" />
+  <Folder Name="/labs/F2-M08-arquitetura-mutacao/src/">
+    <Project Path="labs/F2-M08-arquitetura-mutacao/src/F2M08.Application/F2M08.Application.csproj" />
+    <Project Path="labs/F2-M08-arquitetura-mutacao/src/F2M08.Domain/F2M08.Domain.csproj" />
+    <Project Path="labs/F2-M08-arquitetura-mutacao/src/F2M08.Infrastructure/F2M08.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/labs/F2-M08-arquitetura-mutacao/tests/">
+    <Project Path="labs/F2-M08-arquitetura-mutacao/tests/F2M08.Arquitetura.Tests/F2M08.Arquitetura.Tests.csproj" />
+    <Project Path="labs/F2-M08-arquitetura-mutacao/tests/F2M08.Domain.Tests/F2M08.Domain.Tests.csproj" />
+  </Folder>
   <Folder Name="/labs/P-M01-estruturas-de-dados/" />
   <Folder Name="/labs/P-M01-estruturas-de-dados/src/">
     <Project Path="labs/P-M01-estruturas-de-dados/src/PM01.Estruturas/PM01.Estruturas.csproj" />
@@ -79,5 +138,13 @@
   </Folder>
   <Folder Name="/labs/P-M02-leetcode/tests/">
     <Project Path="labs/P-M02-leetcode/tests/PM02.LeetCode.Tests/PM02.LeetCode.Tests.csproj" />
+  </Folder>
+  <Folder Name="/projetos/" />
+  <Folder Name="/projetos/MP2-ordercalc-legado/" />
+  <Folder Name="/projetos/MP2-ordercalc-legado/src/">
+    <Project Path="projetos/MP2-ordercalc-legado/src/MP2.OrderCalc/MP2.OrderCalc.csproj" />
+  </Folder>
+  <Folder Name="/projetos/MP2-ordercalc-legado/tests/">
+    <Project Path="projetos/MP2-ordercalc-legado/tests/MP2.OrderCalc.Tests/MP2.OrderCalc.Tests.csproj" />
   </Folder>
 </Solution>

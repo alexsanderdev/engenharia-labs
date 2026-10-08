@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/F2M08.Application/F2M08.Application.csproj" />
+    <Project Path="src/F2M08.Domain/F2M08.Domain.csproj" />
+    <Project Path="src/F2M08.Infrastructure/F2M08.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/F2M08.Arquitetura.Tests/F2M08.Arquitetura.Tests.csproj" />
+    <Project Path="tests/F2M08.Domain.Tests/F2M08.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

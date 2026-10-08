@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F2M04.Refatoracao\F2M04.Refatoracao.csproj" />
+  </ItemGroup>
+</Project>

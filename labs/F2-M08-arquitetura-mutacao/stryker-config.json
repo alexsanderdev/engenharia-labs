@@ -1,0 +1,17 @@
+{
+  "stryker-config": {
+    "project": "F2M08.Domain.csproj",
+    "test-projects": [
+      "tests/F2M08.Domain.Tests/F2M08.Domain.Tests.csproj"
+    ],
+    "test-runner": "mtp",
+    "mutation-level": "Standard",
+    "reporters": [ "html", "progress", "cleartext" ],
+    "thresholds": {
+      "high": 90,
+      "low": 80,
+      "break": 80
+    },
+    "concurrency": 4
+  }
+}

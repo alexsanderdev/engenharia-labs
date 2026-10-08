@@ -1,0 +1,14 @@
+{
+  "Status": "OK",
+  "Erro": null,
+  "Subtotal": 4559.80,
+  "Desconto": 20,
+  "Frete": 36.0,
+  "Imposto": 911.96,
+  "Total": 5487.76,
+  "Linhas": [
+    "NB-001 x1 = 4500.00",
+    "CB-008 x2 = 59.80"
+  ],
+  "Mensagens": []
+}

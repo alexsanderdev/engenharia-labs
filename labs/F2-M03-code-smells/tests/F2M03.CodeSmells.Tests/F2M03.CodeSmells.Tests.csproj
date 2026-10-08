@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F2M03.CodeSmells\F2M03.CodeSmells.csproj" />
+  </ItemGroup>
+</Project>

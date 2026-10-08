@@ -1,0 +1,17 @@
+{
+  "stryker-config": {
+    "project": "MP2.OrderCalc.csproj",
+    "test-projects": [
+      "tests/MP2.OrderCalc.Tests/MP2.OrderCalc.Tests.csproj"
+    ],
+    "test-runner": "mtp",
+    "mutation-level": "Standard",
+    "reporters": [ "html", "progress", "cleartext" ],
+    "thresholds": {
+      "high": 85,
+      "low": 70,
+      "break": 0
+    },
+    "concurrency": 4
+  }
+}
