@@ -53,6 +53,13 @@ dotnet test EngenhariaLabs.slnx
 | `F3-M05-efcore-avancado` | EF Core Avançado (Docker) | 14 |
 | `F3-M06-dapper` | Dapper e Consultas de Leitura (Docker) | 25 |
 | `F3-M07-migrations-paginacao` | Migrations, Concorrência e Paginação (Docker) | 28 |
+| `F4-M01-clean-architecture` | Clean Architecture (NetArchTest) | 29 |
+| `F4-M02-ddd-tatico` | DDD tático — agregado Pedido | 60 |
+| `F4-M04-cqrs` | CQRS com dispatcher próprio | 22 |
+| `F4-M05-vertical-slice` | Vertical Slice | 24 |
+| `F4-M06-monolito-modular` | Monólito Modular (Docker) | 31 |
+| `F4-M07-design-patterns` | Design Patterns | 80 |
+| `F4-M08-result-pattern` | Result Pattern e ProblemDetails | 29 |
 
 ## Projetos abertos
 

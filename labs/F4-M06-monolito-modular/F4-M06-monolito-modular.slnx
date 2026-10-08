@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/F4M06.Host/F4M06.Host.csproj" />
+    <Project Path="src/F4M06.Shared/F4M06.Shared.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Catalogo/">
+    <Project Path="src/Modules/Catalogo/F4M06.Catalogo.Contracts/F4M06.Catalogo.Contracts.csproj" />
+    <Project Path="src/Modules/Catalogo/F4M06.Catalogo/F4M06.Catalogo.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Clientes/">
+    <Project Path="src/Modules/Clientes/F4M06.Clientes.Contracts/F4M06.Clientes.Contracts.csproj" />
+    <Project Path="src/Modules/Clientes/F4M06.Clientes/F4M06.Clientes.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Pedidos/">
+    <Project Path="src/Modules/Pedidos/F4M06.Pedidos.Contracts/F4M06.Pedidos.Contracts.csproj" />
+    <Project Path="src/Modules/Pedidos/F4M06.Pedidos/F4M06.Pedidos.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/F4M06.Arquitetura.Tests/F4M06.Arquitetura.Tests.csproj" />
+    <Project Path="tests/F4M06.Integracao.Tests/F4M06.Integracao.Tests.csproj" />
+  </Folder>
+</Solution>

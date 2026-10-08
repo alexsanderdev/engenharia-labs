@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Shared kernel MÍNIMO do monólito modular: só abstrações de infraestrutura
+    (contrato de módulo, barramento de eventos em processo, inicialização do schema).
+    Nada de regra de negócio aqui: o que é de um módulo fica no módulo.
+  -->
+  <PropertyGroup>
+    <!-- CA1716: "Shared" é palavra reservada no VB (irrelevante aqui). CA1711: IIntegrationEventHandler é o nome consagrado. -->
+    <NoWarn>$(NoWarn);CA1716;CA1711</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Contrato público do Catálogo: o ÚNICO projeto do módulo que outros módulos podem referenciar. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\F4M06.Shared\F4M06.Shared.csproj" />
+  </ItemGroup>
+</Project>

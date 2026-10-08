@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F4M06.Shared\F4M06.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Catalogo\F4M06.Catalogo\F4M06.Catalogo.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Catalogo\F4M06.Catalogo.Contracts\F4M06.Catalogo.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Pedidos\F4M06.Pedidos\F4M06.Pedidos.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Pedidos\F4M06.Pedidos.Contracts\F4M06.Pedidos.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Clientes\F4M06.Clientes\F4M06.Clientes.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Clientes\F4M06.Clientes.Contracts\F4M06.Clientes.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -177,6 +177,74 @@
   <Folder Name="/labs/F3-M07-migrations-paginacao/tests/">
     <Project Path="labs/F3-M07-migrations-paginacao/tests/F3M07.Dados.Tests/F3M07.Dados.Tests.csproj" />
   </Folder>
+  <Folder Name="/labs/F4-M01-clean-architecture/" />
+  <Folder Name="/labs/F4-M01-clean-architecture/src/">
+    <Project Path="labs/F4-M01-clean-architecture/src/F4M01.Api/F4M01.Api.csproj" />
+    <Project Path="labs/F4-M01-clean-architecture/src/F4M01.Application/F4M01.Application.csproj" />
+    <Project Path="labs/F4-M01-clean-architecture/src/F4M01.Domain/F4M01.Domain.csproj" />
+    <Project Path="labs/F4-M01-clean-architecture/src/F4M01.Infrastructure/F4M01.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M01-clean-architecture/tests/">
+    <Project Path="labs/F4-M01-clean-architecture/tests/F4M01.Application.Tests/F4M01.Application.Tests.csproj" />
+    <Project Path="labs/F4-M01-clean-architecture/tests/F4M01.Arquitetura.Tests/F4M01.Arquitetura.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M02-ddd-tatico/" />
+  <Folder Name="/labs/F4-M02-ddd-tatico/src/">
+    <Project Path="labs/F4-M02-ddd-tatico/src/F4M02.Pedidos.Domain/F4M02.Pedidos.Domain.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M02-ddd-tatico/tests/">
+    <Project Path="labs/F4-M02-ddd-tatico/tests/F4M02.Pedidos.Domain.Tests/F4M02.Pedidos.Domain.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M04-cqrs/" />
+  <Folder Name="/labs/F4-M04-cqrs/src/">
+    <Project Path="labs/F4-M04-cqrs/src/F4M04.Cqrs/F4M04.Cqrs.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M04-cqrs/tests/">
+    <Project Path="labs/F4-M04-cqrs/tests/F4M04.Cqrs.Tests/F4M04.Cqrs.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M05-vertical-slice/" />
+  <Folder Name="/labs/F4-M05-vertical-slice/src/">
+    <Project Path="labs/F4-M05-vertical-slice/src/F4M05.Api/F4M05.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M05-vertical-slice/tests/">
+    <Project Path="labs/F4-M05-vertical-slice/tests/F4M05.Api.Tests/F4M05.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M06-monolito-modular/" />
+  <Folder Name="/labs/F4-M06-monolito-modular/src/">
+    <Project Path="labs/F4-M06-monolito-modular/src/F4M06.Host/F4M06.Host.csproj" />
+    <Project Path="labs/F4-M06-monolito-modular/src/F4M06.Shared/F4M06.Shared.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M06-monolito-modular/src/Modules/" />
+  <Folder Name="/labs/F4-M06-monolito-modular/src/Modules/Catalogo/">
+    <Project Path="labs/F4-M06-monolito-modular/src/Modules/Catalogo/F4M06.Catalogo.Contracts/F4M06.Catalogo.Contracts.csproj" />
+    <Project Path="labs/F4-M06-monolito-modular/src/Modules/Catalogo/F4M06.Catalogo/F4M06.Catalogo.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M06-monolito-modular/src/Modules/Clientes/">
+    <Project Path="labs/F4-M06-monolito-modular/src/Modules/Clientes/F4M06.Clientes.Contracts/F4M06.Clientes.Contracts.csproj" />
+    <Project Path="labs/F4-M06-monolito-modular/src/Modules/Clientes/F4M06.Clientes/F4M06.Clientes.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M06-monolito-modular/src/Modules/Pedidos/">
+    <Project Path="labs/F4-M06-monolito-modular/src/Modules/Pedidos/F4M06.Pedidos.Contracts/F4M06.Pedidos.Contracts.csproj" />
+    <Project Path="labs/F4-M06-monolito-modular/src/Modules/Pedidos/F4M06.Pedidos/F4M06.Pedidos.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M06-monolito-modular/tests/">
+    <Project Path="labs/F4-M06-monolito-modular/tests/F4M06.Arquitetura.Tests/F4M06.Arquitetura.Tests.csproj" />
+    <Project Path="labs/F4-M06-monolito-modular/tests/F4M06.Integracao.Tests/F4M06.Integracao.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M07-design-patterns/" />
+  <Folder Name="/labs/F4-M07-design-patterns/src/">
+    <Project Path="labs/F4-M07-design-patterns/src/F4M07.Patterns/F4M07.Patterns.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M07-design-patterns/tests/">
+    <Project Path="labs/F4-M07-design-patterns/tests/F4M07.Patterns.Tests/F4M07.Patterns.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M08-result-pattern/" />
+  <Folder Name="/labs/F4-M08-result-pattern/src/">
+    <Project Path="labs/F4-M08-result-pattern/src/F4M08.Api/F4M08.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F4-M08-result-pattern/tests/">
+    <Project Path="labs/F4-M08-result-pattern/tests/F4M08.Api.Tests/F4M08.Api.Tests.csproj" />
+  </Folder>
   <Folder Name="/labs/P-M01-estruturas-de-dados/" />
   <Folder Name="/labs/P-M01-estruturas-de-dados/src/">
     <Project Path="labs/P-M01-estruturas-de-dados/src/PM01.Estruturas/PM01.Estruturas.csproj" />
