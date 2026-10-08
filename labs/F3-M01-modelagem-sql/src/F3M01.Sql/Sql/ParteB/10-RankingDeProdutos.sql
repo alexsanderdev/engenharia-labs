@@ -3,6 +3,21 @@
 -- Devolva as 4 primeiras POSIÇÕES; produtos empatados dividem a posição (e todos aparecem).
 -- Colunas: Posicao, Sku, Unidades
 -- Ordem:   Posicao, Sku
-
--- TODO: apague o THROW abaixo e escreva a consulta.
-THROW 50000, N'TODO: escreva a consulta de Sql/ParteB/10-RankingDeProdutos.sql', 1;
+WITH Vendas AS
+(
+    SELECT pr.Sku, SUM(i.Quantidade) AS Unidades
+    FROM dbo.ItensPedido AS i
+    JOIN dbo.Pedidos  AS p  ON p.Id  = i.PedidoId
+    JOIN dbo.Produtos AS pr ON pr.Id = i.ProdutoId
+    WHERE p.Status <> 'Cancelled'
+    GROUP BY pr.Sku
+),
+Ranking AS
+(
+    SELECT DENSE_RANK() OVER (ORDER BY Unidades DESC) AS Posicao, Sku, Unidades
+    FROM Vendas
+)
+SELECT Posicao, Sku, Unidades
+FROM Ranking
+WHERE Posicao <= 4
+ORDER BY Posicao, Sku;

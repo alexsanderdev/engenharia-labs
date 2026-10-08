@@ -18,8 +18,6 @@ public sealed class OrderFlowDbContext(DbContextOptions<OrderFlowDbContext> opti
     /// </summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // TODO (Passo 1): aplique todas as configurações deste assembly
-        // (uma linha: modelBuilder.ApplyConfigurationsFromAssembly(...)).
-        // Enquanto isso não for feito, o EF usa SÓ as convenções: rode os testes e veja o que elas produzem.
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(OrderFlowDbContext).Assembly);
     }
 }

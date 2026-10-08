@@ -12,34 +12,28 @@ public sealed class ManutencaoService(LojaDbContext db, TimeProvider relogio)
     /// <paramref name="idadeMaxima"/>, preenchendo <c>AtualizadoEm</c> com agora.
     /// Meta: UM comando UPDATE, sem carregar entidades. Devolve quantos foram cancelados.
     /// </summary>
-    public async Task<int> CancelarAbandonadosAsync(TimeSpan idadeMaxima, CancellationToken ct = default)
+    public Task<int> CancelarAbandonadosAsync(TimeSpan idadeMaxima, CancellationToken ct = default)
     {
-        // CONSULTA RUIM: traz TODOS os pedidos abandonados para a memória, rastreia cada um
-        // e depois manda os UPDATEs. Com 200 mil pedidos, isso derruba o job.
-        // TODO (Passo 8): troque por Where(...).ExecuteUpdateAsync(s => s.SetProperty(...).SetProperty(...)).
-        //                 Lembre: ExecuteUpdate NÃO passa pelo interceptador de auditoria.
-        var limite = relogio.GetUtcNow() - idadeMaxima;
-        var abandonados = await db.Pedidos
+        var agora = relogio.GetUtcNow();
+        var limite = agora - idadeMaxima;
+
+        // ExecuteUpdate não passa pelo change tracker nem pelos SaveChangesInterceptors:
+        // a auditoria (AtualizadoEm) precisa ser feita aqui, explicitamente.
+        return db.Pedidos
             .Where(p => p.Status == StatusPedido.Created && p.CriadoEm < limite)
-            .ToListAsync(ct);
-
-        foreach (var pedido in abandonados)
-            pedido.Status = StatusPedido.Cancelled;
-
-        await db.SaveChangesAsync(ct);
-        return abandonados.Count;
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(p => p.Status, StatusPedido.Cancelled)
+                .SetProperty(p => p.AtualizadoEm, agora), ct);
     }
 
     /// <summary>
     /// Apaga eventos de pedido ocorridos antes de <paramref name="antesDe"/>.
     /// Meta: UM comando DELETE, sem carregar entidades. Devolve quantos foram apagados.
     /// </summary>
-    public async Task<int> ExpurgarEventosAsync(DateTimeOffset antesDe, CancellationToken ct = default)
+    public Task<int> ExpurgarEventosAsync(DateTimeOffset antesDe, CancellationToken ct = default)
     {
-        // CONSULTA RUIM: carrega para depois apagar. TODO (Passo 8): ExecuteDeleteAsync.
-        var antigos = await db.EventosPedido.Where(e => e.OcorridoEm < antesDe).ToListAsync(ct);
-        db.EventosPedido.RemoveRange(antigos);
-        await db.SaveChangesAsync(ct);
-        return antigos.Count;
+        return db.EventosPedido
+            .Where(e => e.OcorridoEm < antesDe)
+            .ExecuteDeleteAsync(ct);
     }
 }

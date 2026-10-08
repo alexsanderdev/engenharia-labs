@@ -13,21 +13,28 @@ public sealed class ExclusaoLogicaInterceptor : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
-        // TODO (Passo 3): chame MarcarComoExcluido(eventData.Context) antes de seguir.
+        MarcarComoExcluido(eventData.Context);
         return base.SavingChanges(eventData, result);
     }
 
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
-        // TODO (Passo 3): chame MarcarComoExcluido(eventData.Context) antes de seguir.
+        MarcarComoExcluido(eventData.Context);
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
     private static void MarcarComoExcluido(DbContext? db)
     {
-        throw new NotImplementedException(
-            "TODO (Passo 3): para cada entrada Deleted de Entries<IExclusaoLogica>(): State = Unchanged, " +
-            "Entity.Excluido = true e Property(\"Excluido\").IsModified = true.");
+        if (db is null) return;
+
+        foreach (var entrada in db.ChangeTracker.Entries<IExclusaoLogica>().ToList())
+        {
+            if (entrada.State != EntityState.Deleted) continue;
+
+            entrada.State = EntityState.Unchanged;
+            entrada.Entity.Excluido = true;
+            entrada.Property(nameof(IExclusaoLogica.Excluido)).IsModified = true;
+        }
     }
 }

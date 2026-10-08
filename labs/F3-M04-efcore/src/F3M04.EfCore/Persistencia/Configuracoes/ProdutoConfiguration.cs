@@ -13,9 +13,16 @@ public sealed class ProdutoConfiguration : IEntityTypeConfiguration<Produto>
 {
     public void Configure(EntityTypeBuilder<Produto> builder)
     {
-        // TODO (Passo 2): tabela "Produtos"; chave Id gerada pelo domínio (ValueGeneratedNever).
-        // TODO (Passo 2): Sku obrigatório (30), Nome obrigatório (100), Preco com precisão 18,2.
-        // TODO (Passo 3): índice ÚNICO em Sku.
-        // TODO (Passo 4): seed com HasData(CatalogoInicial.Produtos).
+        builder.ToTable("Produtos");
+        builder.HasKey(p => p.Id);
+        builder.Property(p => p.Id).ValueGeneratedNever();
+
+        builder.Property(p => p.Sku).HasMaxLength(30).IsRequired();
+        builder.Property(p => p.Nome).HasMaxLength(100).IsRequired();
+        builder.Property(p => p.Preco).HasPrecision(18, 2);
+
+        builder.HasIndex(p => p.Sku).IsUnique();
+
+        builder.HasData(CatalogoInicial.Produtos);
     }
 }

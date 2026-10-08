@@ -4,6 +4,17 @@
 -- Use uma CTE (WITH ... AS (...)).
 -- Colunas: Mes, Pedidos, Faturamento, TicketMedio
 -- Ordem:   Mes
-
--- TODO: apague o THROW abaixo e escreva a consulta.
-THROW 50000, N'TODO: escreva a consulta de Sql/ParteB/07-FaturamentoMensal.sql', 1;
+WITH PedidosValidos AS
+(
+    SELECT CONVERT(char(7), p.CriadoEm, 126) AS Mes,   -- 126 = ISO 8601: 'yyyy-mm-ddThh:mi:ss'
+           p.Total
+    FROM dbo.Pedidos AS p
+    WHERE p.Status <> 'Cancelled'
+)
+SELECT Mes,
+       COUNT(*)                              AS Pedidos,
+       SUM(Total)                            AS Faturamento,
+       CAST(AVG(Total) AS decimal(18,2))     AS TicketMedio
+FROM PedidosValidos
+GROUP BY Mes
+ORDER BY Mes;

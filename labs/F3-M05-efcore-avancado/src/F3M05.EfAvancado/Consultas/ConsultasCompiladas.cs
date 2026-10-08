@@ -1,5 +1,6 @@
 using F3M05.EfAvancado.Dominio;
 using F3M05.EfAvancado.Persistencia;
+using Microsoft.EntityFrameworkCore;
 
 namespace F3M05.EfAvancado.Consultas;
 
@@ -14,7 +15,9 @@ public static class ConsultasCompiladas
     /// Deve ser criada com <c>EF.CompileAsyncQuery</c>.
     /// </summary>
     public static readonly Func<LojaDbContext, int, CancellationToken, Task<Pedido?>> PedidoComItensPorId =
-        (db, id, ct) => throw new NotImplementedException(
-            "TODO (Passo 6): EF.CompileAsyncQuery((LojaDbContext db, int id, CancellationToken ct) => " +
-            "db.Pedidos.AsNoTracking().Include(p => p.Itens).FirstOrDefault(p => p.Id == id)).");
+        EF.CompileAsyncQuery((LojaDbContext db, int id, CancellationToken ct) =>
+            db.Pedidos
+                .AsNoTracking()
+                .Include(p => p.Itens)
+                .FirstOrDefault(p => p.Id == id));
 }

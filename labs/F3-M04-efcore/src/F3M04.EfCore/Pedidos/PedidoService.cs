@@ -1,5 +1,6 @@
 using F3M04.EfCore.Dominio;
 using F3M04.EfCore.Persistencia;
+using Microsoft.EntityFrameworkCore;
 
 namespace F3M04.EfCore.Pedidos;
 
@@ -14,10 +15,13 @@ public sealed class PedidoService(OrderFlowDbContext db, TimeProvider relogio)
     /// Produtos ativos ordenados por nome, SEM tracking (somente leitura): o change tracker
     /// do contexto deve continuar vazio depois da chamada.
     /// </summary>
-    public Task<IReadOnlyList<Produto>> ListarProdutosAtivosAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<Produto>> ListarProdutosAtivosAsync(CancellationToken ct = default)
     {
-        _ = db;
-        throw new NotImplementedException("TODO (Passo 6): db.Produtos.AsNoTracking().Where(ativo).OrderBy(nome).ToListAsync(ct).");
+        return await db.Produtos
+            .AsNoTracking()
+            .Where(p => p.Ativo)
+            .OrderBy(p => p.Nome)
+            .ToListAsync(ct);
     }
 
     /// <summary>
@@ -26,10 +30,28 @@ public sealed class PedidoService(OrderFlowDbContext db, TimeProvider relogio)
     /// barrado pelo domínio (<see cref="Pedido.AdicionarItem"/>). Total calculado com o preço do
     /// banco; data vinda do <see cref="TimeProvider"/>. Devolve o id do pedido criado.
     /// </summary>
-    public Task<Guid> CriarAsync(Guid clienteId, IReadOnlyList<ItemSolicitado> itens, CancellationToken ct = default)
+    public async Task<Guid> CriarAsync(Guid clienteId, IReadOnlyList<ItemSolicitado> itens, CancellationToken ct = default)
     {
-        _ = relogio;
-        throw new NotImplementedException("TODO (Passo 7): carregue os produtos com ids.Contains(p.Id) numa consulta, crie o Pedido com relogio.GetUtcNow(), AdicionarItem, Add e SaveChangesAsync.");
+        ArgumentNullException.ThrowIfNull(itens);
+        if (itens.Count == 0)
+            throw new ArgumentException("O pedido precisa de ao menos um item.", nameof(itens));
+
+        var ids = itens.Select(i => i.ProdutoId).Distinct().ToList();
+        var produtos = await db.Produtos
+            .Where(p => ids.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, ct);
+
+        var faltando = ids.Where(id => !produtos.ContainsKey(id)).ToList();
+        if (faltando.Count > 0)
+            throw new InvalidOperationException($"Produto(s) inexistente(s): {string.Join(", ", faltando)}.");
+
+        var pedido = new Pedido(clienteId, relogio.GetUtcNow());
+        foreach (var item in itens)
+            pedido.AdicionarItem(produtos[item.ProdutoId], item.Quantidade);
+
+        db.Pedidos.Add(pedido);
+        await db.SaveChangesAsync(ct);
+        return pedido.Id;
     }
 
     /// <summary>
@@ -38,7 +60,9 @@ public sealed class PedidoService(OrderFlowDbContext db, TimeProvider relogio)
     /// </summary>
     public Task<Pedido?> ObterComItensAsync(Guid id, CancellationToken ct = default)
     {
-        throw new NotImplementedException("TODO (Passo 6): db.Pedidos.Include(p => p.Itens).SingleOrDefaultAsync(...) — com tracking.");
+        return db.Pedidos
+            .Include(p => p.Itens)
+            .SingleOrDefaultAsync(p => p.Id == id, ct);
     }
 
     /// <summary>
@@ -46,26 +70,50 @@ public sealed class PedidoService(OrderFlowDbContext db, TimeProvider relogio)
     /// itens com nome do produto (ordenados por nome). Nenhuma entidade é materializada nem
     /// rastreada. Devolve <c>null</c> se o pedido não existir.
     /// </summary>
-    public Task<PedidoResumoDto?> ObterResumoAsync(Guid id, CancellationToken ct = default)
+    public async Task<PedidoResumoDto?> ObterResumoAsync(Guid id, CancellationToken ct = default)
     {
-        throw new NotImplementedException("TODO (Passo 6): projete com Select/join para PedidoResumoDto (Cliente e Produto entram por join, não por Include).");
+        var consulta =
+            from p in db.Pedidos
+            join c in db.Clientes on p.ClienteId equals c.Id
+            where p.Id == id
+            select new PedidoResumoDto(
+                p.Id,
+                c.Nome,
+                p.Status,
+                p.Total,
+                p.CriadoEm,
+                (from i in p.Itens
+                 join pr in db.Produtos on i.ProdutoId equals pr.Id
+                 orderby pr.Nome
+                 select new ItemResumoDto(pr.Nome, i.Quantidade, i.PrecoUnitario, i.Quantidade * i.PrecoUnitario))
+                .ToList());
+
+        return await consulta.SingleOrDefaultAsync(ct);
     }
 
     /// <summary>
     /// Pedidos do cliente, do mais recente para o mais antigo, projetados para
     /// <see cref="PedidoListaDto"/> (quantidade de itens calculada no SQL, sem carregar os itens).
     /// </summary>
-    public Task<IReadOnlyList<PedidoListaDto>> ListarDoClienteAsync(Guid clienteId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<PedidoListaDto>> ListarDoClienteAsync(Guid clienteId, CancellationToken ct = default)
     {
-        throw new NotImplementedException("TODO (Passo 6): Where(cliente).OrderByDescending(CriadoEm).Select(p => new PedidoListaDto(..., p.Itens.Count, ...)).");
+        return await db.Pedidos
+            .Where(p => p.ClienteId == clienteId)
+            .OrderByDescending(p => p.CriadoEm)
+            .Select(p => new PedidoListaDto(p.Id, p.CriadoEm, p.Status, p.Itens.Count, p.Total))
+            .ToListAsync(ct);
     }
 
     /// <summary>
     /// Confirma o pedido: carrega rastreado (com os itens, que a regra de domínio exige),
     /// chama <see cref="Pedido.Confirmar"/> e salva. Pedido inexistente: <see cref="KeyNotFoundException"/>.
     /// </summary>
-    public Task ConfirmarAsync(Guid id, CancellationToken ct = default)
+    public async Task ConfirmarAsync(Guid id, CancellationToken ct = default)
     {
-        throw new NotImplementedException("TODO (Passo 8): ObterComItensAsync, pedido.Confirmar(), SaveChangesAsync — o change tracker gera o UPDATE.");
+        var pedido = await ObterComItensAsync(id, ct)
+            ?? throw new KeyNotFoundException($"Pedido {id} não encontrado.");
+
+        pedido.Confirmar();
+        await db.SaveChangesAsync(ct);
     }
 }

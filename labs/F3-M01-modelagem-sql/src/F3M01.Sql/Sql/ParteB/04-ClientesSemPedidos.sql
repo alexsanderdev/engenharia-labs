@@ -2,6 +2,9 @@
 -- Clientes que nunca fizeram nenhum pedido.
 -- Colunas: ClienteId, Nome
 -- Ordem:   ClienteId
-
--- TODO: apague o THROW abaixo e escreva a consulta.
-THROW 50000, N'TODO: escreva a consulta de Sql/ParteB/04-ClientesSemPedidos.sql', 1;
+SELECT c.Id AS ClienteId,
+       c.Nome
+FROM dbo.Clientes AS c
+LEFT JOIN dbo.Pedidos AS p ON p.ClienteId = c.Id
+WHERE p.Id IS NULL
+ORDER BY c.Id;

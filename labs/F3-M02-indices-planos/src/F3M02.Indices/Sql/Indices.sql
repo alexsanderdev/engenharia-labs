@@ -1,23 +1,29 @@
 -- =============================================================================
--- Indices.sql — aplicado UMA vez sobre a massa de 200 mil pedidos, antes dos testes.
--- Regra do lab: cada índice existe por causa de uma consulta. Escreva a justificativa
--- num comentário acima de cada CREATE INDEX (qual consulta, qual operador some do plano).
---
--- Tabelas (já existem, com PK clusterizada em Id; ItensPedido em (PedidoId, ProdutoId)):
---   dbo.Clientes   (Id, Nome, Email, Documento varchar(11) UNIQUE, CriadoEm)
---   dbo.Produtos   (Id, Sku, Nome, Preco, Ativo)
---   dbo.Pedidos    (Id, ClienteId, CriadoEm, Status, Total, EnderecoEntrega)
---   dbo.ItensPedido(PedidoId, ProdutoId, Quantidade, PrecoUnitario)
---
--- Limite: no máximo 4 índices não clusterizados em dbo.Pedidos e nenhum redundante.
+-- Indices.sql (SOLUÇÃO) — aplicado uma vez sobre a massa de 200 mil pedidos.
+-- Cada índice existe por causa de uma consulta (comentário = justificativa).
 -- =============================================================================
 
--- TODO (Passos 1 e 2) · Consultas/01-PedidosDoCliente.sql: Index Seek, sem Key Lookup, sem Sort.
+-- 01 · Pedidos do cliente: igualdade (ClienteId) primeiro, depois a ordenação (CriadoEm).
+--      INCLUDE leva Status e Total para a folha: sem Key Lookup. Também serve de índice da FK.
+CREATE INDEX IX_Pedidos_ClienteId_CriadoEm
+    ON dbo.Pedidos (ClienteId, CriadoEm DESC)
+    INCLUDE (Status, Total);
 
--- TODO (Passo 3) · Consultas/02-VendasDoProduto.sql: índice na FK ItensPedido.ProdutoId, cobrindo a consulta.
+-- 02 · Vendas do produto: a PK de ItensPedido começa por PedidoId, então ProdutoId (FK) precisa do seu índice.
+--      Sem o INCLUDE: Seek + ~600 Key Lookups (~1.850 leituras). Com ele: ~6 leituras.
+CREATE INDEX IX_ItensPedido_ProdutoId
+    ON dbo.ItensPedido (ProdutoId)
+    INCLUDE (Quantidade, PrecoUnitario);
 
--- TODO (Passo 4) · Consultas/03-PedidosEmAberto.sql: índice FILTRADO só com os pedidos 'Created'.
+-- 03 · Fila de pedidos em aberto: só ~1% das linhas é 'Created'. Índice filtrado = pequeno e barato de manter.
+CREATE INDEX IX_Pedidos_EmAberto
+    ON dbo.Pedidos (CriadoEm)
+    INCLUDE (ClienteId, Total)
+    WHERE Status = 'Created';
 
--- TODO (Passo 5) · Consultas/04-FaturamentoDoMes.sql: índice para o intervalo de CriadoEm (e corrija a consulta).
+-- 04 · Faturamento do mês: intervalo em CriadoEm, cobrindo Total.
+CREATE INDEX IX_Pedidos_CriadoEm
+    ON dbo.Pedidos (CriadoEm)
+    INCLUDE (Total);
 
--- Passo 6 · Consultas/05-ClientePorDocumento.sql: o índice único já existe; o problema está na consulta.
+-- 05 · Cliente por documento: UQ_Clientes_Documento já existe; o problema era a conversão implícita.

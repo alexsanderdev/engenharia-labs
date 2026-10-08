@@ -2,6 +2,16 @@
 -- Para cada cliente, o pedido NÃO cancelado de maior Total (empate: menor PedidoId).
 -- Colunas: ClienteId, PedidoId, Total
 -- Ordem:   ClienteId
-
--- TODO: apague o THROW abaixo e escreva a consulta.
-THROW 50000, N'TODO: escreva a consulta de Sql/ParteB/08-MaiorPedidoPorCliente.sql', 1;
+WITH Ranqueados AS
+(
+    SELECT p.ClienteId,
+           p.Id AS PedidoId,
+           p.Total,
+           ROW_NUMBER() OVER (PARTITION BY p.ClienteId ORDER BY p.Total DESC, p.Id) AS Posicao
+    FROM dbo.Pedidos AS p
+    WHERE p.Status <> 'Cancelled'
+)
+SELECT ClienteId, PedidoId, Total
+FROM Ranqueados
+WHERE Posicao = 1
+ORDER BY ClienteId;

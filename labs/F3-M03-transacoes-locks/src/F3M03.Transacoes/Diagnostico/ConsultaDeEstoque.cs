@@ -24,10 +24,30 @@ public sealed class ConsultaDeEstoque(string connectionString)
     /// (<c>SET LOCK_TIMEOUT</c>, em milissegundos, na MESMA sessão, antes do SELECT).
     /// Se estourar, lança <see cref="RecursoBloqueadoException"/> com a SqlException 1222 como InnerException.
     /// </summary>
-    public Task<int> ObterEstoqueAsync(int produtoId, TimeSpan esperaMaxima, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 8): no MESMO batch do SELECT, 'SET LOCK_TIMEOUT <ms>;' (valor literal, é um int) e depois " +
-            "'SELECT Estoque FROM dbo.Produtos WHERE Id = @id;'. Capture SqlException com Number == " +
-            "NumeroDoErroDeLockTimeout (1222) e lance RecursoBloqueadoException com ela como InnerException. " +
-            $"(connection string com {connectionString.Length} caracteres)");
+    public async Task<int> ObterEstoqueAsync(int produtoId, TimeSpan esperaMaxima, CancellationToken ct = default)
+    {
+        await using var conexao = new SqlConnection(connectionString);
+        await conexao.OpenAsync(ct);
+
+        // SET LOCK_TIMEOUT não aceita variável: o valor vai no texto (é um int, sem risco de injeção).
+        // E não pode ir num comando com parâmetros (sp_executesql desfaz o SET ao terminar), por
+        // isso o SET e o SELECT vão no MESMO batch. Alternativa: dois comandos, o SET sem parâmetros.
+        var ms = (int)esperaMaxima.TotalMilliseconds;
+        await using var comando = new SqlCommand(
+            $"""
+            SET LOCK_TIMEOUT {ms};
+            SELECT Estoque FROM dbo.Produtos WHERE Id = @id;
+            """, conexao);
+        comando.Parameters.AddWithValue("@id", produtoId);
+
+        try
+        {
+            return (int)(await comando.ExecuteScalarAsync(ct))!;
+        }
+        catch (SqlException ex) when (ex.Number == NumeroDoErroDeLockTimeout)
+        {
+            throw new RecursoBloqueadoException(
+                $"O produto {produtoId} está bloqueado por outra transação há mais de {ms} ms.", ex);
+        }
+    }
 }

@@ -16,8 +16,13 @@ public sealed record PoliticaDeRetry(int MaxTentativas, TimeSpan AtrasoBase, Tim
     /// falhou: <c>AtrasoBase * 2^(tentativaQueFalhou - 1)</c>, limitado a <see cref="AtrasoMaximo"/>.
     /// Ex.: base 100 ms → 100, 200, 400, 800 ms...
     /// </summary>
-    public TimeSpan CalcularAtraso(int tentativaQueFalhou) =>
-        throw new NotImplementedException(
-            "TODO (Passo 5): AtrasoBase * 2^(tentativaQueFalhou - 1), limitado a AtrasoMaximo. " +
-            "Cuidado com overflow em tentativas altas (limite o expoente ou compare antes de multiplicar).");
+    public TimeSpan CalcularAtraso(int tentativaQueFalhou)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(tentativaQueFalhou, 1);
+
+        // Expoente limitado para não estourar (2^30 * base já passa de qualquer teto razoável).
+        var expoente = Math.Min(tentativaQueFalhou - 1, 30);
+        var ticks = AtrasoBase.Ticks * (double)(1L << expoente);
+        return ticks >= AtrasoMaximo.Ticks ? AtrasoMaximo : TimeSpan.FromTicks((long)ticks);
+    }
 }

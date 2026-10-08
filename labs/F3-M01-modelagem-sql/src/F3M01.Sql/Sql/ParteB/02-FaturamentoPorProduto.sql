@@ -3,6 +3,13 @@
 -- Receita = soma de Quantidade * PrecoUnitario do ITEM (preço da época da compra).
 -- Colunas: Sku, Produto, Unidades, Receita
 -- Ordem:   Receita DESC, Sku
-
--- TODO: apague o THROW abaixo e escreva a consulta.
-THROW 50000, N'TODO: escreva a consulta de Sql/ParteB/02-FaturamentoPorProduto.sql', 1;
+SELECT pr.Sku,
+       pr.Nome                                  AS Produto,
+       SUM(i.Quantidade)                        AS Unidades,
+       SUM(i.Quantidade * i.PrecoUnitario)      AS Receita
+FROM dbo.ItensPedido AS i
+JOIN dbo.Pedidos  AS p  ON p.Id  = i.PedidoId
+JOIN dbo.Produtos AS pr ON pr.Id = i.ProdutoId
+WHERE p.Status <> 'Cancelled'
+GROUP BY pr.Sku, pr.Nome
+ORDER BY Receita DESC, pr.Sku;

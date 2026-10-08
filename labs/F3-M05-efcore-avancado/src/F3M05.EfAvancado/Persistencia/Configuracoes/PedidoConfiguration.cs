@@ -25,6 +25,6 @@ public sealed class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
             .HasForeignKey(e => e.PedidoId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // TODO (Passo 3): global query filter que esconde pedidos excluídos (HasQueryFilter).
+        builder.HasQueryFilter(p => !p.Excluido);
     }
 }

@@ -1,3 +1,4 @@
+using F3M05.EfAvancado.Dominio;
 using F3M05.EfAvancado.Persistencia;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,23 +13,15 @@ public sealed class RelatorioPedidos(LojaDbContext db)
     /// </summary>
     public async Task<IReadOnlyList<PedidoResumo>> ListarResumosAsync(CancellationToken ct = default)
     {
-        // CONSULTA RUIM (N+1): o resultado está certo, mas são 1 + 2 × N comandos.
-        // Com 5 pedidos: 11 round-trips. Com 5.000: 10.001.
-        // TODO (Passo 4): troque tudo por UMA projeção (Select direto para PedidoResumo).
-        var pedidos = await db.Pedidos.OrderBy(p => p.Id).ToListAsync(ct);
-
-        var resumos = new List<PedidoResumo>();
-        foreach (var pedido in pedidos)
-        {
-            await db.Entry(pedido).Reference(p => p.Cliente).LoadAsync(ct);
-            await db.Entry(pedido).Collection(p => p.Itens).LoadAsync(ct);
-            resumos.Add(new PedidoResumo(
-                pedido.Id,
-                pedido.Cliente.Nome,
-                pedido.Itens.Count,
-                pedido.Itens.Sum(i => i.Quantidade * i.PrecoUnitario)));
-        }
-        return resumos;
+        // Projeção: o SQL traz só as 4 colunas, com JOIN no cliente e subconsultas de COUNT/SUM.
+        return await db.Pedidos
+            .OrderBy(p => p.Id)
+            .Select(p => new PedidoResumo(
+                p.Id,
+                p.Cliente.Nome,
+                p.Itens.Count,
+                p.Itens.Sum(i => i.Quantidade * i.PrecoUnitario)))
+            .ToListAsync(ct);
     }
 
     /// <summary>
@@ -37,10 +30,20 @@ public sealed class RelatorioPedidos(LojaDbContext db)
     /// (GROUP BY) acontece no banco, em UM comando, e o parâmetro é seguro (interpolação vira
     /// parâmetro, não concatenação).
     /// </summary>
-    public Task<IReadOnlyList<FaturamentoDiario>> FaturamentoPorDiaAsync(DateTimeOffset desde, CancellationToken ct = default)
+    public async Task<IReadOnlyList<FaturamentoDiario>> FaturamentoPorDiaAsync(DateTimeOffset desde, CancellationToken ct = default)
     {
-        throw new NotImplementedException(
-            "TODO (Passo 7): db.Database.SqlQuery<FaturamentoDiario>($\"SELECT CAST(p.CriadoEm AS date) AS Dia, ... GROUP BY ...\")" +
-            ".OrderBy(f => f.Dia).ToListAsync(ct). Use interpolação ({desde}) — vira parâmetro.");
+        var cancelado = nameof(StatusPedido.Cancelled);
+        return await db.Database.SqlQuery<FaturamentoDiario>(
+            $"""
+            SELECT CAST(p.CriadoEm AS date) AS Dia,
+                   COUNT(DISTINCT p.Id)              AS Pedidos,
+                   SUM(i.Quantidade * i.PrecoUnitario) AS Total
+            FROM Pedidos p
+            JOIN ItensPedido i ON i.PedidoId = p.Id
+            WHERE p.Excluido = 0 AND p.Status <> {cancelado} AND p.CriadoEm >= {desde}
+            GROUP BY CAST(p.CriadoEm AS date)
+            """)
+            .OrderBy(f => f.Dia)
+            .ToListAsync(ct);
     }
 }

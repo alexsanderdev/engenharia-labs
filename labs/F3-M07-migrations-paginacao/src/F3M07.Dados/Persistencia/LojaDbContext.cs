@@ -23,17 +23,19 @@ public sealed class LojaDbContext(DbContextOptions<LojaDbContext> options) : DbC
             b.Property(p => p.Total).HasPrecision(18, 2);
             b.HasOne<Cliente>().WithMany().HasForeignKey(p => p.ClienteId).OnDelete(DeleteBehavior.Restrict);
 
-            // TODO Passo 1 (ANTES de criar a migration Inicial):
-            //  a) Versao como rowversion: b.Property(p => p.Versao).IsRowVersion();
-            //     Sem isso o EF cria um varbinary(max) comum e NÃO usa a coluna no WHERE do UPDATE.
-            //  b) Índice da paginação keyset, na ordem do ORDER BY (CriadoEm DESC, Id DESC), cobrindo
-            //     ClienteId, Status e Total, com o nome "IX_Pedidos_CriadoEm_Id"
-            //     (HasIndex(...).IsDescending().IncludeProperties(...).HasDatabaseName(...)).
+            // Passo 1: rowversion — o SQL Server gera e troca o valor a cada UPDATE; o EF usa no WHERE.
+            b.Property(p => p.Versao).IsRowVersion();
 
-            // TODO Passo 3 (DEPOIS da migration Inicial): troque o Ignore abaixo por
-            //     b.Property(p => p.Canal).HasMaxLength(20).IsRequired().HasDefaultValue("Web");
-            //  e crie a migration AdicionaCanalAoPedido (e edite-a: os pedidos antigos ganham 'Legado').
-            b.Ignore(p => p.Canal);
+            // Passo 1: índice da paginação keyset, na MESMA ordem do ORDER BY (CriadoEm DESC, Id DESC)
+            // e "cobrindo" as colunas da listagem (INCLUDE) para não precisar de key lookup.
+            b.HasIndex(p => new { p.CriadoEm, p.Id })
+                .IsDescending()
+                .IncludeProperties(p => new { p.ClienteId, p.Status, p.Total })
+                .HasDatabaseName("IX_Pedidos_CriadoEm_Id");
+
+            // Passo 3: coluna nova NOT NULL com DEFAULT. O default serve para a versão ANTIGA da aplicação,
+            // que ainda não conhece a coluna, continuar inserindo durante o deploy (expand/contract).
+            b.Property(p => p.Canal).HasMaxLength(20).IsRequired().HasDefaultValue("Web");
         });
     }
 }

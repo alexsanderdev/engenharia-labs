@@ -13,8 +13,16 @@ public sealed class ItemPedidoConfiguration : IEntityTypeConfiguration<ItemPedid
 {
     public void Configure(EntityTypeBuilder<ItemPedido> builder)
     {
-        // TODO (Passo 2): tabela "ItensPedido"; chave Id gerada pelo domínio; PrecoUnitario 18,2;
-        //                 Subtotal ignorado (explícito, mesmo que a convenção já ignore).
-        // TODO (Passo 3): FK ProdutoId → Produtos (HasOne<Produto>().WithMany()...) com Restrict.
+        builder.ToTable("ItensPedido");
+        builder.HasKey(i => i.Id);
+        builder.Property(i => i.Id).ValueGeneratedNever();
+
+        builder.Property(i => i.PrecoUnitario).HasPrecision(18, 2);
+        builder.Ignore(i => i.Subtotal);
+
+        builder.HasOne<Produto>()
+            .WithMany()
+            .HasForeignKey(i => i.ProdutoId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -12,8 +12,13 @@ public sealed class ClienteConfiguration : IEntityTypeConfiguration<Cliente>
 {
     public void Configure(EntityTypeBuilder<Cliente> builder)
     {
-        // TODO (Passo 2): tabela "Clientes"; chave Id gerada pelo domínio (ValueGeneratedNever).
-        // TODO (Passo 2): Nome obrigatório (100), Email obrigatório (200).
-        // TODO (Passo 3): índice ÚNICO em Email.
+        builder.ToTable("Clientes");
+        builder.HasKey(c => c.Id);
+        builder.Property(c => c.Id).ValueGeneratedNever();
+
+        builder.Property(c => c.Nome).HasMaxLength(100).IsRequired();
+        builder.Property(c => c.Email).HasMaxLength(200).IsRequired();
+
+        builder.HasIndex(c => c.Email).IsUnique();
     }
 }

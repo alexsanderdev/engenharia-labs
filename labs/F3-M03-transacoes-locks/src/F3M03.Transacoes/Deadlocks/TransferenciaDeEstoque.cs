@@ -62,12 +62,41 @@ public sealed class TransferenciaDeEstoque(string connectionString, PrioridadeDe
     /// Se a origem não tiver estoque, desfaça tudo (inclusive o destino, se ele foi atualizado
     /// primeiro) e devolva <c>false</c>.
     /// </summary>
-    public Task<bool> MoverEmOrdemConsistenteAsync(
-        int origemId, int destinoId, int quantidade, Func<Task>? entreAsAtualizacoes = null, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): use AbrirAsync, BeginTransactionAsync e os helpers TirarAsync/PorAsync (como no " +
-            "MoverNaOrdemDoPedidoAsync), mas atualize SEMPRE primeiro o produto de MENOR Id. Se a origem vier depois " +
-            "e não tiver estoque, faça Rollback (desfaz o destino) e devolva false. Chame o gancho entre as duas atualizações.");
+    public async Task<bool> MoverEmOrdemConsistenteAsync(
+        int origemId, int destinoId, int quantidade, Func<Task>? entreAsAtualizacoes = null, CancellationToken ct = default)
+    {
+        await using var conexao = await AbrirAsync(ct);
+        await using var transacao = (SqlTransaction)await conexao.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+
+        bool origemPrimeiro = origemId < destinoId;
+        bool ok;
+
+        if (origemPrimeiro)
+        {
+            ok = await TirarAsync(conexao, transacao, origemId, quantidade, ct);
+            if (ok)
+            {
+                if (entreAsAtualizacoes is not null) await entreAsAtualizacoes();
+                await PorAsync(conexao, transacao, destinoId, quantidade, ct);
+            }
+        }
+        else
+        {
+            await PorAsync(conexao, transacao, destinoId, quantidade, ct);
+            if (entreAsAtualizacoes is not null) await entreAsAtualizacoes();
+            ok = await TirarAsync(conexao, transacao, origemId, quantidade, ct);
+        }
+
+        if (!ok)
+        {
+            // Desfaz também o "Por" no destino, quando ele veio primeiro.
+            await transacao.RollbackAsync(ct);
+            return false;
+        }
+
+        await transacao.CommitAsync(ct);
+        return true;
+    }
 
     private async Task<SqlConnection> AbrirAsync(CancellationToken ct)
     {

@@ -27,10 +27,14 @@ public sealed class RetryDeDeadlock(PoliticaDeRetry politica, TimeProvider relog
     /// <c>true</c> se <paramref name="ex"/> é, ou embrulha em qualquer nível de <see cref="Exception.InnerException"/>
     /// (ex.: <c>DbUpdateException</c> do EF Core), uma <see cref="SqlException"/> com <c>Number == 1205</c>.
     /// </summary>
-    public static bool EhDeadlock(Exception ex) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 5): percorra ex, ex.InnerException, ... e devolva true se achar uma {nameof(SqlException)} " +
-            $"com Number == {NumeroDoErroDeDeadlock}. (Recebido: {ex.GetType().Name})");
+    public static bool EhDeadlock(Exception ex)
+    {
+        for (Exception? atual = ex; atual is not null; atual = atual.InnerException)
+        {
+            if (atual is SqlException { Number: NumeroDoErroDeDeadlock }) return true;
+        }
+        return false;
+    }
 
     /// <summary>
     /// Executa <paramref name="operacao"/> (recebe o número da tentativa: 1, 2, 3...).
@@ -38,10 +42,18 @@ public sealed class RetryDeDeadlock(PoliticaDeRetry politica, TimeProvider relog
     /// <see cref="PoliticaDeRetry.CalcularAtraso"/> usando o <c>relogio</c> e tenta de novo.
     /// Exceção não retentável, ou tentativas esgotadas: relança a exceção ORIGINAL (sem embrulhar).
     /// </summary>
-    public Task<T> ExecutarAsync<T>(Func<int, CancellationToken, Task<T>> operacao, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 5): laço de tentativas (1..{politica.MaxTentativas}) com try/catch e filtro " +
-            "'catch (Exception ex) when (tentativa < MaxTentativas && _ehRetentavel(ex))'; dentro do catch, " +
-            $"'await Task.Delay(politica.CalcularAtraso(tentativa), relogio, ct)' (relógio: {relogio.GetType().Name}). " +
-            $"Fora do filtro, a exceção sobe sozinha, intacta. (retentável: {_ehRetentavel.Method.Name})");
+    public async Task<T> ExecutarAsync<T>(Func<int, CancellationToken, Task<T>> operacao, CancellationToken ct = default)
+    {
+        for (var tentativa = 1; ; tentativa++)
+        {
+            try
+            {
+                return await operacao(tentativa, ct);
+            }
+            catch (Exception ex) when (tentativa < politica.MaxTentativas && _ehRetentavel(ex))
+            {
+                await Task.Delay(politica.CalcularAtraso(tentativa), relogio, ct);
+            }
+        }
+    }
 }

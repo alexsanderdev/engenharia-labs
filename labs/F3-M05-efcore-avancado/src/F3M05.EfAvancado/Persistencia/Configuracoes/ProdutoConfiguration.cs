@@ -19,13 +19,17 @@ public sealed class ProdutoConfiguration : IEntityTypeConfiguration<Produto>
         builder.ToTable("Produtos");
         builder.Property(p => p.Nome).HasMaxLength(100);
 
-        // TODO (Passo 2): troque os dois Ignore abaixo pelo mapeamento de verdade.
-        //  - Sku: HasConversion(sku => sku.Valor, valor => new Sku(valor)), HasMaxLength(20), IsUnicode(false)
-        //         + índice único em Sku.
-        //  - Preco: OwnsOne(p => p.Preco, preco => { colunas "PrecoValor" (18,2) e "PrecoMoeda" (3, fixo, não unicode) })
-        //           + Navigation(p => p.Preco).IsRequired().
-        // Enquanto estiverem ignorados, o EF simplesmente NÃO grava nem lê esses valores.
-        builder.Ignore(p => p.Sku);
-        builder.Ignore(p => p.Preco);
+        builder.Property(p => p.Sku)
+            .HasConversion(sku => sku.Valor, valor => new Sku(valor))
+            .HasMaxLength(20)
+            .IsUnicode(false);
+        builder.HasIndex(p => p.Sku).IsUnique();
+
+        builder.OwnsOne(p => p.Preco, preco =>
+        {
+            preco.Property(d => d.Valor).HasColumnName("PrecoValor").HasPrecision(18, 2);
+            preco.Property(d => d.Moeda).HasColumnName("PrecoMoeda").HasMaxLength(3).IsFixedLength().IsUnicode(false);
+        });
+        builder.Navigation(p => p.Preco).IsRequired();
     }
 }

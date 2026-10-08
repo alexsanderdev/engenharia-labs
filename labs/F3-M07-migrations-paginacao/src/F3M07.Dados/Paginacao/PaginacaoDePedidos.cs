@@ -24,10 +24,16 @@ public sealed class PaginacaoDePedidos(LojaDbContext db)
     /// </summary>
     public IQueryable<PedidoResumo> ConsultaPorOffset(int numeroPagina, int tamanho)
     {
-        _ = db;
-        throw new NotImplementedException(
-            "TODO Passo 8: valide (numeroPagina >= 1; 1 <= tamanho <= TamanhoMaximo); AsNoTracking, " +
-            "OrderByDescending(CriadoEm).ThenByDescending(Id), Skip((numeroPagina - 1) * tamanho), Take(tamanho), Select(new PedidoResumo(...)).");
+        ArgumentOutOfRangeException.ThrowIfLessThan(numeroPagina, 1);
+        ValidarTamanho(tamanho);
+
+        return db.Pedidos
+            .AsNoTracking()
+            .OrderByDescending(p => p.CriadoEm)
+            .ThenByDescending(p => p.Id)
+            .Skip((numeroPagina - 1) * tamanho)
+            .Take(tamanho)
+            .Select(p => new PedidoResumo(p.Id, p.ClienteId, p.CriadoEm, p.Status, p.Total));
     }
 
     /// <summary>
@@ -35,10 +41,31 @@ public sealed class PaginacaoDePedidos(LojaDbContext db)
     /// <paramref name="depoisDe"/> na ordenação (CriadoEm DESC, Id DESC); <c>null</c> = primeira página.
     /// O predicado precisa ser "buscável" pelo índice (CriadoEm, Id).
     /// </summary>
-    public IQueryable<PedidoResumo> ConsultaPorKeyset(PosicaoCursor? depoisDe, int tamanho) =>
-        throw new NotImplementedException(
-            "TODO Passo 9: com cursor, Where(p => p.CriadoEm <= c.CriadoEm && (p.CriadoEm < c.CriadoEm || p.Id < c.Id)); " +
-            "mesma ordenação do offset, Take(tamanho), SEM Skip.");
+    public IQueryable<PedidoResumo> ConsultaPorKeyset(PosicaoCursor? depoisDe, int tamanho)
+    {
+        ValidarTamanho(tamanho);
+        return MontarKeyset(depoisDe, tamanho);
+    }
+
+    private IQueryable<PedidoResumo> MontarKeyset(PosicaoCursor? depoisDe, int quantidade)
+    {
+        var consulta = db.Pedidos.AsNoTracking();
+
+        if (depoisDe is { } c)
+        {
+            // "(CriadoEm, Id) < (c.CriadoEm, c.Id)" escrito de forma que o otimizador faça SEEK:
+            // o primeiro termo (CriadoEm <= x) delimita a faixa do índice; o segundo resolve os empates.
+            consulta = consulta.Where(p =>
+                p.CriadoEm <= c.CriadoEm &&
+                (p.CriadoEm < c.CriadoEm || p.Id < c.Id));
+        }
+
+        return consulta
+            .OrderByDescending(p => p.CriadoEm)
+            .ThenByDescending(p => p.Id)
+            .Take(quantidade)
+            .Select(p => new PedidoResumo(p.Id, p.ClienteId, p.CriadoEm, p.Status, p.Total));
+    }
 
     public async Task<IReadOnlyList<PedidoResumo>> ListarPorOffsetAsync(int numeroPagina, int tamanho, CancellationToken ct = default) =>
         await ConsultaPorOffset(numeroPagina, tamanho).ToListAsync(ct);
@@ -47,8 +74,23 @@ public sealed class PaginacaoDePedidos(LojaDbContext db)
     /// Passo 9: página keyset a partir de um cursor opaco (<c>null</c> = primeira página).
     /// Busca <c>tamanho + 1</c> linhas para saber se existe próxima página sem um COUNT(*).
     /// </summary>
-    public Task<PaginaKeyset<PedidoResumo>> ListarPorKeysetAsync(string? cursor, int tamanho, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO Passo 9: decodifique o cursor (null = primeira página) e busque tamanho + 1 linhas; se vierem mais que 'tamanho', " +
-            "devolva só 'tamanho' itens e o cursor do ÚLTIMO item devolvido; senão ProximoCursor = null.");
+    public async Task<PaginaKeyset<PedidoResumo>> ListarPorKeysetAsync(string? cursor, int tamanho, CancellationToken ct = default)
+    {
+        ValidarTamanho(tamanho);
+        PosicaoCursor? depoisDe = cursor is null ? null : CursorDePaginacao.Decodificar(cursor);
+
+        var linhas = await MontarKeyset(depoisDe, tamanho + 1).ToListAsync(ct);
+        if (linhas.Count <= tamanho)
+            return new PaginaKeyset<PedidoResumo>(linhas, null);
+
+        var itens = linhas.Take(tamanho).ToList();
+        var ultimo = itens[^1];
+        return new PaginaKeyset<PedidoResumo>(itens, CursorDePaginacao.Codificar(new PosicaoCursor(ultimo.CriadoEm, ultimo.Id)));
+    }
+
+    private static void ValidarTamanho(int tamanho)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(tamanho, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(tamanho, TamanhoMaximo);
+    }
 }

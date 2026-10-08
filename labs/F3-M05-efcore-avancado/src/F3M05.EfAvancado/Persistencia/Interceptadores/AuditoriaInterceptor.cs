@@ -17,22 +17,35 @@ public sealed class AuditoriaInterceptor(TimeProvider relogio) : SaveChangesInte
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
-        // TODO (Passo 1): chame Auditar(eventData.Context) antes de seguir.
+        Auditar(eventData.Context);
         return base.SavingChanges(eventData, result);
     }
 
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
-        // TODO (Passo 1): chame Auditar(eventData.Context) antes de seguir.
+        Auditar(eventData.Context);
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
     private void Auditar(DbContext? db)
     {
-        _ = relogio;
-        throw new NotImplementedException(
-            "TODO (Passo 1): percorra db.ChangeTracker.Entries<IAuditavel>(); Added → CriadoEm e AtualizadoEm = agora; " +
-            "Modified → AtualizadoEm = agora e Property(\"CriadoEm\").IsModified = false.");
+        if (db is null) return;
+
+        var agora = relogio.GetUtcNow();
+        foreach (var entrada in db.ChangeTracker.Entries<IAuditavel>().ToList())
+        {
+            switch (entrada.State)
+            {
+                case EntityState.Added:
+                    entrada.Entity.CriadoEm = agora;
+                    entrada.Entity.AtualizadoEm = agora;
+                    break;
+                case EntityState.Modified:
+                    entrada.Entity.AtualizadoEm = agora;
+                    entrada.Property(nameof(IAuditavel.CriadoEm)).IsModified = false;
+                    break;
+            }
+        }
     }
 }
