@@ -245,6 +245,48 @@
   <Folder Name="/labs/F4-M08-result-pattern/tests/">
     <Project Path="labs/F4-M08-result-pattern/tests/F4M08.Api.Tests/F4M08.Api.Tests.csproj" />
   </Folder>
+  <Folder Name="/labs/F5-M01-rest-contratos/" />
+  <Folder Name="/labs/F5-M01-rest-contratos/src/">
+    <Project Path="labs/F5-M01-rest-contratos/src/F5M01.Api/F5M01.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M01-rest-contratos/tests/">
+    <Project Path="labs/F5-M01-rest-contratos/tests/F5M01.Api.Tests/F5M01.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M02-versionamento-openapi/" />
+  <Folder Name="/labs/F5-M02-versionamento-openapi/src/">
+    <Project Path="labs/F5-M02-versionamento-openapi/src/F5M02.Api/F5M02.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M02-versionamento-openapi/tests/">
+    <Project Path="labs/F5-M02-versionamento-openapi/tests/F5M02.Api.Tests/F5M02.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M03-desenvolvimento-seguro/" />
+  <Folder Name="/labs/F5-M03-desenvolvimento-seguro/src/">
+    <Project Path="labs/F5-M03-desenvolvimento-seguro/src/F5M03.Api/F5M03.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M03-desenvolvimento-seguro/tests/">
+    <Project Path="labs/F5-M03-desenvolvimento-seguro/tests/F5M03.Api.Tests/F5M03.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M04-authn-authz/" />
+  <Folder Name="/labs/F5-M04-authn-authz/src/">
+    <Project Path="labs/F5-M04-authn-authz/src/F5M04.Api/F5M04.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M04-authn-authz/tests/">
+    <Project Path="labs/F5-M04-authn-authz/tests/F5M04.Api.Tests/F5M04.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M05-rate-limit-idempotencia/" />
+  <Folder Name="/labs/F5-M05-rate-limit-idempotencia/src/">
+    <Project Path="labs/F5-M05-rate-limit-idempotencia/src/F5M05.Api/F5M05.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M05-rate-limit-idempotencia/tests/">
+    <Project Path="labs/F5-M05-rate-limit-idempotencia/tests/F5M05.Api.Tests/F5M05.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M06-httpclient-resiliencia/" />
+  <Folder Name="/labs/F5-M06-httpclient-resiliencia/src/">
+    <Project Path="labs/F5-M06-httpclient-resiliencia/src/F5M06.Pagamentos/F5M06.Pagamentos.csproj" />
+  </Folder>
+  <Folder Name="/labs/F5-M06-httpclient-resiliencia/tests/">
+    <Project Path="labs/F5-M06-httpclient-resiliencia/tests/F5M06.Pagamentos.Tests/F5M06.Pagamentos.Tests.csproj" />
+  </Folder>
   <Folder Name="/labs/P-M01-estruturas-de-dados/" />
   <Folder Name="/labs/P-M01-estruturas-de-dados/src/">
     <Project Path="labs/P-M01-estruturas-de-dados/src/PM01.Estruturas/PM01.Estruturas.csproj" />

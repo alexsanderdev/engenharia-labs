@@ -1,0 +1,34 @@
+@api = http://localhost:5505
+# Chaves de DESENVOLVIMENTO (appsettings.Development.json) — não são segredo.
+@chaveA = dev-chave-cliente-a-NAO-E-SEGREDO
+@backoffice = dev-chave-backoffice-NAO-E-SEGREDO
+
+### Catálogo (output cache + token bucket por IP). Rode várias vezes e veja o 429.
+GET {{api}}/catalogo?categoria=perifericos
+
+### Criar pedido idempotente — rode 2x: a 2ª volta com Idempotent-Replayed: true
+POST {{api}}/pedidos
+X-Api-Key: {{chaveA}}
+Idempotency-Key: 6f1c2a9e-0d4b-4c39-9a51-3e0b8f7d2c10
+Content-Type: application/json
+
+{ "itens": [ { "produtoId": "55555555-0000-0000-0000-000000000001", "quantidade": 2 } ] }
+
+### Mesma chave, corpo diferente → 422
+POST {{api}}/pedidos
+X-Api-Key: {{chaveA}}
+Idempotency-Key: 6f1c2a9e-0d4b-4c39-9a51-3e0b8f7d2c10
+Content-Type: application/json
+
+{ "itens": [ { "produtoId": "55555555-0000-0000-0000-000000000001", "quantidade": 3 } ] }
+
+### Atualizar preço (invalida a tag "catalogo" do output cache)
+PUT {{api}}/catalogo/55555555-0000-0000-0000-000000000001/preco
+X-Api-Key: {{backoffice}}
+Content-Type: application/json
+
+{ "preco": 149.90 }
+
+### Relatório (concurrency limiter: 1 por vez)
+GET {{api}}/relatorios/vendas
+X-Api-Key: {{chaveA}}

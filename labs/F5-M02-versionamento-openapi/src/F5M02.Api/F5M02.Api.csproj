@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <!-- AV0029/AV0030 sugerem o pacote Asp.Versioning.OpenApi (AddApiVersioning().AddOpenApi() e WithDocumentPerVersion()).
+         Ele não está no Directory.Packages.props do repo: aqui os documentos por versão são registrados à mão
+         (AddOpenApi("v1"), AddOpenApi("v2")), o que também é mais didático. Veja a Aula. -->
+    <NoWarn>$(NoWarn);AV0029;AV0030</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Http" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Scalar.AspNetCore" />
+  </ItemGroup>
+</Project>
