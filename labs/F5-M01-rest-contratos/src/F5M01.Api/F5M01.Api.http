@@ -1,0 +1,78 @@
+@api = http://localhost:5501
+@ana = aaaaaaaa-0000-0000-0000-000000000001
+@teclado = 11111111-1111-1111-1111-111111111111
+@mouse = 22222222-2222-2222-2222-222222222222
+@webcamInativa = 33333333-3333-3333-3333-333333333333
+
+############################ ANTES: a API RPC legada (só no starter)
+
+### "Criar" — 200 mesmo quando falha, e a entidade inteira no corpo (custoInterno, versao, notaInternaAntifraude...)
+POST {{api}}/api/CriarPedido
+Content-Type: application/json
+
+{ "clienteId": "{{ana}}", "itens": [ { "produtoId": "{{webcamInativa}}", "quantidade": 1 } ] }
+
+### "Obter" via POST (não cacheável, não idempotente aos olhos do HTTP)
+POST {{api}}/api/ObterPedido
+Content-Type: application/json
+
+{ "id": "00000000-0000-0000-0000-000000000001" }
+
+############################ DEPOIS: a API REST
+
+### Criar (201 + Location + ETag)
+# @name criar
+POST {{api}}/pedidos
+Content-Type: application/json
+
+{ "clienteId": "{{ana}}", "itens": [ { "produtoId": "{{teclado}}", "quantidade": 2 } ] }
+
+@id = {{criar.response.body.$.id}}
+@etag = {{criar.response.headers.ETag}}
+
+### Obter (200 + ETag + Cache-Control)
+GET {{api}}/pedidos/{{id}}
+
+### GET condicional (304 sem corpo)
+GET {{api}}/pedidos/{{id}}
+If-None-Match: {{etag}}
+
+### Sub-recurso: itens
+GET {{api}}/pedidos/{{id}}/itens
+
+### PUT idempotente do item (201 na primeira, 200 nas seguintes, mesmo ETag)
+PUT {{api}}/pedidos/{{id}}/itens/{{mouse}}
+Content-Type: application/json
+
+{ "quantidade": 3 }
+
+### PUT com If-Match velho (412) — rode depois do PUT acima
+PUT {{api}}/pedidos/{{id}}/itens/{{mouse}}
+Content-Type: application/json
+If-Match: {{etag}}
+
+{ "quantidade": 5 }
+
+### PATCH com JSON Merge Patch
+PATCH {{api}}/pedidos/{{id}}
+Content-Type: application/merge-patch+json
+
+{ "observacao": "Entregar na portaria", "enderecoEntrega": { "logradouro": "Av. Paulista, 1000", "cidade": "São Paulo", "cep": "01310-100" } }
+
+### PATCH com application/json (415)
+PATCH {{api}}/pedidos/{{id}}
+Content-Type: application/json
+
+{ "observacao": "x" }
+
+### DELETE do item (204, repetível)
+DELETE {{api}}/pedidos/{{id}}/itens/{{mouse}}
+
+### Confirmação (200; a segunda vez dá 409)
+POST {{api}}/pedidos/{{id}}/confirmacao
+
+### Lista paginada, filtrada e ordenada
+GET {{api}}/pedidos?status=Confirmed&ordenarPor=-total&pagina=1&tamanhoPagina=10
+
+### Parâmetro inválido (400 ValidationProblem)
+GET {{api}}/pedidos?ordenarPor=custoInterno&tamanhoPagina=500

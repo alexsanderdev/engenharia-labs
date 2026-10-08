@@ -1,0 +1,68 @@
+@api = http://localhost:5504
+@ana = aaaaaaaa-0000-0000-0000-000000000001
+@bruno = bbbbbbbb-0000-0000-0000-000000000002
+
+### 1) Catálogo público (200 sem token)
+GET {{api}}/produtos
+
+### 2) Sem token (401 + WWW-Authenticate: Bearer)
+GET {{api}}/me
+
+### 3) Token de cliente (SÓ Development: emissor local, chave efêmera, 15 min)
+# @name tokenAna
+POST {{api}}/dev/token
+Content-Type: application/json
+
+{ "sub": "{{ana}}", "papeis": ["Cliente"], "escopos": "pedidos.read pedidos.write" }
+
+### 4) Quem sou eu? (confira os claims sub/role/scope sem mapeamento legado)
+GET {{api}}/me
+Authorization: Bearer {{tokenAna.response.body.$.access_token}}
+
+### 5) Cria pedido como Ana (201). O clienteId vem do token, não do corpo.
+# @name pedidoAna
+POST {{api}}/pedidos
+Authorization: Bearer {{tokenAna.response.body.$.access_token}}
+Content-Type: application/json
+
+{ "itens": [ { "produtoId": "11111111-1111-1111-1111-111111111111", "quantidade": 2 } ] }
+
+### 6) Token do Bruno
+# @name tokenBruno
+POST {{api}}/dev/token
+Content-Type: application/json
+
+{ "sub": "{{bruno}}", "papeis": ["Cliente"], "escopos": "pedidos.read pedidos.write" }
+
+### 7) BOLA: Bruno tenta ler o pedido da Ana (404, igual a um id inexistente)
+GET {{api}}/pedidos/{{pedidoAna.response.body.$.id}}
+Authorization: Bearer {{tokenBruno.response.body.$.access_token}}
+
+### 8) Cliente tentando criar produto (403)
+POST {{api}}/produtos
+Authorization: Bearer {{tokenAna.response.body.$.access_token}}
+Content-Type: application/json
+
+{ "nome": "Headset", "preco": 199.90 }
+
+### 9) Token de admin
+# @name tokenAdmin
+POST {{api}}/dev/token
+Content-Type: application/json
+
+{ "sub": "adadadad-0000-0000-0000-000000000001", "papeis": ["Admin"], "escopos": "produtos.write pedidos.read pedidos.write" }
+
+### 10) Admin cria produto (201) e lê o pedido da Ana (200), mas não cancela (403)
+POST {{api}}/produtos
+Authorization: Bearer {{tokenAdmin.response.body.$.access_token}}
+Content-Type: application/json
+
+{ "nome": "Headset", "preco": 199.90 }
+
+###
+GET {{api}}/pedidos/{{pedidoAna.response.body.$.id}}
+Authorization: Bearer {{tokenAdmin.response.body.$.access_token}}
+
+###
+POST {{api}}/pedidos/{{pedidoAna.response.body.$.id}}/cancelar
+Authorization: Bearer {{tokenAdmin.response.body.$.access_token}}

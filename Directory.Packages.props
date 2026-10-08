@@ -27,5 +27,13 @@
     <!-- Fase 4: arquitetura (sem MediatR: licença comercial desde a v13; labs usam dispatcher próprio) -->
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <!-- Fase 5: APIs e segurança de borda -->
+    <PackageVersion Include="Asp.Versioning.Http" Version="10.2.3" />
+    <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="10.2.1" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.17.12" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.15.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
+    <PackageVersion Include="WireMock.Net" Version="2.18.0" />
   </ItemGroup>
 </Project>

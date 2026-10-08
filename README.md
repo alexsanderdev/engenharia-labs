@@ -60,6 +60,12 @@ dotnet test EngenhariaLabs.slnx
 | `F4-M06-monolito-modular` | Monólito Modular (Docker) | 31 |
 | `F4-M07-design-patterns` | Design Patterns | 80 |
 | `F4-M08-result-pattern` | Result Pattern e ProblemDetails | 29 |
+| `F5-M01-rest-contratos` | HTTP REST e contratos (ETag, 304/412, paginação) | 65 |
+| `F5-M02-versionamento-openapi` | Versionamento, ProblemDetails e OpenAPI | 29 |
+| `F5-M03-desenvolvimento-seguro` | Desenvolvimento seguro (API vulnerável para corrigir) | 58 |
+| `F5-M04-authn-authz` | Autenticação e autorização (JWT, políticas, recurso) | 40 |
+| `F5-M05-rate-limit-idempotencia` | Rate limiting, Idempotency-Key e output cache | 30 |
+| `F5-M06-httpclient-resiliencia` | HttpClient e resiliência (WireMock) | 37 |
 
 ## Projetos abertos
 

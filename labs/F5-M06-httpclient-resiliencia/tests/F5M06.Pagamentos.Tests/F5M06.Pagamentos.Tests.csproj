@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Os testes limitam a espera com WaitAsync(timeout); passar TestContext.Current.CancellationToken
+         em cada chamada só poluiria o código que o aluno lê. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WireMock.Net" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F5M06.Pagamentos\F5M06.Pagamentos.csproj" />
+  </ItemGroup>
+</Project>
