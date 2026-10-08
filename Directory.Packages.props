@@ -24,5 +24,8 @@
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="6.1.6" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
     <PackageVersion Include="Dapper" Version="2.1.89" />
+    <!-- Fase 4: arquitetura (sem MediatR: licença comercial desde a v13; labs usam dispatcher próprio) -->
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
   </ItemGroup>
 </Project>

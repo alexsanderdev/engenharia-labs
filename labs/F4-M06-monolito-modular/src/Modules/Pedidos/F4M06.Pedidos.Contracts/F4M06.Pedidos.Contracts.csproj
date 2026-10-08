@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Contrato público de Pedidos: eventos de integração que o módulo publica. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\F4M06.Shared\F4M06.Shared.csproj" />
+  </ItemGroup>
+</Project>

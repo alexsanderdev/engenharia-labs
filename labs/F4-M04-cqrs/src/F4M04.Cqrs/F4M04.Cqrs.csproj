@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <!-- DI, Logging e TimeProvider vêm pelo Generic Host -->
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="FluentValidation" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\F4M06.Shared\F4M06.Shared.csproj" />
+    <ProjectReference Include="..\F4M06.Clientes.Contracts\F4M06.Clientes.Contracts.csproj" />
+    <!-- Clientes ASSINA eventos de Pedidos: depende só do contrato (o evento), não do módulo. -->
+    <ProjectReference Include="..\..\Pedidos\F4M06.Pedidos.Contracts\F4M06.Pedidos.Contracts.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\F4M06.Shared\F4M06.Shared.csproj" />
+    <ProjectReference Include="..\F4M06.Catalogo.Contracts\F4M06.Catalogo.Contracts.csproj" />
+  </ItemGroup>
+</Project>

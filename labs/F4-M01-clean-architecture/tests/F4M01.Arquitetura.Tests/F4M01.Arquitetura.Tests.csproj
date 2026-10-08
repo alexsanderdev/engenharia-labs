@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="NetArchTest.Rules" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F4M01.Domain\F4M01.Domain.csproj" />
+    <ProjectReference Include="..\..\src\F4M01.Application\F4M01.Application.csproj" />
+    <ProjectReference Include="..\..\src\F4M01.Infrastructure\F4M01.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\F4M01.Api\F4M01.Api.csproj" />
+  </ItemGroup>
+</Project>

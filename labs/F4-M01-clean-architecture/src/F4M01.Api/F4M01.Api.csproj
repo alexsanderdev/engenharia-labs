@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!--
+    A Api é a borda HTTP. Ela referencia Application (casos de uso) e Infrastructure
+    (só para o composition root chamar AddInfrastructure). Fora de F4M01.Api.Composicao,
+    nenhum tipo da Api pode conhecer Infrastructure ou EF Core (teste de arquitetura).
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\F4M01.Application\F4M01.Application.csproj" />
+    <ProjectReference Include="..\F4M01.Infrastructure\F4M01.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domínio puro: nenhuma referência a EF Core, ASP.NET Core ou qualquer pacote. -->
+</Project>

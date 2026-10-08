@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Repare: sem Infrastructure, sem Api, sem banco. Casos de uso testados só com fakes das portas. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F4M01.Application\F4M01.Application.csproj" />
+    <ProjectReference Include="..\..\src\F4M01.Domain\F4M01.Domain.csproj" />
+  </ItemGroup>
+</Project>

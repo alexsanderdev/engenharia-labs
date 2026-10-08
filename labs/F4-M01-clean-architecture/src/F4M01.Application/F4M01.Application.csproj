@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\F4M01.Domain\F4M01.Domain.csproj" />
+    <!--
+      Violação de propósito (Passo 3): a Application conhece a Infrastructure porque
+      ListarPedidosDoClienteHandler usa o OrderFlowDbContext direto.
+      Depois de trocar o DbContext pela porta IPedidoRepository, APAGUE esta referência
+      e faça o contrário: a Infrastructure passa a referenciar a Application (para implementar as portas).
+    -->
+    <ProjectReference Include="..\F4M01.Infrastructure\F4M01.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

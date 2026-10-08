@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Composition root: o ÚNICO projeto que referencia a implementação de todos os módulos. -->
+  <ItemGroup>
+    <ProjectReference Include="..\F4M06.Shared\F4M06.Shared.csproj" />
+    <ProjectReference Include="..\Modules\Catalogo\F4M06.Catalogo\F4M06.Catalogo.csproj" />
+    <ProjectReference Include="..\Modules\Pedidos\F4M06.Pedidos\F4M06.Pedidos.csproj" />
+    <ProjectReference Include="..\Modules\Clientes\F4M06.Clientes\F4M06.Clientes.csproj" />
+  </ItemGroup>
+</Project>

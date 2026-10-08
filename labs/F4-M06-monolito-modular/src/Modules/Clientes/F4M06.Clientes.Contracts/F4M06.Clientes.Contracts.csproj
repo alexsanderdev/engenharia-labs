@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Contrato público de Clientes: o que outros módulos podem perguntar sobre clientes. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\F4M06.Shared\F4M06.Shared.csproj" />
+  </ItemGroup>
+</Project>

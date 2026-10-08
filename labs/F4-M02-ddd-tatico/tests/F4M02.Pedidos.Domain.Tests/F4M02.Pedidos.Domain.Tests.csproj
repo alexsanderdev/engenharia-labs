@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F4M02.Pedidos.Domain\F4M02.Pedidos.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="F4M02.Pedidos.Domain" />
+    <Using Include="F4M02.Pedidos.Domain.Comum" />
+    <Using Include="F4M02.Pedidos.Domain.ValueObjects" />
+    <Using Include="F4M02.Pedidos.Domain.Pedidos" />
+    <Using Include="F4M02.Pedidos.Domain.Descontos" />
+  </ItemGroup>
+</Project>

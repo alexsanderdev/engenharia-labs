@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Violação de propósito (Passo 2): o domínio referencia EF Core só para usar [Precision] no Pedido.
+    Depois de mover o mapeamento para a Infrastructure (Fluent API), APAGUE esta referência.
+    O domínio, no fim do lab, não referencia NADA.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+  </ItemGroup>
+</Project>
