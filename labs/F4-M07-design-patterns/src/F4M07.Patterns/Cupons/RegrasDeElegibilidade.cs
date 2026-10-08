@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace F4M07.Patterns.Cupons;
 
 /// <summary>Categoria do cliente no programa de fidelidade.</summary>
@@ -18,18 +20,15 @@ public sealed record ContextoDoCupom(
 /// <summary>Subtotal maior ou igual ao mínimo. Descrição: "subtotal &gt;= {minimo:N2}" (pt-BR, ex.: "subtotal &gt;= 100,00").</summary>
 public sealed class SubtotalMinimo(decimal minimo) : Especificacao<ContextoDoCupom>
 {
-    public override bool EhSatisfeitaPor(ContextoDoCupom candidato) =>
-        throw new NotImplementedException($"TODO: candidato.Subtotal >= {minimo}");
+    public override bool EhSatisfeitaPor(ContextoDoCupom candidato) => candidato.Subtotal >= minimo;
 
-    public override string Descricao =>
-        throw new NotImplementedException("TODO: $\"subtotal >= {minimo.ToString(\"N2\", CultureInfo.GetCultureInfo(\"pt-BR\"))}\"");
+    public override string Descricao => $"subtotal >= {minimo.ToString("N2", CultureInfo.GetCultureInfo("pt-BR"))}";
 }
 
 /// <summary>Cliente sem nenhum pedido anterior. Descrição: "primeira compra".</summary>
 public sealed class PrimeiraCompra : Especificacao<ContextoDoCupom>
 {
-    public override bool EhSatisfeitaPor(ContextoDoCupom candidato) =>
-        throw new NotImplementedException("TODO: PedidosAnterioresDoCliente == 0");
+    public override bool EhSatisfeitaPor(ContextoDoCupom candidato) => candidato.PedidosAnterioresDoCliente == 0;
 
     public override string Descricao => "primeira compra";
 }
@@ -37,8 +36,7 @@ public sealed class PrimeiraCompra : Especificacao<ContextoDoCupom>
 /// <summary>Cliente VIP. Descrição: "cliente VIP".</summary>
 public sealed class ClienteVip : Especificacao<ContextoDoCupom>
 {
-    public override bool EhSatisfeitaPor(ContextoDoCupom candidato) =>
-        throw new NotImplementedException("TODO: CategoriaDoCliente == Vip");
+    public override bool EhSatisfeitaPor(ContextoDoCupom candidato) => candidato.CategoriaDoCliente == CategoriaDoCliente.Vip;
 
     public override string Descricao => "cliente VIP";
 }
@@ -47,7 +45,7 @@ public sealed class ClienteVip : Especificacao<ContextoDoCupom>
 public sealed class ContemCategoria(string categoria) : Especificacao<ContextoDoCupom>
 {
     public override bool EhSatisfeitaPor(ContextoDoCupom candidato) =>
-        throw new NotImplementedException($"TODO: CategoriasDosItens.Contains(\"{categoria}\", StringComparer.OrdinalIgnoreCase)");
+        candidato.CategoriasDosItens.Contains(categoria, StringComparer.OrdinalIgnoreCase);
 
     public override string Descricao => $"contém categoria {categoria}";
 }
@@ -58,8 +56,7 @@ public sealed class ContemCategoria(string categoria) : Especificacao<ContextoDo
 /// </summary>
 public sealed class Vigente(DateTimeOffset inicio, DateTimeOffset fim) : Especificacao<ContextoDoCupom>
 {
-    public override bool EhSatisfeitaPor(ContextoDoCupom candidato) =>
-        throw new NotImplementedException($"TODO: Agora >= {inicio:O} && Agora < {fim:O}");
+    public override bool EhSatisfeitaPor(ContextoDoCupom candidato) => candidato.Agora >= inicio && candidato.Agora < fim;
 
     public override string Descricao => "vigente";
 }

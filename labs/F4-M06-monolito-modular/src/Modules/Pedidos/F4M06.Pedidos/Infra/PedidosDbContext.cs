@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace F4M06.Pedidos.Infra;
 
 /// <summary>DbContext PRIVADO de Pedidos: só enxerga as tabelas do schema <c>pedidos</c>.</summary>
-public sealed class PedidosDbContext(DbContextOptions<PedidosDbContext> options) : DbContext(options)
+internal sealed class PedidosDbContext(DbContextOptions<PedidosDbContext> options) : DbContext(options)
 {
     public const string Schema = "pedidos";
 
@@ -12,6 +12,8 @@ public sealed class PedidosDbContext(DbContextOptions<PedidosDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasDefaultSchema(Schema);
+
         modelBuilder.Entity<Pedido>(pedido =>
         {
             pedido.ToTable("Pedidos");

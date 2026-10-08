@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Options;
 
 namespace F4M07.Patterns.Precos;
@@ -16,10 +17,21 @@ public sealed class ServicoDePrecosComCache(
     TimeProvider tempo,
     IOptions<OpcoesDoCacheDePrecos> opcoes) : IServicoDePrecos
 {
-    // Dica: um ConcurrentDictionary<string, (decimal Preco, DateTimeOffset ExpiraEm)> com StringComparer.OrdinalIgnoreCase.
+    private readonly ConcurrentDictionary<string, (decimal Preco, DateTimeOffset ExpiraEm)> _cache =
+        new(StringComparer.OrdinalIgnoreCase);
 
-    public ValueTask<decimal?> ObterPrecoAsync(string sku, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO: hit válido (agora < ExpiraEm) devolve do cache; senão delegue ao serviço interno e só guarde se não for null " +
-            $"(ExpiraEm = tempo.GetUtcNow() + Ttl). Dependências: {interno.GetType().Name}, {tempo.GetType().Name}, {opcoes.GetType().Name}.");
+    public async ValueTask<decimal?> ObterPrecoAsync(string sku, CancellationToken ct = default)
+    {
+        var agora = tempo.GetUtcNow();
+        if (_cache.TryGetValue(sku, out var entrada) && agora < entrada.ExpiraEm)
+            return entrada.Preco;
+
+        var preco = await interno.ObterPrecoAsync(sku, ct);
+        if (preco is { } valor)
+            _cache[sku] = (valor, agora + opcoes.Value.Ttl);
+        else
+            _cache.TryRemove(sku, out _);
+
+        return preco;
+    }
 }

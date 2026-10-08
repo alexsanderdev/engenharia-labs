@@ -9,19 +9,21 @@ public sealed record ListarPedidosDoCliente(Guid ClienteId) : IQuery<IReadOnlyLi
 /// <summary>Queries também passam pela validação do pipeline.</summary>
 public sealed class ListarPedidosDoClienteValidator : AbstractValidator<ListarPedidosDoCliente>
 {
-    public ListarPedidosDoClienteValidator()
-    {
-        // TODO: ClienteId não pode ser vazio (mensagem: "Informe o cliente."). Veja o CriarPedidoValidator.
-    }
+    public ListarPedidosDoClienteValidator() =>
+        RuleFor(q => q.ClienteId).NotEmpty().WithMessage("Informe o cliente.");
 }
 
-/// <summary>
-/// Lista do read model os pedidos do cliente, ordenados por CriadoEm decrescente.
-/// TODO: receba no construtor apenas o que o lado de leitura precisa.
-/// </summary>
-public sealed class ListarPedidosDoClienteHandler : IQueryHandler<ListarPedidosDoCliente, IReadOnlyList<PedidoResumo>>
+public sealed class ListarPedidosDoClienteHandler(BancoDeLeitura leitura)
+    : IQueryHandler<ListarPedidosDoCliente, IReadOnlyList<PedidoResumo>>
 {
-    public Task<IReadOnlyList<PedidoResumo>> HandleAsync(ListarPedidosDoCliente query, CancellationToken ct) =>
-        throw new NotImplementedException(
-            "TODO: injete o BancoDeLeitura, filtre por ClienteId e ordene por CriadoEm decrescente.");
+    public Task<IReadOnlyList<PedidoResumo>> HandleAsync(ListarPedidosDoCliente query, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        IReadOnlyList<PedidoResumo> resultado = leitura.Pedidos.Values
+            .Where(p => p.ClienteId == query.ClienteId)
+            .OrderByDescending(p => p.CriadoEm)
+            .ThenByDescending(p => p.Id)
+            .ToList();
+        return Task.FromResult(resultado);
+    }
 }

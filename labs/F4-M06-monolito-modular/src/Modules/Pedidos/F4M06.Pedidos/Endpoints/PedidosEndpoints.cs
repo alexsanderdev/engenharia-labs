@@ -1,7 +1,9 @@
-using F4M06.Catalogo.Infra;
+using F4M06.Catalogo.Contracts;
 using F4M06.Clientes.Contracts;
+using F4M06.Pedidos.Contracts;
 using F4M06.Pedidos.Dominio;
 using F4M06.Pedidos.Infra;
+using F4M06.Shared.Eventos;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -9,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace F4M06.Pedidos.Endpoints;
 
-public sealed record ItemRequest(Guid ProdutoId, int Quantidade);
+internal sealed record ItemRequest(Guid ProdutoId, int Quantidade);
 
-public sealed record CriarPedidoRequest(Guid ClienteId, IReadOnlyList<ItemRequest>? Itens);
+internal sealed record CriarPedidoRequest(Guid ClienteId, IReadOnlyList<ItemRequest>? Itens);
 
-public sealed record ItemPedidoResponse(Guid ProdutoId, string NomeProduto, decimal PrecoUnitario, int Quantidade);
+internal sealed record ItemPedidoResponse(Guid ProdutoId, string NomeProduto, decimal PrecoUnitario, int Quantidade);
 
-public sealed record PedidoResponse(Guid Id, Guid ClienteId, string Status, decimal Total, IReadOnlyList<ItemPedidoResponse> Itens)
+internal sealed record PedidoResponse(Guid Id, Guid ClienteId, string Status, decimal Total, IReadOnlyList<ItemPedidoResponse> Itens)
 {
     public static PedidoResponse De(Pedido p) => new(
         p.Id, p.ClienteId, p.Status.ToString(), p.Total,
@@ -23,7 +25,7 @@ public sealed record PedidoResponse(Guid Id, Guid ClienteId, string Status, deci
 }
 
 /// <summary>API HTTP de Pedidos (rotas sob <c>/pedidos</c>).</summary>
-public static class PedidosEndpoints
+internal static class PedidosEndpoints
 {
     public static void MapPedidosEndpoints(this IEndpointRouteBuilder endpoints)
     {
@@ -34,13 +36,13 @@ public static class PedidosEndpoints
     }
 
     /// <summary>
-    /// Cria o pedido. Com Clientes, a conversa já é pelo contrato público (<see cref="IClientesApi"/>).
-    /// Com o Catálogo... "era só uma consulta rápida": lê direto o DbContext do outro módulo.
+    /// Cria o pedido. Fala com os outros módulos SÓ pelos contratos públicos:
+    /// <see cref="IClientesApi"/> (o cliente existe?) e <see cref="ICatalogoApi"/> (preço e status dos produtos).
     /// </summary>
     private static async Task<IResult> CriarAsync(
         CriarPedidoRequest request,
         PedidosDbContext db,
-        CatalogoDbContext catalogo,
+        ICatalogoApi catalogo,
         IClientesApi clientes,
         TimeProvider relogio,
         CancellationToken ct)
@@ -53,9 +55,9 @@ public static class PedidosEndpoints
         if (!await clientes.ExisteAsync(request.ClienteId, ct))
             return Results.Problem($"Cliente {request.ClienteId} não encontrado.", statusCode: StatusCodes.Status422UnprocessableEntity);
 
-        // Acesso direto às tabelas e à entidade Produto do Catálogo.
+        // UMA chamada em lote ao Catálogo (nada de uma chamada por item).
         var ids = itens.Select(i => i.ProdutoId).Distinct().ToArray();
-        var produtos = await catalogo.Produtos.Where(p => ids.Contains(p.Id)).ToDictionaryAsync(p => p.Id, ct);
+        var produtos = (await catalogo.ObterProdutosAsync(ids, ct)).ToDictionary(p => p.Id);
 
         var pedido = new Pedido(Guid.NewGuid(), request.ClienteId, relogio.GetUtcNow());
         foreach (var item in itens)
@@ -78,8 +80,16 @@ public static class PedidosEndpoints
             ? Results.Ok(PedidoResponse.De(pedido))
             : Results.NotFound();
 
-    /// <summary>Confirma o pedido.</summary>
-    private static async Task<IResult> ConfirmarAsync(Guid id, PedidosDbContext db, CancellationToken ct)
+    /// <summary>
+    /// Confirma o pedido e, DEPOIS do commit, publica <see cref="PedidoConfirmado"/>.
+    /// Pedidos não sabe quem assina (hoje, Clientes): só publica o fato.
+    /// </summary>
+    private static async Task<IResult> ConfirmarAsync(
+        Guid id,
+        PedidosDbContext db,
+        IEventBus eventos,
+        TimeProvider relogio,
+        CancellationToken ct)
     {
         if (await db.Pedidos.SingleOrDefaultAsync(p => p.Id == id, ct) is not { } pedido) return Results.NotFound();
 
@@ -94,8 +104,8 @@ public static class PedidosEndpoints
 
         await db.SaveChangesAsync(ct);
 
-        // TODO (Passo 5): depois do commit, publicar o evento de integração PedidoConfirmado
-        // (F4M06.Pedidos.Contracts) pelo IEventBus. Pedidos não deve saber quem vai reagir.
+        await eventos.PublishAsync(
+            new PedidoConfirmado(Guid.NewGuid(), relogio.GetUtcNow(), pedido.Id, pedido.ClienteId, pedido.Total), ct);
 
         return Results.Ok(PedidoResponse.De(pedido));
     }

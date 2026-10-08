@@ -15,8 +15,12 @@ public sealed record Quantidade
     public const int Maxima = 999;
 
     /// <exception cref="RegraDeNegocioVioladaException">Se <paramref name="valor"/> estiver fora de 1..<see cref="Maxima"/> (<see cref="Regras.QuantidadeInvalida"/>).</exception>
-    public Quantidade(int valor) =>
-        throw new NotImplementedException("TODO (Passo 1): rejeite valor <= 0 ou > Maxima com Regras.QuantidadeInvalida; guarde em Valor.");
+    public Quantidade(int valor)
+    {
+        if (valor is <= 0 or > Maxima)
+            throw new RegraDeNegocioVioladaException(Regras.QuantidadeInvalida, $"Quantidade deve estar entre 1 e {Maxima} (recebido: {valor}).");
+        Valor = valor;
+    }
 
     public int Valor { get; }
 

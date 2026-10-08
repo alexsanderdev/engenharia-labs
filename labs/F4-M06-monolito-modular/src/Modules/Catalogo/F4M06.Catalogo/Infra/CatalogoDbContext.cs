@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace F4M06.Catalogo.Infra;
 
 /// <summary>DbContext PRIVADO do Catálogo: só enxerga as tabelas do schema <c>catalogo</c>.</summary>
-public sealed class CatalogoDbContext(DbContextOptions<CatalogoDbContext> options) : DbContext(options)
+internal sealed class CatalogoDbContext(DbContextOptions<CatalogoDbContext> options) : DbContext(options)
 {
     public const string Schema = "catalogo";
 

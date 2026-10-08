@@ -38,14 +38,20 @@ public sealed class CriarPedidoHandler(
     IRepositorioDePedidos repositorio,
     TimeProvider relogio) : ICommandHandler<CriarPedido, Guid>
 {
-    /// <summary>
-    /// Para cada item, busca o <see cref="Produto"/> no catálogo (inexistente → <see cref="RegraDeNegocioException"/>),
-    /// chama <see cref="Pedido.Criar"/> com <c>relogio.GetUtcNow()</c>, adiciona no repositório e devolve o id.
-    /// </summary>
-    public Task<Guid> HandleAsync(CriarPedido command, CancellationToken ct)
+    public async Task<Guid> HandleAsync(CriarPedido command, CancellationToken ct)
     {
-        _ = (catalogo, repositorio, relogio);
-        throw new NotImplementedException(
-            "TODO: busque cada produto no ICatalogo, chame Pedido.Criar, repositorio.Adicionar(pedido) e devolva pedido.Id. Não chame SaveChanges aqui.");
+        ArgumentNullException.ThrowIfNull(command);
+
+        var itens = new List<(Produto, int)>();
+        foreach (var item in command.Itens)
+        {
+            var produto = await catalogo.ObterProdutoAsync(item.ProdutoId, ct)
+                          ?? throw new RegraDeNegocioException($"Produto {item.ProdutoId} não existe no catálogo.");
+            itens.Add((produto, item.Quantidade));
+        }
+
+        var pedido = Pedido.Criar(command.ClienteId, itens, relogio.GetUtcNow());
+        repositorio.Adicionar(pedido);
+        return pedido.Id;
     }
 }

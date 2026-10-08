@@ -1,27 +1,43 @@
 namespace F4M07.Patterns.Checkout;
 
-// Passo 6 — cada elo valida UMA coisa. Válido? return proxima(); inválido? return ResultadoDaValidacao.Invalido(...)
-// SEM chamar proxima() (isso interrompe a corrente).
-
 /// <summary>Carrinho sem itens → "carrinho.vazio".</summary>
 public sealed class CarrinhoNaoVazio : IValidacaoDeCheckout
 {
     public ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, ProximaValidacao proxima, CancellationToken ct) =>
-        throw new NotImplementedException("TODO: Itens.Count == 0 → Invalido(\"carrinho.vazio\", ...); senão proxima().");
+        contexto.Itens.Count == 0
+            ? ValueTask.FromResult(ResultadoDaValidacao.Invalido("carrinho.vazio", "O carrinho está vazio."))
+            : proxima();
 }
 
 /// <summary>Algum item com quantidade &lt;= 0 → "item.quantidade_invalida" (mensagem cita o SKU).</summary>
 public sealed class QuantidadesPositivas : IValidacaoDeCheckout
 {
-    public ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, ProximaValidacao proxima, CancellationToken ct) =>
-        throw new NotImplementedException("TODO: primeiro item com Quantidade <= 0 → Invalido(\"item.quantidade_invalida\", mensagem com o SKU).");
+    public ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, ProximaValidacao proxima, CancellationToken ct)
+    {
+        var invalido = contexto.Itens.FirstOrDefault(i => i.Quantidade <= 0);
+        return invalido is null
+            ? proxima()
+            : ValueTask.FromResult(ResultadoDaValidacao.Invalido(
+                "item.quantidade_invalida", $"Quantidade inválida para {invalido.Sku}: {invalido.Quantidade}."));
+    }
 }
 
 /// <summary>SKU inexistente → "produto.inexistente"; produto inativo → "produto.inativo" (mensagem cita o SKU).</summary>
 public sealed class ProdutosAtivos(ICatalogoParaCheckout catalogo) : IValidacaoDeCheckout
 {
-    public ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, ProximaValidacao proxima, CancellationToken ct) =>
-        throw new NotImplementedException($"TODO: para cada item, await catalogo.ObterAsync(sku, ct): null → inexistente; !Ativo → inativo. ({catalogo.GetType().Name})");
+    public async ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, ProximaValidacao proxima, CancellationToken ct)
+    {
+        foreach (var item in contexto.Itens)
+        {
+            var produto = await catalogo.ObterAsync(item.Sku, ct);
+            if (produto is null)
+                return ResultadoDaValidacao.Invalido("produto.inexistente", $"Produto {item.Sku} não existe.");
+            if (!produto.Ativo)
+                return ResultadoDaValidacao.Invalido("produto.inativo", $"Produto {item.Sku} está inativo.");
+        }
+
+        return await proxima();
+    }
 }
 
 /// <summary>
@@ -30,6 +46,21 @@ public sealed class ProdutosAtivos(ICatalogoParaCheckout catalogo) : IValidacaoD
 /// </summary>
 public sealed class EstoqueSuficiente(ICatalogoParaCheckout catalogo) : IValidacaoDeCheckout
 {
-    public ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, ProximaValidacao proxima, CancellationToken ct) =>
-        throw new NotImplementedException($"TODO: agrupe por SKU (OrdinalIgnoreCase), some as quantidades e compare com o Estoque. ({catalogo.GetType().Name})");
+    public async ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, ProximaValidacao proxima, CancellationToken ct)
+    {
+        var porSku = contexto.Itens
+            .GroupBy(i => i.Sku, StringComparer.OrdinalIgnoreCase)
+            .Select(g => (Sku: g.Key, Quantidade: g.Sum(i => i.Quantidade)));
+
+        foreach (var (sku, quantidade) in porSku)
+        {
+            var produto = await catalogo.ObterAsync(sku, ct);
+            var disponivel = produto?.Estoque ?? 0;
+            if (disponivel < quantidade)
+                return ResultadoDaValidacao.Invalido(
+                    "estoque.insuficiente", $"Estoque insuficiente para {sku}: pedido {quantidade}, disponível {disponivel}.");
+        }
+
+        return await proxima();
+    }
 }

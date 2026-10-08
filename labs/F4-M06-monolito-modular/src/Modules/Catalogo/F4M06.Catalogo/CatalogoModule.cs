@@ -1,4 +1,6 @@
+using F4M06.Catalogo.Contracts;
 using F4M06.Catalogo.Endpoints;
+using F4M06.Catalogo.Fachada;
 using F4M06.Catalogo.Infra;
 using F4M06.Shared.Modulos;
 using Microsoft.AspNetCore.Routing;
@@ -16,7 +18,8 @@ public sealed class CatalogoModule : IModule
     {
         services.AddModuleDbContext<CatalogoDbContext>();
 
-        // TODO (Passo 2): registrar o contrato público síncrono (ICatalogoApi) com a implementação interna.
+        // Contrato público síncrono: outros módulos pedem ICatalogoApi e recebem a implementação interna.
+        services.AddScoped<ICatalogoApi, CatalogoApi>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapProdutosEndpoints();

@@ -1,7 +1,7 @@
 namespace F4M06.Catalogo.Dominio;
 
 /// <summary>Produto do catálogo. Entidade PRIVADA do módulo Catálogo.</summary>
-public sealed class Produto
+internal sealed class Produto
 {
     private Produto() { } // EF Core
 

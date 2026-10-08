@@ -31,10 +31,29 @@ public sealed class PoliticaDeDesconto
 
     /// <summary>Calcula o desconto a que o cliente tem direito neste pedido, sem alterar o pedido.</summary>
     /// <exception cref="RegraDeNegocioVioladaException"><see cref="Regras.ClienteDiferente"/> se o perfil não for do dono do pedido.</exception>
-    public Dinheiro Calcular(Pedido pedido, PerfilDoCliente cliente) =>
-        throw new NotImplementedException("TODO (Passo 6): perfil do dono? escolha o percentual (VIP > fiel > nada), calcule sobre o Subtotal e limite ao teto (Dinheiro.Menor).");
+    public Dinheiro Calcular(Pedido pedido, PerfilDoCliente cliente)
+    {
+        ArgumentNullException.ThrowIfNull(pedido);
+        ArgumentNullException.ThrowIfNull(cliente);
+        if (cliente.ClienteId != pedido.ClienteId)
+            throw new RegraDeNegocioVioladaException(Regras.ClienteDiferente, "O perfil informado não é do cliente dono do pedido.");
+
+        var percentual = cliente switch
+        {
+            { Vip: true } => PercentualVip,
+            { PedidosConcluidos: >= PedidosParaSerFiel } => PercentualFiel,
+            _ => 0m,
+        };
+
+        var teto = new Dinheiro(TetoPorPedido, pedido.Moeda);
+        return Dinheiro.Menor(pedido.Subtotal.Percentual(percentual), teto);
+    }
 
     /// <summary>Calcula e aplica o desconto no pedido. Devolve o valor aplicado.</summary>
-    public Dinheiro Aplicar(Pedido pedido, PerfilDoCliente cliente) =>
-        throw new NotImplementedException("TODO (Passo 6): Calcular(...) e depois pedido.AplicarDesconto(...).");
+    public Dinheiro Aplicar(Pedido pedido, PerfilDoCliente cliente)
+    {
+        var desconto = Calcular(pedido, cliente);
+        pedido.AplicarDesconto(desconto);
+        return desconto;
+    }
 }

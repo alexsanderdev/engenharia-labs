@@ -6,16 +6,16 @@ using Microsoft.AspNetCore.Routing;
 
 namespace F4M06.Clientes.Endpoints;
 
-public sealed record CriarClienteRequest(string? Nome, string? Email);
+internal sealed record CriarClienteRequest(string? Nome, string? Email);
 
-public sealed record ClienteResponse(Guid Id, string Nome, string Email, decimal TotalGasto, int PedidosConfirmados, string Nivel)
+internal sealed record ClienteResponse(Guid Id, string Nome, string Email, decimal TotalGasto, int PedidosConfirmados, string Nivel)
 {
     public static ClienteResponse De(Cliente c) =>
         new(c.Id, c.Nome, c.Email, c.TotalGasto, c.PedidosConfirmados, c.Nivel.ToString());
 }
 
 /// <summary>API HTTP de Clientes (rotas sob <c>/clientes</c>).</summary>
-public static class ClientesEndpoints
+internal static class ClientesEndpoints
 {
     public static void MapClientesEndpoints(this IEndpointRouteBuilder endpoints)
     {

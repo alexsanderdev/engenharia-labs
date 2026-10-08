@@ -38,21 +38,23 @@ public sealed record Error(string Code, string Message, ErrorType Type)
     /// <summary>Erros por campo (só para <see cref="ErrorType.Validation"/>). Chave = nome do campo no JSON.</summary>
     public IReadOnlyDictionary<string, string[]>? ValidationErrors { get; init; }
 
-    // Todas as fábricas exigem código e mensagem preenchidos (ArgumentException se vazios ou só espaços).
-
-    /// <summary>Erro de validação, opcionalmente com erros por campo (guarde-os em <see cref="ValidationErrors"/>).</summary>
+    /// <summary>Erro de validação, opcionalmente com erros por campo.</summary>
     public static Error Validation(string code, string message, IReadOnlyDictionary<string, string[]>? errors = null) =>
-        throw new NotImplementedException("TODO: valide code/message (ArgumentException.ThrowIfNullOrWhiteSpace) e crie um Error do tipo Validation com ValidationErrors = errors (dica: 'with').");
+        Criar(code, message, ErrorType.Validation) with { ValidationErrors = errors };
 
-    public static Error NotFound(string code, string message) =>
-        throw new NotImplementedException("TODO: valide code/message e crie um Error do tipo NotFound.");
+    public static Error NotFound(string code, string message) => Criar(code, message, ErrorType.NotFound);
 
-    public static Error Conflict(string code, string message) =>
-        throw new NotImplementedException("TODO: valide code/message e crie um Error do tipo Conflict.");
+    public static Error Conflict(string code, string message) => Criar(code, message, ErrorType.Conflict);
 
-    public static Error Forbidden(string code, string message) =>
-        throw new NotImplementedException("TODO: valide code/message e crie um Error do tipo Forbidden.");
+    public static Error Forbidden(string code, string message) => Criar(code, message, ErrorType.Forbidden);
 
-    public static Error Failure(string code, string message) =>
-        throw new NotImplementedException("TODO: valide code/message e crie um Error do tipo Failure.");
+    public static Error Failure(string code, string message) => Criar(code, message, ErrorType.Failure);
+
+    /// <summary>Todas as fábricas exigem código e mensagem preenchidos (<see cref="ArgumentException"/> se vazios).</summary>
+    private static Error Criar(string code, string message, ErrorType type)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
+        return new Error(code, message, type);
+    }
 }

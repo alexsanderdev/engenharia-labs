@@ -1,13 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!--
-    TODO (Passo 3): quando a Application deixar de referenciar este projeto, adicione aqui
-    <ProjectReference Include="..\F4M01.Application\F4M01.Application.csproj" />
-    para implementar as portas (IPedidoRepository, IProdutoRepository, IRelogio).
-  -->
+  <!-- Infrastructure é o anel de FORA: conhece Application (para implementar as portas) e Domain. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\F4M01.Application\F4M01.Application.csproj" />
     <ProjectReference Include="..\F4M01.Domain\F4M01.Domain.csproj" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 namespace F4M06.Pedidos.Dominio;
 
-public enum StatusPedido
+internal enum StatusPedido
 {
     Created,
     Confirmed,
@@ -8,13 +8,13 @@ public enum StatusPedido
 }
 
 /// <summary>Transição de status que a regra do pedido não permite.</summary>
-public sealed class TransicaoInvalidaException(string mensagem) : InvalidOperationException(mensagem);
+internal sealed class TransicaoInvalidaException(string mensagem) : InvalidOperationException(mensagem);
 
 /// <summary>
 /// Item do pedido. Guarda uma CÓPIA do nome e do preço do produto no momento da compra:
 /// o pedido não aponta para a tabela do Catálogo (nem FK, nem navegação).
 /// </summary>
-public sealed class ItemPedido
+internal sealed class ItemPedido
 {
     public ItemPedido(Guid produtoId, string nomeProduto, decimal precoUnitario, int quantidade)
     {
@@ -33,7 +33,7 @@ public sealed class ItemPedido
 }
 
 /// <summary>Pedido: agregado PRIVADO do módulo Pedidos.</summary>
-public sealed class Pedido
+internal sealed class Pedido
 {
     private readonly List<ItemPedido> _itens = [];
 

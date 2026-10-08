@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 
 namespace F4M08.Api.Infra;
 
@@ -22,12 +23,42 @@ public sealed partial class GlobalExceptionHandler(
     /// detail genérico. Nunca copie <c>exception.Message</c> para a resposta.
     /// Escreve com <see cref="IProblemDetailsService.TryWriteAsync"/> e devolve true (tratada).
     /// </summary>
-    public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        _ = (problemDetails, logger);
-        throw new NotImplementedException(
-            "TODO: monte um ProblemDetails (Status, Title, Detail genérico, Extensions[\"code\"]), logue com LogErroInesperado/LogRequisicaoInvalida, " +
-            "defina httpContext.Response.StatusCode e escreva com problemDetails.TryWriteAsync(new ProblemDetailsContext { ... }).");
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(exception);
+
+        ProblemDetails problem;
+        if (exception is BadHttpRequestException badRequest)
+        {
+            LogRequisicaoInvalida(logger, exception, httpContext.Request.Method, httpContext.Request.Path);
+            problem = new ProblemDetails
+            {
+                Status = badRequest.StatusCode,
+                Title = "Requisição malformada",
+                Detail = "A requisição não pôde ser lida. Verifique o corpo, os parâmetros e os headers obrigatórios.",
+            };
+            problem.Extensions["code"] = CodigoRequisicaoInvalida;
+        }
+        else
+        {
+            LogErroInesperado(logger, exception, httpContext.Request.Method, httpContext.Request.Path);
+            problem = new ProblemDetails
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Erro interno",
+                Detail = "Ocorreu um erro inesperado. Informe o traceId ao suporte.",
+            };
+            problem.Extensions["code"] = CodigoErroInterno;
+        }
+
+        httpContext.Response.StatusCode = problem.Status.Value;
+        return await problemDetails.TryWriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            ProblemDetails = problem,
+            Exception = exception,
+        });
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Erro inesperado em {Metodo} {Caminho}")]

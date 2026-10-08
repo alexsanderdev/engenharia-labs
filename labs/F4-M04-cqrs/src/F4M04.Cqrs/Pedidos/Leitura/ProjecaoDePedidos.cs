@@ -13,13 +13,30 @@ public sealed class ProjecaoDePedidos(BancoDeLeitura leitura)
     /// <summary>Cria (ou substitui, para ser idempotente) o resumo com status "Created".</summary>
     public Task HandleAsync(PedidoCriado domainEvent, CancellationToken ct)
     {
-        _ = leitura;
-        throw new NotImplementedException(
-            "TODO: grave leitura.Pedidos[PedidoId] = new PedidoResumo(..., Status: \"Created\", CriadoEm: OcorreuEm, ConfirmadoEm: null).");
+        ArgumentNullException.ThrowIfNull(domainEvent);
+        leitura.Pedidos[domainEvent.PedidoId] = new PedidoResumo(
+            domainEvent.PedidoId,
+            domainEvent.ClienteId,
+            nameof(StatusPedido.Created),
+            domainEvent.Total,
+            domainEvent.QuantidadeItens,
+            domainEvent.OcorreuEm,
+            ConfirmadoEm: null);
+        return Task.CompletedTask;
     }
 
     /// <summary>Atualiza status e data de confirmação, preservando os demais campos. Pedido desconhecido é ignorado.</summary>
-    public Task HandleAsync(PedidoConfirmado domainEvent, CancellationToken ct) =>
-        throw new NotImplementedException(
-            "TODO: se o resumo existir, substitua por 'atual with { Status = \"Confirmed\", ConfirmadoEm = OcorreuEm }'; senão ignore.");
+    public Task HandleAsync(PedidoConfirmado domainEvent, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(domainEvent);
+        if (leitura.Pedidos.TryGetValue(domainEvent.PedidoId, out var atual))
+        {
+            leitura.Pedidos[domainEvent.PedidoId] = atual with
+            {
+                Status = nameof(StatusPedido.Confirmed),
+                ConfirmadoEm = domainEvent.OcorreuEm,
+            };
+        }
+        return Task.CompletedTask;
+    }
 }

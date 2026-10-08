@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace F4M01.Infrastructure.Persistencia;
 
-// Mapeamento com Fluent API: é AQUI que o domínio vira tabela.
+// Mapeamento com Fluent API: o domínio continua "limpo" (sem [Precision], [Table], [Key]...).
 
 internal sealed class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
 {
@@ -14,8 +14,7 @@ internal sealed class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
         builder.ToTable("Pedidos");
         builder.HasKey(p => p.Id);
         builder.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
-        // TODO (Passo 2): a precisão do Total está num atributo [Precision] DENTRO do domínio.
-        // Mova para cá: builder.Property(p => p.Total).HasPrecision(18, 2);
+        builder.Property(p => p.Total).HasPrecision(18, 2);
         builder.HasIndex(p => p.ClienteId);
 
         // Itens fazem parte do agregado: owned collection, gravada em tabela própria.
@@ -29,8 +28,7 @@ internal sealed class PedidoConfiguration : IEntityTypeConfiguration<Pedido>
             item.Property(i => i.PrecoUnitario).HasPrecision(18, 2);
             item.Ignore(i => i.Subtotal);
         });
-        // TODO (Passo 2): quando Itens virar IReadOnlyList com campo _itens, acrescente:
-        // builder.Navigation(p => p.Itens).UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.Navigation(p => p.Itens).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
 

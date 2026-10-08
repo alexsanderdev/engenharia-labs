@@ -14,14 +14,35 @@ namespace F4M02.Pedidos.Domain.ValueObjects;
 public sealed record EnderecoDeEntrega
 {
     /// <exception cref="RegraDeNegocioVioladaException">Se algum campo for inválido.</exception>
-    public EnderecoDeEntrega(string logradouro, string numero, string cidade, string uf, string cep) =>
-        throw new NotImplementedException("TODO (Passo 1): valide e normalize cada campo (Trim; UF maiúscula com 2 letras; CEP com 8 dígitos, sem '-' e '.') lançando Regras.EnderecoInvalido.");
+    public EnderecoDeEntrega(string logradouro, string numero, string cidade, string uf, string cep)
+    {
+        Logradouro = Obrigatorio(logradouro, "Logradouro");
+        Numero = Obrigatorio(numero, "Número");
+        Cidade = Obrigatorio(cidade, "Cidade");
 
-    public string Logradouro { get; } = string.Empty;
-    public string Numero { get; } = string.Empty;
-    public string Cidade { get; } = string.Empty;
-    public string Uf { get; } = string.Empty;
+        var ufNormalizada = Obrigatorio(uf, "UF").ToUpperInvariant();
+        if (ufNormalizada.Length != 2 || !ufNormalizada.All(char.IsAsciiLetterUpper))
+            throw Invalido($"UF '{uf}' inválida: use a sigla de 2 letras.");
+        Uf = ufNormalizada;
+
+        var cepSoDigitos = (cep ?? string.Empty).Replace("-", string.Empty, StringComparison.Ordinal).Replace(".", string.Empty, StringComparison.Ordinal).Trim();
+        if (cepSoDigitos.Length != 8 || !cepSoDigitos.All(char.IsAsciiDigit))
+            throw Invalido($"CEP '{cep}' inválido: são 8 dígitos.");
+        Cep = cepSoDigitos;
+    }
+
+    public string Logradouro { get; }
+    public string Numero { get; }
+    public string Cidade { get; }
+    public string Uf { get; }
 
     /// <summary>Somente os 8 dígitos.</summary>
-    public string Cep { get; } = string.Empty;
+    public string Cep { get; }
+
+    public override string ToString() => $"{Logradouro}, {Numero} — {Cidade}/{Uf} — CEP {Cep[..5]}-{Cep[5..]}";
+
+    private static string Obrigatorio(string? valor, string campo) =>
+        string.IsNullOrWhiteSpace(valor) ? throw Invalido($"{campo} é obrigatório.") : valor.Trim();
+
+    private static RegraDeNegocioVioladaException Invalido(string mensagem) => new(Regras.EnderecoInvalido, mensagem);
 }

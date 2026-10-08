@@ -13,14 +13,18 @@ public sealed partial record Sku
     public const int TamanhoMaximo = 20;
 
     /// <exception cref="RegraDeNegocioVioladaException">Se o código não seguir o padrão (<see cref="Regras.SkuInvalido"/>).</exception>
-    public Sku(string valor) =>
-        throw new NotImplementedException("TODO (Passo 1): normalize (Trim + ToUpperInvariant), valide o tamanho e Padrao(); inválido → Regras.SkuInvalido.");
+    public Sku(string valor)
+    {
+        var normalizado = valor?.Trim().ToUpperInvariant() ?? string.Empty;
+        if (normalizado.Length is < TamanhoMinimo or > TamanhoMaximo || !Padrao().IsMatch(normalizado))
+            throw new RegraDeNegocioVioladaException(Regras.SkuInvalido, $"SKU '{valor}' inválido: use {TamanhoMinimo} a {TamanhoMaximo} letras/dígitos em blocos separados por hífen.");
+        Valor = normalizado;
+    }
 
-    public string Valor { get; } = string.Empty;
+    public string Valor { get; }
 
     public override string ToString() => Valor;
 
-    /// <summary>PRONTO: blocos de letras/dígitos separados por um hífen. Valide DEPOIS de normalizar.</summary>
     [GeneratedRegex("^[A-Z0-9]+(-[A-Z0-9]+)*$")]
     private static partial Regex Padrao();
 }

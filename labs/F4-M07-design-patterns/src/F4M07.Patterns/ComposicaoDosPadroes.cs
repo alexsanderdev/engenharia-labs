@@ -35,41 +35,66 @@ public static class ComposicaoDosPadroes
     /// sua modalidade (<see cref="ModalidadeFrete"/>); <see cref="ICotadorDeFrete"/> Singleton construído com TODAS as
     /// estratégias keyed: <c>sp.GetKeyedServices&lt;ICalculadoraDeFrete&gt;(KeyedService.AnyKey)</c>.
     /// </summary>
-    public static IServiceCollection AddFrete(this IServiceCollection services) =>
-        throw new NotImplementedException(
-            "TODO: services.AddKeyedSingleton<ICalculadoraDeFrete, FreteEconomico>(ModalidadeFrete.Economico) (e as outras duas) + " +
-            "services.AddSingleton<ICotadorDeFrete>(sp => new CotadorDeFrete(sp.GetKeyedServices<ICalculadoraDeFrete>(KeyedService.AnyKey))).");
+    public static IServiceCollection AddFrete(this IServiceCollection services)
+    {
+        services.AddKeyedSingleton<ICalculadoraDeFrete, FreteEconomico>(ModalidadeFrete.Economico);
+        services.AddKeyedSingleton<ICalculadoraDeFrete, FreteExpresso>(ModalidadeFrete.Expresso);
+        services.AddKeyedSingleton<ICalculadoraDeFrete, RetiradaNaLoja>(ModalidadeFrete.Retirada);
+        services.AddSingleton<ICotadorDeFrete>(sp =>
+            new CotadorDeFrete(sp.GetKeyedServices<ICalculadoraDeFrete>(KeyedService.AnyKey)));
+        return services;
+    }
 
     /// <summary>
     /// DECORATOR: <see cref="ServicoDePrecosDoCatalogo"/> Singleton (concreto, para os testes contarem as consultas) e
     /// <see cref="IServicoDePrecos"/> apontando para ele; depois <c>Decorar</c> com cache e, POR FORA, com log
-    /// (log por fora = toda chamada é logada, inclusive as que o cache respondeu). Registre também
-    /// <c>AddOptions&lt;OpcoesDoCacheDePrecos&gt;()</c>.
+    /// (log por fora = toda chamada é logada, inclusive as que o cache respondeu).
     /// </summary>
-    public static IServiceCollection AddPrecos(this IServiceCollection services) =>
-        throw new NotImplementedException(
-            $"TODO: AddSingleton<{nameof(ServicoDePrecosDoCatalogo)}>(), AddSingleton<IServicoDePrecos>(sp => sp.GetRequiredService<...>()), " +
-            "Decorar<IServicoDePrecos, ServicoDePrecosComCache>(), Decorar<IServicoDePrecos, ServicoDePrecosComLog>().");
+    public static IServiceCollection AddPrecos(this IServiceCollection services)
+    {
+        services.AddOptions<OpcoesDoCacheDePrecos>();
+        services.AddSingleton<ServicoDePrecosDoCatalogo>();
+        services.AddSingleton<IServicoDePrecos>(sp => sp.GetRequiredService<ServicoDePrecosDoCatalogo>());
+        services.Decorar<IServicoDePrecos, ServicoDePrecosComCache>();
+        services.Decorar<IServicoDePrecos, ServicoDePrecosComLog>();
+        return services;
+    }
 
     /// <summary>
     /// ADAPTER: <see cref="IGatewayDePagamento"/> → <see cref="PagaFacilAdapter"/> (Singleton). O <see cref="PagaFacilClient"/>
-    /// usa <c>TryAddSingleton</c> com um "sandbox" que aprova tudo
-    /// (<c>new PagaFacilChargeResponse { Status = 0, AuthCode = "SANDBOX" }</c>), para o teste poder registrar o seu antes.
+    /// usa <c>TryAddSingleton</c> com um "sandbox" que aprova tudo, para o teste poder registrar o seu antes.
     /// </summary>
-    public static IServiceCollection AddPagamentos(this IServiceCollection services) =>
-        throw new NotImplementedException(
-            $"TODO: TryAddSingleton(_ => new {nameof(PagaFacilClient)}(...sandbox...)) + AddSingleton<IGatewayDePagamento, PagaFacilAdapter>().");
+    public static IServiceCollection AddPagamentos(this IServiceCollection services)
+    {
+        services.TryAddSingleton(_ => new PagaFacilClient(
+            _ => new PagaFacilChargeResponse { Status = 0, AuthCode = "SANDBOX" }));
+        services.AddSingleton<IGatewayDePagamento, PagaFacilAdapter>();
+        return services;
+    }
 
-    /// <summary>FACTORY: <see cref="IFabricaDeNotificacoes"/> Singleton + <c>AddOptions&lt;OpcoesDeNotificacao&gt;()</c>.</summary>
-    public static IServiceCollection AddNotificacoes(this IServiceCollection services) =>
-        throw new NotImplementedException($"TODO: AddOptions<{nameof(OpcoesDeNotificacao)}>() + AddSingleton<IFabricaDeNotificacoes, FabricaDeNotificacoes>().");
+    /// <summary>FACTORY: <see cref="IFabricaDeNotificacoes"/> Singleton + <see cref="OpcoesDeNotificacao"/>.</summary>
+    public static IServiceCollection AddNotificacoes(this IServiceCollection services)
+    {
+        services.AddOptions<OpcoesDeNotificacao>();
+        services.AddSingleton<IFabricaDeNotificacoes, FabricaDeNotificacoes>();
+        return services;
+    }
 
     /// <summary>
     /// CHAIN OF RESPONSIBILITY + DI explícita: <see cref="ICatalogoParaCheckout"/> (TryAdd, <see cref="CatalogoEmMemoria"/>),
     /// as 4 validações como <see cref="IValidacaoDeCheckout"/> Scoped NESTA ordem — CarrinhoNaoVazio, QuantidadesPositivas,
-    /// ProdutosAtivos, EstoqueSuficiente —, o pipeline Scoped, <c>AddOptions&lt;OpcoesDeCheckout&gt;()</c> e a calculadora Scoped.
+    /// ProdutosAtivos, EstoqueSuficiente —, o pipeline Scoped, <see cref="OpcoesDeCheckout"/> e a calculadora Scoped.
     /// </summary>
-    public static IServiceCollection AddCheckout(this IServiceCollection services) =>
-        throw new NotImplementedException(
-            $"TODO: a ordem de AddScoped<IValidacaoDeCheckout, ...> É a ordem da corrente. Depois {nameof(PipelineDeValidacaoDoCheckout)} e {nameof(CalculadoraDeTotalDoPedido)}.");
+    public static IServiceCollection AddCheckout(this IServiceCollection services)
+    {
+        services.TryAddSingleton<ICatalogoParaCheckout, CatalogoEmMemoria>();
+        services.AddScoped<IValidacaoDeCheckout, CarrinhoNaoVazio>();
+        services.AddScoped<IValidacaoDeCheckout, QuantidadesPositivas>();
+        services.AddScoped<IValidacaoDeCheckout, ProdutosAtivos>();
+        services.AddScoped<IValidacaoDeCheckout, EstoqueSuficiente>();
+        services.AddScoped<PipelineDeValidacaoDoCheckout>();
+        services.AddOptions<OpcoesDeCheckout>();
+        services.AddScoped<CalculadoraDeTotalDoPedido>();
+        return services;
+    }
 }

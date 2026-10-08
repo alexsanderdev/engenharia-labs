@@ -2,6 +2,9 @@ using F4M06.Clientes.Contracts;
 using F4M06.Clientes.Endpoints;
 using F4M06.Clientes.Fachada;
 using F4M06.Clientes.Infra;
+using F4M06.Clientes.Integracao;
+using F4M06.Pedidos.Contracts;
+using F4M06.Shared.Eventos;
 using F4M06.Shared.Modulos;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +22,8 @@ public sealed class ClientesModule : IModule
         services.AddModuleDbContext<ClientesDbContext>();
         services.AddScoped<IClientesApi, ClientesApi>();
 
-        // TODO (Passo 5): assinar o evento PedidoConfirmado (publicado por Pedidos) com o PedidoConfirmadoHandler.
+        // Assinatura explícita: Clientes reage a PedidoConfirmado (publicado por Pedidos).
+        services.AddIntegrationEventHandler<PedidoConfirmado, PedidoConfirmadoHandler>();
     }
 
     public void MapEndpoints(IEndpointRouteBuilder endpoints) => endpoints.MapClientesEndpoints();

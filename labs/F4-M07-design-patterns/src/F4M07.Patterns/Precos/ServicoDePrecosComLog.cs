@@ -16,15 +16,20 @@ public sealed partial class ServicoDePrecosComLog(
     /// <c>Information</c> (EventId 4701) com <c>Sku</c> e <c>DuracaoMs</c> quando achou, ou <c>Warning</c>
     /// (EventId 4702) com <c>Sku</c> quando o preço é <c>null</c>.
     /// </summary>
-    public ValueTask<decimal?> ObterPrecoAsync(string sku, CancellationToken ct = default)
+    public async ValueTask<decimal?> ObterPrecoAsync(string sku, CancellationToken ct = default)
     {
-        _ = logger; // usado pelos métodos [LoggerMessage] abaixo
-        throw new NotImplementedException(
-            "TODO: inicio = tempo.GetTimestamp(); await interno.ObterPrecoAsync(sku, ct); duração = tempo.GetElapsedTime(inicio). " +
-            $"Depois chame LogPrecoObtido ou LogPrecoNaoEncontrado. Dependências: {interno.GetType().Name}, {tempo.GetType().Name}.");
+        var inicio = tempo.GetTimestamp();
+        var preco = await interno.ObterPrecoAsync(sku, ct);
+        var duracaoMs = tempo.GetElapsedTime(inicio).TotalMilliseconds;
+
+        if (preco is null)
+            LogPrecoNaoEncontrado(sku);
+        else
+            LogPrecoObtido(sku, duracaoMs);
+
+        return preco;
     }
 
-    // Os métodos de log já estão prontos (source generator [LoggerMessage]): só chame.
     [LoggerMessage(EventId = 4701, Level = LogLevel.Information, Message = "Preço do {Sku} obtido em {DuracaoMs} ms")]
     private partial void LogPrecoObtido(string sku, double duracaoMs);
 

@@ -1,5 +1,4 @@
-using F4M01.Infrastructure.Persistencia;
-using Microsoft.EntityFrameworkCore;
+using F4M01.Application.Abstracoes;
 
 namespace F4M01.Application.Pedidos;
 
@@ -7,18 +6,15 @@ namespace F4M01.Application.Pedidos;
 public sealed record PedidoResumoDto(Guid Id, string Status, decimal Total, DateTimeOffset CriadoEm, int QuantidadeDeItens);
 
 /// <summary>Consulta "pedidos do cliente", do mais recente para o mais antigo.</summary>
-/// <remarks>
-/// TODO (Passo 3): este caso de uso FUNCIONA, mas só pode ser testado com banco: ele depende do
-/// <see cref="OrderFlowDbContext"/> (Infrastructure) e de EF Core. Troque a dependência pela porta
-/// <c>IPedidoRepository</c> (método <c>ListarPorClienteAsync</c>) e faça a ordenação/projeção em memória aqui.
-/// </remarks>
-public sealed class ListarPedidosDoClienteHandler(OrderFlowDbContext db)
+public sealed class ListarPedidosDoClienteHandler(IPedidoRepository pedidos)
 {
-    public async Task<IReadOnlyList<PedidoResumoDto>> HandleAsync(Guid clienteId, CancellationToken ct = default) =>
-        await db.Pedidos
-            .AsNoTracking()
-            .Where(p => p.ClienteId == clienteId)
+    public async Task<IReadOnlyList<PedidoResumoDto>> HandleAsync(Guid clienteId, CancellationToken ct = default)
+    {
+        var lista = await pedidos.ListarPorClienteAsync(clienteId, ct);
+
+        return lista
             .OrderByDescending(p => p.CriadoEm)
             .Select(p => new PedidoResumoDto(p.Id, p.Status.ToString(), p.Total, p.CriadoEm, p.Itens.Count))
-            .ToListAsync(ct);
+            .ToList();
+    }
 }

@@ -29,38 +29,83 @@ public sealed class PedidosCasosDeUso(ICatalogo catalogo, IPedidoRepositorio ped
     /// "itens[i].quantidade"), busca os produtos (inexistente → <see cref="PedidoErrors.ProdutoInexistente"/>),
     /// cria o agregado (inativo → erro do domínio), persiste e devolve o <see cref="PedidoResponse"/>.
     /// </summary>
-    public Task<Result<PedidoResponse>> CriarAsync(CriarPedidoRequest request, CancellationToken ct)
+    public async Task<Result<PedidoResponse>> CriarAsync(CriarPedidoRequest request, CancellationToken ct)
     {
-        _ = (catalogo, relogio);
-        throw new NotImplementedException(
-            "TODO: Validar(request) → se falhar, return validacao.Error; busque cada produto (null → PedidoErrors.ProdutoInexistente); " +
-            "Pedido.Criar(...) (falha → return o erro); pedidos.AdicionarAsync; return PedidoResponse.De(pedido). Sem throw de negócio!");
+        ArgumentNullException.ThrowIfNull(request);
+        var validacao = Validar(request);
+        if (validacao.IsFailure) return validacao.Error;
+
+        var itens = new List<(Produto, int)>();
+        foreach (var item in request.Itens!)
+        {
+            var produto = await catalogo.ObterAsync(item.ProdutoId, ct);
+            if (produto is null) return PedidoErrors.ProdutoInexistente(item.ProdutoId);
+            itens.Add((produto, item.Quantidade));
+        }
+
+        var criado = Pedido.Criar(request.ClienteId, itens, relogio.GetUtcNow());
+        if (criado.IsFailure) return criado.Error;
+
+        await pedidos.AdicionarAsync(criado.Value, ct);
+        return PedidoResponse.De(criado.Value);
     }
 
     /// <summary>Pedido pelo id; inexistente → <see cref="PedidoErrors.NaoEncontrado"/>.</summary>
-    public Task<Result<PedidoResponse>> ObterAsync(Guid pedidoId, CancellationToken ct) =>
-        throw new NotImplementedException("TODO: (await CarregarAsync(id, ct)).Map(PedidoResponse.De).");
+    public async Task<Result<PedidoResponse>> ObterAsync(Guid pedidoId, CancellationToken ct) =>
+        (await CarregarAsync(pedidoId, ct)).Map(PedidoResponse.De);
 
     /// <summary>Created → Confirmed. Inexistente → NotFound; outro status → Conflict.</summary>
-    public Task<Result<PedidoResponse>> ConfirmarAsync(Guid pedidoId, CancellationToken ct) =>
-        throw new NotImplementedException("TODO: carregue o pedido e chame pedido.Confirmar(); propague o erro ou devolva PedidoResponse.De(pedido).");
+    public async Task<Result<PedidoResponse>> ConfirmarAsync(Guid pedidoId, CancellationToken ct) =>
+        (await CarregarAsync(pedidoId, ct)).Bind(p => p.Confirmar().Match(
+            onSuccess: () => Result.Success(PedidoResponse.De(p)),
+            onFailure: Result.Failure<PedidoResponse>));
 
     /// <summary>Confirmed → Completed. Inexistente → NotFound; outro status → Conflict.</summary>
-    public Task<Result<PedidoResponse>> ConcluirAsync(Guid pedidoId, CancellationToken ct) =>
-        throw new NotImplementedException("TODO: igual ao ConfirmarAsync, com pedido.Concluir().");
+    public async Task<Result<PedidoResponse>> ConcluirAsync(Guid pedidoId, CancellationToken ct) =>
+        (await CarregarAsync(pedidoId, ct)).Bind(p => p.Concluir().Match(
+            onSuccess: () => Result.Success(PedidoResponse.De(p)),
+            onFailure: Result.Failure<PedidoResponse>));
 
     /// <summary>
     /// Cancela o pedido em nome de <paramref name="clienteSolicitante"/>.
     /// Inexistente → NotFound; pedido de outro cliente → <see cref="PedidoErrors.AcessoNegado"/> (Forbidden);
     /// Completed/Cancelled → Conflict.
     /// </summary>
-    public Task<Result> CancelarAsync(Guid pedidoId, Guid clienteSolicitante, CancellationToken ct) =>
-        throw new NotImplementedException("TODO: carregue; ClienteId diferente → PedidoErrors.AcessoNegado; senão return pedido.Cancelar().");
+    public async Task<Result> CancelarAsync(Guid pedidoId, Guid clienteSolicitante, CancellationToken ct)
+    {
+        var carregado = await CarregarAsync(pedidoId, ct);
+        if (carregado.IsFailure) return carregado.Error;
 
-    /// <summary>Helper PRONTO: pedido inexistente vira NotFound (repare nas conversões implícitas).</summary>
+        var pedido = carregado.Value;
+        if (pedido.ClienteId != clienteSolicitante) return PedidoErrors.AcessoNegado(pedidoId);
+        return pedido.Cancelar();
+    }
+
     private async Task<Result<Pedido>> CarregarAsync(Guid pedidoId, CancellationToken ct)
     {
         var pedido = await pedidos.ObterAsync(pedidoId, ct);
         return pedido is null ? PedidoErrors.NaoEncontrado(pedidoId) : pedido;
+    }
+
+    private static Result Validar(CriarPedidoRequest request)
+    {
+        var erros = new Dictionary<string, string[]>();
+        if (request.ClienteId == Guid.Empty)
+            erros["clienteId"] = ["Informe o cliente."];
+
+        if (request.Itens is null || request.Itens.Count == 0)
+        {
+            erros["itens"] = ["Um pedido precisa de pelo menos um item."];
+        }
+        else
+        {
+            for (var i = 0; i < request.Itens.Count; i++)
+            {
+                if (request.Itens[i].Quantidade <= 0)
+                    erros[$"itens[{i}].quantidade"] = ["A quantidade deve ser maior que zero."];
+            }
+        }
+
+        return erros.Count == 0 ? Result.Success() : PedidoErrors.Validacao(erros);
     }
 }

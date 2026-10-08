@@ -4,8 +4,8 @@ using Microsoft.Extensions.Logging;
 namespace F4M04.Cqrs.Pipeline;
 
 /// <summary>
-/// Mensagens de log do pipeline (PRONTAS; source generator do LoggerMessage: sem boxing nem parse do template a cada chamada).
-/// Os testes procuram por "Executando {Nome}", "{Nome} concluído em X ms" e "{Nome} falhou".
+/// Mensagens de log do pipeline (source generator do LoggerMessage: sem boxing nem parse do template a cada chamada).
+/// Os testes procuram por "Executando {Nome}", "{Nome} concluído" e "{Nome} falhou".
 /// </summary>
 internal static partial class LogDoPipeline
 {
@@ -40,13 +40,23 @@ public sealed class LoggingCommandDecorator<TCommand, TResult>(
     /// <summary>
     /// Loga "Executando {Nome}", chama o inner, loga "{Nome} concluído em X ms".
     /// Se o inner lançar, loga "{Nome} falhou" (nível Error, com a exceção) e relança.
-    /// {Nome} é <c>typeof(TCommand).Name</c>. Use os métodos de <see cref="LogDoPipeline"/>.
     /// </summary>
-    public Task<TResult> HandleAsync(TCommand command, CancellationToken ct)
+    public async Task<TResult> HandleAsync(TCommand command, CancellationToken ct)
     {
-        _ = (inner, logger, relogio);
-        throw new NotImplementedException(
-            "TODO: LogDoPipeline.Executando → await inner.HandleAsync → LogDoPipeline.Concluido; em exceção, LogDoPipeline.Falhou e relance (throw;).");
+        var nome = typeof(TCommand).Name;
+        var inicio = relogio.GetTimestamp();
+        LogDoPipeline.Executando(logger, nome);
+        try
+        {
+            var resultado = await inner.HandleAsync(command, ct).ConfigureAwait(false);
+            LogDoPipeline.Concluido(logger, nome, relogio, inicio);
+            return resultado;
+        }
+        catch (Exception ex)
+        {
+            LogDoPipeline.Falhou(logger, ex, nome);
+            throw;
+        }
     }
 }
 
@@ -57,9 +67,21 @@ public sealed class LoggingQueryDecorator<TQuery, TResult>(
     TimeProvider relogio) : IQueryHandler<TQuery, TResult>
     where TQuery : IQuery<TResult>
 {
-    public Task<TResult> HandleAsync(TQuery query, CancellationToken ct)
+    public async Task<TResult> HandleAsync(TQuery query, CancellationToken ct)
     {
-        _ = (inner, logger, relogio);
-        throw new NotImplementedException("TODO: igual ao LoggingCommandDecorator, com typeof(TQuery).Name.");
+        var nome = typeof(TQuery).Name;
+        var inicio = relogio.GetTimestamp();
+        LogDoPipeline.Executando(logger, nome);
+        try
+        {
+            var resultado = await inner.HandleAsync(query, ct).ConfigureAwait(false);
+            LogDoPipeline.Concluido(logger, nome, relogio, inicio);
+            return resultado;
+        }
+        catch (Exception ex)
+        {
+            LogDoPipeline.Falhou(logger, ex, nome);
+            throw;
+        }
     }
 }

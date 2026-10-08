@@ -6,17 +6,17 @@ using Microsoft.AspNetCore.Routing;
 
 namespace F4M06.Catalogo.Endpoints;
 
-public sealed record CriarProdutoRequest(string? Nome, decimal Preco);
+internal sealed record CriarProdutoRequest(string? Nome, decimal Preco);
 
-public sealed record AlterarPrecoRequest(decimal Preco);
+internal sealed record AlterarPrecoRequest(decimal Preco);
 
-public sealed record ProdutoResponse(Guid Id, string Nome, decimal Preco, bool Ativo)
+internal sealed record ProdutoResponse(Guid Id, string Nome, decimal Preco, bool Ativo)
 {
     public static ProdutoResponse De(Produto p) => new(p.Id, p.Nome, p.Preco, p.Ativo);
 }
 
 /// <summary>API HTTP do Catálogo (rotas sob <c>/catalogo</c>).</summary>
-public static class ProdutosEndpoints
+internal static class ProdutosEndpoints
 {
     public static void MapProdutosEndpoints(this IEndpointRouteBuilder endpoints)
     {

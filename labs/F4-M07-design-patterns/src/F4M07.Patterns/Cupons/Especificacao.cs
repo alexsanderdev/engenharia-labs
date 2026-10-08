@@ -3,7 +3,6 @@ namespace F4M07.Patterns.Cupons;
 /// <summary>
 /// SPECIFICATION: uma regra de negócio booleana com nome, testável sozinha e combinável com E/OU/NÃO.
 /// Use os métodos <see cref="E"/>, <see cref="Ou"/>, <see cref="Nao"/> ou os operadores <c>&amp;</c>, <c>|</c>, <c>!</c>.
-/// Esta classe base está PRONTA; implemente os três combinadores abaixo.
 /// </summary>
 public abstract class Especificacao<T>
 {
@@ -31,25 +30,24 @@ public abstract class Especificacao<T>
 public sealed class EspecificacaoE<T>(Especificacao<T> esquerda, Especificacao<T> direita) : Especificacao<T>
 {
     public override bool EhSatisfeitaPor(T candidato) =>
-        throw new NotImplementedException($"TODO: esquerda && direita (com curto-circuito). ({esquerda.GetType().Name}, {direita.GetType().Name})");
+        esquerda.EhSatisfeitaPor(candidato) && direita.EhSatisfeitaPor(candidato);
 
-    public override string Descricao => throw new NotImplementedException("TODO: $\"({esquerda.Descricao} E {direita.Descricao})\"");
+    public override string Descricao => $"({esquerda.Descricao} E {direita.Descricao})";
 }
 
 /// <summary>Satisfeita quando PELO MENOS UMA é satisfeita (curto-circuito). Descrição: "(A OU B)".</summary>
 public sealed class EspecificacaoOu<T>(Especificacao<T> esquerda, Especificacao<T> direita) : Especificacao<T>
 {
     public override bool EhSatisfeitaPor(T candidato) =>
-        throw new NotImplementedException($"TODO: esquerda || direita (com curto-circuito). ({esquerda.GetType().Name}, {direita.GetType().Name})");
+        esquerda.EhSatisfeitaPor(candidato) || direita.EhSatisfeitaPor(candidato);
 
-    public override string Descricao => throw new NotImplementedException("TODO: $\"({esquerda.Descricao} OU {direita.Descricao})\"");
+    public override string Descricao => $"({esquerda.Descricao} OU {direita.Descricao})";
 }
 
 /// <summary>Inverte a regra. Descrição: "NÃO A".</summary>
 public sealed class EspecificacaoNao<T>(Especificacao<T> interna) : Especificacao<T>
 {
-    public override bool EhSatisfeitaPor(T candidato) =>
-        throw new NotImplementedException($"TODO: !interna.EhSatisfeitaPor(candidato). ({interna.GetType().Name})");
+    public override bool EhSatisfeitaPor(T candidato) => !interna.EhSatisfeitaPor(candidato);
 
-    public override string Descricao => throw new NotImplementedException("TODO: $\"NÃO {interna.Descricao}\"");
+    public override string Descricao => $"NÃO {interna.Descricao}";
 }

@@ -17,9 +17,33 @@ public static class DecoracaoDeServicos
     /// </summary>
     public static IServiceCollection Decorar<TServico, TDecorator>(this IServiceCollection services)
         where TServico : class
-        where TDecorator : class, TServico =>
-        throw new NotImplementedException(
-            "TODO: ache o índice do último ServiceDescriptor de TServico (!IsKeyedService) e troque por " +
-            "ServiceDescriptor.Describe(typeof(TServico), sp => ActivatorUtilities.CreateInstance<TDecorator>(sp, interno), original.Lifetime). " +
-            "O interno vem de ImplementationInstance, ImplementationFactory(sp) ou ActivatorUtilities.GetServiceOrCreateInstance(sp, ImplementationType).");
+        where TDecorator : class, TServico
+    {
+        var indice = -1;
+        for (var i = services.Count - 1; i >= 0; i--)
+        {
+            if (services[i].ServiceType == typeof(TServico) && !services[i].IsKeyedService)
+            {
+                indice = i;
+                break;
+            }
+        }
+
+        if (indice < 0)
+            throw new InvalidOperationException(
+                $"Não há registro de {typeof(TServico).Name} para decorar com {typeof(TDecorator).Name}. Registre o serviço antes.");
+
+        var original = services[indice];
+        services[indice] = ServiceDescriptor.Describe(
+            typeof(TServico),
+            sp => ActivatorUtilities.CreateInstance<TDecorator>(sp, CriarInterno(sp, original)),
+            original.Lifetime);
+
+        return services;
+    }
+
+    private static object CriarInterno(IServiceProvider sp, ServiceDescriptor original) =>
+        original.ImplementationInstance
+        ?? original.ImplementationFactory?.Invoke(sp)
+        ?? ActivatorUtilities.GetServiceOrCreateInstance(sp, original.ImplementationType!);
 }

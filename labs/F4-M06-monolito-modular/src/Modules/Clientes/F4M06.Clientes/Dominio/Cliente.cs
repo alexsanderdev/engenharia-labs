@@ -1,6 +1,6 @@
 namespace F4M06.Clientes.Dominio;
 
-public enum NivelFidelidade
+internal enum NivelFidelidade
 {
     Bronze,
     Prata,
@@ -8,7 +8,7 @@ public enum NivelFidelidade
 }
 
 /// <summary>Cliente e o programa de fidelidade. Entidade PRIVADA do módulo Clientes.</summary>
-public sealed class Cliente
+internal sealed class Cliente
 {
     public const decimal LimitePrata = 1_000m;
     public const decimal LimiteOuro = 5_000m;
@@ -49,7 +49,7 @@ public sealed class Cliente
 /// A chave é o <c>PedidoId</c>: um pedido só é confirmado uma vez, então o mesmo evento
 /// entregue duas vezes não pode somar duas vezes.
 /// </summary>
-public sealed class PedidoContabilizado
+internal sealed class PedidoContabilizado
 {
     private PedidoContabilizado() { } // EF Core
 

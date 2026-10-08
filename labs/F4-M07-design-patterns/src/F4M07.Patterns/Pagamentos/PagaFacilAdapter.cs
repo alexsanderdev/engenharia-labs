@@ -1,3 +1,4 @@
+using System.Globalization;
 using F4M07.Patterns.Pagamentos.PagaFacil;
 
 namespace F4M07.Patterns.Pagamentos;
@@ -8,6 +9,8 @@ namespace F4M07.Patterns.Pagamentos;
 /// </summary>
 public sealed class PagaFacilAdapter(PagaFacilClient cliente) : IGatewayDePagamento
 {
+    private const string CodigoBrl = "986";
+
     /// <summary>
     /// Regras de tradução:
     /// <list type="bullet">
@@ -19,8 +22,50 @@ public sealed class PagaFacilAdapter(PagaFacilClient cliente) : IGatewayDePagame
     /// <see cref="PagaFacilTimeoutException"/> → <see cref="ResultadoDaCobranca.GatewayIndisponivel"/>.</item>
     /// </list>
     /// </summary>
-    public Task<ResultadoDaCobranca> CobrarAsync(Cobranca cobranca, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO: valide o valor, monte o PagaFacilChargeRequest, chame cliente.Charge e traduza a resposta " +
-            $"(switch no Status; try/catch de {nameof(PagaFacilTimeoutException)}). Nenhum tipo do PagaFácil sai desta classe. ({cliente.GetType().Name})");
+    public Task<ResultadoDaCobranca> CobrarAsync(Cobranca cobranca, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var requisicao = new PagaFacilChargeRequest
+        {
+            AmountInCents = ParaCentavos(cobranca.Valor).ToString(CultureInfo.InvariantCulture),
+            CurrencyCode = CodigoBrl,
+            MerchantReference = cobranca.PedidoId.ToString("N"),
+            CardHash = cobranca.TokenDoCartao,
+        };
+
+        ResultadoDaCobranca resultado;
+        try
+        {
+            var resposta = cliente.Charge(requisicao);
+            resultado = resposta.Status switch
+            {
+                0 => new ResultadoDaCobranca.Aprovada(resposta.AuthCode ?? string.Empty),
+                1 => new ResultadoDaCobranca.Recusada(TraduzirRecusa(resposta.DeclineCode)),
+                _ => new ResultadoDaCobranca.GatewayIndisponivel($"PagaFácil devolveu status {resposta.Status}"),
+            };
+        }
+        catch (PagaFacilTimeoutException ex)
+        {
+            resultado = new ResultadoDaCobranca.GatewayIndisponivel(ex.Message);
+        }
+
+        return Task.FromResult(resultado);
+    }
+
+    private static long ParaCentavos(decimal valor)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(valor);
+        var centavos = valor * 100m;
+        if (centavos != decimal.Truncate(centavos))
+            throw new ArgumentException($"Valor {valor} tem mais de 2 casas decimais.", nameof(valor));
+        return (long)centavos;
+    }
+
+    private static MotivoDeRecusa TraduzirRecusa(string? codigo) => codigo switch
+    {
+        "51" => MotivoDeRecusa.SaldoInsuficiente,
+        "14" => MotivoDeRecusa.CartaoInvalido,
+        "59" => MotivoDeRecusa.SuspeitaDeFraude,
+        _ => MotivoDeRecusa.Outro,
+    };
 }

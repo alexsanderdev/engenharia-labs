@@ -17,14 +17,15 @@ public abstract class RaizDeAgregado<TId> : Entidade<TId>
     }
 
     /// <summary>Eventos registrados desde a criação/carga (ou desde o último <see cref="LimparEventos"/>), em ordem.</summary>
-    public IReadOnlyList<IEventoDeDominio> EventosDeDominio =>
-        throw new NotImplementedException("TODO (Passo 4): exponha _eventosDeDominio como SOMENTE LEITURA (AsReadOnly), nunca a List em si.");
+    public IReadOnlyList<IEventoDeDominio> EventosDeDominio => _eventosDeDominio.AsReadOnly();
 
     /// <summary>Registra um fato que acabou de acontecer. Só a própria raiz registra eventos.</summary>
-    protected void Registrar(IEventoDeDominio evento) =>
-        throw new NotImplementedException($"TODO (Passo 4): adicione o evento à lista (hoje com {_eventosDeDominio.Count}).");
+    protected void Registrar(IEventoDeDominio evento)
+    {
+        ArgumentNullException.ThrowIfNull(evento);
+        _eventosDeDominio.Add(evento);
+    }
 
     /// <summary>Esvazia a lista. Chamado pela infraestrutura depois de despachar os eventos.</summary>
-    public void LimparEventos() =>
-        throw new NotImplementedException("TODO (Passo 4): limpe a lista.");
+    public void LimparEventos() => _eventosDeDominio.Clear();
 }

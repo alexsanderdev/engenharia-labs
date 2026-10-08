@@ -24,7 +24,6 @@ public sealed class Pedido : RaizDeAgregado<PedidoId>
 
     private readonly List<ItemDoPedido> _itens = [];
 
-    // PRONTO: construtor privado — ninguém de fora faz "new Pedido(...)". O único jeito de nascer é Criar(...).
     private Pedido(PedidoId id, ClienteId clienteId, EnderecoDeEntrega enderecoDeEntrega, string moeda, DateTimeOffset criadoEm)
         : base(id)
     {
@@ -49,17 +48,16 @@ public sealed class Pedido : RaizDeAgregado<PedidoId>
     public StatusPedido Status { get; private set; }
 
     /// <summary>Itens do pedido, somente leitura para quem está fora do agregado.</summary>
-    public IReadOnlyList<ItemDoPedido> Itens =>
-        throw new NotImplementedException($"TODO (Passo 2): exponha os {_itens.Count} itens como SOMENTE LEITURA (AsReadOnly) — nunca a List.");
+    public IReadOnlyList<ItemDoPedido> Itens => _itens.AsReadOnly();
 
     /// <summary>Soma dos subtotais dos itens (zero na moeda do pedido se não houver itens).</summary>
-    public Dinheiro Subtotal => throw new NotImplementedException("TODO (Passo 2): some os subtotais partindo de Dinheiro.Zero(Moeda).");
+    public Dinheiro Subtotal => _itens.Aggregate(Dinheiro.Zero(Moeda), (soma, item) => soma + item.Subtotal);
 
     /// <summary>Desconto aplicado (zero por padrão). Só a <see cref="Descontos.PoliticaDeDesconto"/> (ou outro serviço) decide quanto.</summary>
     public Dinheiro Desconto { get; private set; }
 
     /// <summary>Subtotal − desconto. Nunca informado por quem chama.</summary>
-    public Dinheiro Total => throw new NotImplementedException("TODO (Passo 2): Subtotal - Desconto.");
+    public Dinheiro Total => Subtotal - Desconto;
 
     /// <summary>
     /// Factory method: abre um pedido em <see cref="StatusPedido.Created"/>, sem itens, com id novo,
@@ -71,26 +69,60 @@ public sealed class Pedido : RaizDeAgregado<PedidoId>
     /// <param name="agora">Instante atual — quem chama lê do <see cref="TimeProvider"/>.</param>
     /// <exception cref="ArgumentException">Se <paramref name="clienteId"/> for o <c>default</c>.</exception>
     /// <exception cref="RegraDeNegocioVioladaException">Se a moeda for inválida.</exception>
-    public static Pedido Criar(ClienteId clienteId, EnderecoDeEntrega enderecoDeEntrega, string moeda, DateTimeOffset agora) =>
-        throw new NotImplementedException("TODO (Passo 2): rejeite clienteId default; valide/normalize a moeda via Dinheiro.Zero(moeda).Moeda; crie com PedidoId.Novo(); Registrar(new PedidoCriado(...)).");
+    public static Pedido Criar(ClienteId clienteId, EnderecoDeEntrega enderecoDeEntrega, string moeda, DateTimeOffset agora)
+    {
+        if (clienteId == default)
+            throw new ArgumentException("ClienteId é obrigatório.", nameof(clienteId));
+        ArgumentNullException.ThrowIfNull(enderecoDeEntrega);
+        var moedaValidada = Dinheiro.Zero(moeda).Moeda;
+
+        var pedido = new Pedido(PedidoId.Novo(), clienteId, enderecoDeEntrega, moedaValidada, agora);
+        pedido.Registrar(new PedidoCriado(pedido.Id, clienteId, agora));
+        return pedido;
+    }
 
     /// <summary>Coloca um produto no pedido, copiando nome, SKU e preço do catálogo. Remove o desconto aplicado.</summary>
     /// <exception cref="RegraDeNegocioVioladaException">
     /// <see cref="Regras.PedidoNaoEditavel"/>, <see cref="Regras.ProdutoInativo"/>, <see cref="Regras.MoedasDiferentes"/>,
     /// <see cref="Regras.ProdutoRepetido"/> ou <see cref="Regras.LimiteDeItens"/>.
     /// </exception>
-    public void AdicionarItem(ProdutoDoCatalogo produto, Quantidade quantidade) =>
-        throw new NotImplementedException("TODO (Passo 2/3): editável? ativo? mesma moeda? já está no pedido? cabe no limite? → adicione o item e remova o desconto.");
+    public void AdicionarItem(ProdutoDoCatalogo produto, Quantidade quantidade)
+    {
+        ArgumentNullException.ThrowIfNull(produto);
+        ArgumentNullException.ThrowIfNull(quantidade);
+        GarantirEditavel();
+
+        if (!produto.Ativo)
+            throw new RegraDeNegocioVioladaException(Regras.ProdutoInativo, $"O produto {produto.Sku} está inativo e não pode entrar no pedido.");
+        if (produto.Preco.Moeda != Moeda)
+            throw new RegraDeNegocioVioladaException(Regras.MoedasDiferentes, $"O pedido é em {Moeda}, mas o preço do produto {produto.Sku} está em {produto.Preco.Moeda}.");
+        if (_itens.Exists(i => i.ProdutoId == produto.Id))
+            throw new RegraDeNegocioVioladaException(Regras.ProdutoRepetido, $"O produto {produto.Sku} já está no pedido: altere a quantidade do item.");
+        if (_itens.Count >= MaximoDeItens)
+            throw new RegraDeNegocioVioladaException(Regras.LimiteDeItens, $"Um pedido tem no máximo {MaximoDeItens} itens.");
+
+        _itens.Add(new ItemDoPedido(produto, quantidade));
+        RemoverDesconto();
+    }
 
     /// <summary>Troca a quantidade de um item existente. Remove o desconto aplicado.</summary>
     /// <exception cref="RegraDeNegocioVioladaException"><see cref="Regras.PedidoNaoEditavel"/> ou <see cref="Regras.ItemNaoEncontrado"/>.</exception>
-    public void AlterarQuantidade(ProdutoId produtoId, Quantidade novaQuantidade) =>
-        throw new NotImplementedException("TODO (Passo 3): editável? ache o item (ou Regras.ItemNaoEncontrado), altere a quantidade NO MESMO item e remova o desconto.");
+    public void AlterarQuantidade(ProdutoId produtoId, Quantidade novaQuantidade)
+    {
+        ArgumentNullException.ThrowIfNull(novaQuantidade);
+        GarantirEditavel();
+        ItemDo(produtoId).AlterarQuantidade(novaQuantidade);
+        RemoverDesconto();
+    }
 
     /// <summary>Tira um item do pedido. Remove o desconto aplicado.</summary>
     /// <exception cref="RegraDeNegocioVioladaException"><see cref="Regras.PedidoNaoEditavel"/> ou <see cref="Regras.ItemNaoEncontrado"/>.</exception>
-    public void RemoverItem(ProdutoId produtoId) =>
-        throw new NotImplementedException("TODO (Passo 3): editável? ache o item (ou Regras.ItemNaoEncontrado), remova e remova o desconto.");
+    public void RemoverItem(ProdutoId produtoId)
+    {
+        GarantirEditavel();
+        _itens.Remove(ItemDo(produtoId));
+        RemoverDesconto();
+    }
 
     /// <summary>
     /// Aplica (substitui) o desconto do pedido. Quem calcula o valor é um domain service
@@ -100,21 +132,71 @@ public sealed class Pedido : RaizDeAgregado<PedidoId>
     /// <see cref="Regras.PedidoNaoEditavel"/>, <see cref="Regras.MoedasDiferentes"/> ou
     /// <see cref="Regras.DescontoInvalido"/> (desconto maior que o subtotal).
     /// </exception>
-    public void AplicarDesconto(Dinheiro desconto) =>
-        throw new NotImplementedException("TODO (Passo 6): editável? desconto > Subtotal → Regras.DescontoInvalido (a comparação já barra outra moeda). Guarde em Desconto.");
+    public void AplicarDesconto(Dinheiro desconto)
+    {
+        ArgumentNullException.ThrowIfNull(desconto);
+        GarantirEditavel();
+        if (desconto > Subtotal)
+            throw new RegraDeNegocioVioladaException(Regras.DescontoInvalido, $"Desconto de {desconto} maior que o subtotal de {Subtotal}.");
+
+        Desconto = desconto;
+    }
 
     /// <summary>Created → Confirmed. Exige ao menos um item. Registra <see cref="PedidoConfirmado"/> com o total.</summary>
     /// <exception cref="RegraDeNegocioVioladaException"><see cref="Regras.TransicaoInvalida"/> ou <see cref="Regras.PedidoSemItens"/>.</exception>
-    public void Confirmar(DateTimeOffset agora) =>
-        throw new NotImplementedException("TODO (Passo 4): transição permitida? tem item? → Status = Confirmed e Registrar(new PedidoConfirmado(...)).");
+    public void Confirmar(DateTimeOffset agora)
+    {
+        GarantirTransicao(StatusPedido.Confirmed);
+        if (_itens.Count == 0)
+            throw new RegraDeNegocioVioladaException(Regras.PedidoSemItens, "Pedido sem itens não pode ser confirmado.");
+
+        Status = StatusPedido.Confirmed;
+        Registrar(new PedidoConfirmado(Id, ClienteId, Total, _itens.Count, agora));
+    }
 
     /// <summary>Confirmed → Completed.</summary>
     /// <exception cref="RegraDeNegocioVioladaException"><see cref="Regras.TransicaoInvalida"/>.</exception>
-    public void Concluir() =>
-        throw new NotImplementedException("TODO (Passo 4): só a partir de Confirmed.");
+    public void Concluir()
+    {
+        GarantirTransicao(StatusPedido.Completed);
+        Status = StatusPedido.Completed;
+    }
 
     /// <summary>Created → Cancelled, com motivo (sem espaços nas pontas). Registra <see cref="PedidoCancelado"/>.</summary>
     /// <exception cref="RegraDeNegocioVioladaException"><see cref="Regras.MotivoObrigatorio"/> ou <see cref="Regras.TransicaoInvalida"/>.</exception>
-    public void Cancelar(string motivo, DateTimeOffset agora) =>
-        throw new NotImplementedException("TODO (Passo 4): motivo obrigatório; só a partir de Created (Completed não cancela); Registrar(new PedidoCancelado(...)).");
+    public void Cancelar(string motivo, DateTimeOffset agora)
+    {
+        if (string.IsNullOrWhiteSpace(motivo))
+            throw new RegraDeNegocioVioladaException(Regras.MotivoObrigatorio, "Informe o motivo do cancelamento.");
+        GarantirTransicao(StatusPedido.Cancelled);
+
+        Status = StatusPedido.Cancelled;
+        Registrar(new PedidoCancelado(Id, ClienteId, motivo.Trim(), agora));
+    }
+
+    private static bool TransicaoPermitida(StatusPedido de, StatusPedido para) => (de, para) switch
+    {
+        (StatusPedido.Created, StatusPedido.Confirmed) => true,
+        (StatusPedido.Confirmed, StatusPedido.Completed) => true,
+        (StatusPedido.Created, StatusPedido.Cancelled) => true,
+        _ => false,
+    };
+
+    private void GarantirTransicao(StatusPedido para)
+    {
+        if (!TransicaoPermitida(Status, para))
+            throw new RegraDeNegocioVioladaException(Regras.TransicaoInvalida, $"Transição inválida: {Status} → {para}.");
+    }
+
+    private void GarantirEditavel()
+    {
+        if (Status != StatusPedido.Created)
+            throw new RegraDeNegocioVioladaException(Regras.PedidoNaoEditavel, $"Pedido em {Status} não pode ser alterado.");
+    }
+
+    private ItemDoPedido ItemDo(ProdutoId produtoId) =>
+        _itens.Find(i => i.ProdutoId == produtoId)
+        ?? throw new RegraDeNegocioVioladaException(Regras.ItemNaoEncontrado, $"O produto {produtoId} não está no pedido.");
+
+    private void RemoverDesconto() => Desconto = Dinheiro.Zero(Moeda);
 }

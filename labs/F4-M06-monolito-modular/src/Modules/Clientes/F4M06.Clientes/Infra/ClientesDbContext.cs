@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace F4M06.Clientes.Infra;
 
 /// <summary>DbContext PRIVADO de Clientes: só enxerga as tabelas do schema <c>clientes</c>.</summary>
-public sealed class ClientesDbContext(DbContextOptions<ClientesDbContext> options) : DbContext(options)
+internal sealed class ClientesDbContext(DbContextOptions<ClientesDbContext> options) : DbContext(options)
 {
     public const string Schema = "clientes";
 

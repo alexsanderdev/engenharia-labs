@@ -12,9 +12,10 @@ public sealed class UnitOfWorkCommandDecorator<TCommand, TResult>(
     IUnitOfWork unitOfWork) : ICommandHandler<TCommand, TResult>
     where TCommand : ICommand<TResult>
 {
-    public Task<TResult> HandleAsync(TCommand command, CancellationToken ct)
+    public async Task<TResult> HandleAsync(TCommand command, CancellationToken ct)
     {
-        _ = (inner, unitOfWork);
-        throw new NotImplementedException("TODO: await inner.HandleAsync; depois await unitOfWork.SaveChangesAsync; devolva o resultado do inner.");
+        var resultado = await inner.HandleAsync(command, ct).ConfigureAwait(false);
+        await unitOfWork.SaveChangesAsync(ct).ConfigureAwait(false);
+        return resultado;
     }
 }

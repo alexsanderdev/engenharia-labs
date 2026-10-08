@@ -22,10 +22,13 @@ public sealed class ConfirmarPedidoHandler(
     /// Carrega o agregado (lança <see cref="PedidoNaoEncontradoException"/> se não existir),
     /// chama <see cref="Pedido.Confirmar"/> e devolve <see cref="Unit.Value"/>.
     /// </summary>
-    public Task<Unit> HandleAsync(ConfirmarPedido command, CancellationToken ct)
+    public async Task<Unit> HandleAsync(ConfirmarPedido command, CancellationToken ct)
     {
-        _ = (repositorio, relogio);
-        throw new NotImplementedException(
-            "TODO: carregue o pedido pelo repositório (null → PedidoNaoEncontradoException), chame Confirmar(relogio.GetUtcNow()) e devolva Unit.Value.");
+        ArgumentNullException.ThrowIfNull(command);
+        var pedido = await repositorio.ObterAsync(command.PedidoId, ct)
+                     ?? throw new PedidoNaoEncontradoException(command.PedidoId);
+
+        pedido.Confirmar(relogio.GetUtcNow());
+        return Unit.Value;
     }
 }

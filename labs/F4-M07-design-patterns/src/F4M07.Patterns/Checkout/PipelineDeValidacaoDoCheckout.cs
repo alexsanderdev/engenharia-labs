@@ -14,7 +14,20 @@ public sealed class PipelineDeValidacaoDoCheckout(IEnumerable<IValidacaoDeChecko
     /// Um elo que não chama <c>proxima()</c> interrompe a corrente (os seguintes NÃO executam).
     /// Antes de cada elo, respeite o cancelamento (<c>ct.ThrowIfCancellationRequested()</c>).
     /// </summary>
-    public ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            $"TODO: comece com um ProximaValidacao terminal que devolve Valido e embrulhe de trás para frente as {_validacoes.Length} validações.");
+    public ValueTask<ResultadoDaValidacao> ValidarAsync(ContextoDeCheckout contexto, CancellationToken ct = default)
+    {
+        ProximaValidacao corrente = () => ValueTask.FromResult(ResultadoDaValidacao.Valido);
+        for (var i = _validacoes.Length - 1; i >= 0; i--)
+        {
+            var validacao = _validacoes[i];
+            var proxima = corrente;
+            corrente = () =>
+            {
+                ct.ThrowIfCancellationRequested();
+                return validacao.ValidarAsync(contexto, proxima, ct);
+            };
+        }
+
+        return corrente();
+    }
 }
