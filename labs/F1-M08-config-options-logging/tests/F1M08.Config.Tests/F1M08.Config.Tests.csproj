@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F1M08.Config\F1M08.Config.csproj" />
+  </ItemGroup>
+</Project>

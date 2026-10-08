@@ -1,0 +1,83 @@
+<Solution>
+  <Folder Name="/labs/" />
+  <Folder Name="/labs/F0-M01-hello/" />
+  <Folder Name="/labs/F0-M01-hello/src/">
+    <Project Path="labs/F0-M01-hello/src/F0M01.Hello/F0M01.Hello.csproj" />
+  </Folder>
+  <Folder Name="/labs/F0-M01-hello/tests/">
+    <Project Path="labs/F0-M01-hello/tests/F0M01.Hello.Tests/F0M01.Hello.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M01-csharp-moderno/" />
+  <Folder Name="/labs/F1-M01-csharp-moderno/src/">
+    <Project Path="labs/F1-M01-csharp-moderno/src/F1M01.CSharpModerno/F1M01.CSharpModerno.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M01-csharp-moderno/tests/">
+    <Project Path="labs/F1-M01-csharp-moderno/tests/F1M01.CSharpModerno.Tests/F1M01.CSharpModerno.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M02-generics-colecoes/" />
+  <Folder Name="/labs/F1-M02-generics-colecoes/src/">
+    <Project Path="labs/F1-M02-generics-colecoes/src/F1M02.Colecoes/F1M02.Colecoes.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M02-generics-colecoes/tests/">
+    <Project Path="labs/F1-M02-generics-colecoes/tests/F1M02.Colecoes.Tests/F1M02.Colecoes.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M03-async-cancelamento/" />
+  <Folder Name="/labs/F1-M03-async-cancelamento/src/">
+    <Project Path="labs/F1-M03-async-cancelamento/src/F1M03.Async/F1M03.Async.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M03-async-cancelamento/tests/">
+    <Project Path="labs/F1-M03-async-cancelamento/tests/F1M03.Async.Tests/F1M03.Async.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M04-linq/" />
+  <Folder Name="/labs/F1-M04-linq/benchmarks/">
+    <Project Path="labs/F1-M04-linq/benchmarks/F1M04.Linq.Benchmarks/F1M04.Linq.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M04-linq/src/">
+    <Project Path="labs/F1-M04-linq/src/F1M04.Linq/F1M04.Linq.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M04-linq/tests/">
+    <Project Path="labs/F1-M04-linq/tests/F1M04.Linq.Tests/F1M04.Linq.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M05-memoria-span/" />
+  <Folder Name="/labs/F1-M05-memoria-span/src/">
+    <Project Path="labs/F1-M05-memoria-span/src/F1M05.Memoria/F1M05.Memoria.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M05-memoria-span/tests/">
+    <Project Path="labs/F1-M05-memoria-span/tests/F1M05.Memoria.Tests/F1M05.Memoria.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M06-di-generic-host/" />
+  <Folder Name="/labs/F1-M06-di-generic-host/src/">
+    <Project Path="labs/F1-M06-di-generic-host/src/F1M06.Hosting/F1M06.Hosting.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M06-di-generic-host/tests/">
+    <Project Path="labs/F1-M06-di-generic-host/tests/F1M06.Hosting.Tests/F1M06.Hosting.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M07-aspnetcore-api/" />
+  <Folder Name="/labs/F1-M07-aspnetcore-api/src/">
+    <Project Path="labs/F1-M07-aspnetcore-api/src/F1M07.Api/F1M07.Api.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M07-aspnetcore-api/tests/">
+    <Project Path="labs/F1-M07-aspnetcore-api/tests/F1M07.Api.Tests/F1M07.Api.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M08-config-options-logging/" />
+  <Folder Name="/labs/F1-M08-config-options-logging/src/">
+    <Project Path="labs/F1-M08-config-options-logging/src/F1M08.Config/F1M08.Config.csproj" />
+  </Folder>
+  <Folder Name="/labs/F1-M08-config-options-logging/tests/">
+    <Project Path="labs/F1-M08-config-options-logging/tests/F1M08.Config.Tests/F1M08.Config.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/P-M01-estruturas-de-dados/" />
+  <Folder Name="/labs/P-M01-estruturas-de-dados/src/">
+    <Project Path="labs/P-M01-estruturas-de-dados/src/PM01.Estruturas/PM01.Estruturas.csproj" />
+  </Folder>
+  <Folder Name="/labs/P-M01-estruturas-de-dados/tests/">
+    <Project Path="labs/P-M01-estruturas-de-dados/tests/PM01.Estruturas.Tests/PM01.Estruturas.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/P-M02-leetcode/" />
+  <Folder Name="/labs/P-M02-leetcode/src/">
+    <Project Path="labs/P-M02-leetcode/src/PM02.LeetCode/PM02.LeetCode.csproj" />
+  </Folder>
+  <Folder Name="/labs/P-M02-leetcode/tests/">
+    <Project Path="labs/P-M02-leetcode/tests/PM02.LeetCode.Tests/PM02.LeetCode.Tests.csproj" />
+  </Folder>
+</Solution>

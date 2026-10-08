@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Projeto OPCIONAL: não tem testes e não faz parte do critério de "lab verde". -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F1M04.Linq\F1M04.Linq.csproj" />
+  </ItemGroup>
+</Project>

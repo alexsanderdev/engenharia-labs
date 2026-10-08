@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/F1M01.CSharpModerno/F1M01.CSharpModerno.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/F1M01.CSharpModerno.Tests/F1M01.CSharpModerno.Tests.csproj" />
+  </Folder>
+</Solution>

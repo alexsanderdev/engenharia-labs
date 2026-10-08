@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/F1M04.Linq.Benchmarks/F1M04.Linq.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/F1M04.Linq/F1M04.Linq.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/F1M04.Linq.Tests/F1M04.Linq.Tests.csproj" />
+  </Folder>
+</Solution>

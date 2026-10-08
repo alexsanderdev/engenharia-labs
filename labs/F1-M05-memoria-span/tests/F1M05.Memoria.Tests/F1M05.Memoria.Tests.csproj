@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F1M05.Memoria\F1M05.Memoria.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PM01.Estruturas\PM01.Estruturas.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore
+        run: dotnet restore EngenhariaLabs.slnx
+      - name: Build (todos os labs precisam compilar)
+        run: dotnet build EngenhariaLabs.slnx --no-restore -c Release
+      - name: Test
+        # Na branch "solucoes" tudo deve passar. Na "main" os labs não resolvidos falham — isso é esperado.
+        run: |
+          dotnet test EngenhariaLabs.slnx --no-build -c Release --logger "trx" --results-directory TestResults || {
+            if [ "${GITHUB_REF_NAME}" = "solucoes" ]; then exit 1; fi
+            echo "::warning::Há labs com testes falhando (esperado na main enquanto você estuda)."
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults

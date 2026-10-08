@@ -1,0 +1,56 @@
+### Requests de exemplo — rode com `dotnet run --project labs/F1-M07-aspnetcore-api/src/F1M07.Api`
+### (VS / VS Code com REST Client / Rider executam este arquivo)
+
+@baseUrl = http://localhost:5107
+
+### Lista produtos
+GET {{baseUrl}}/products
+Accept: application/json
+
+### Cria produto (201 + Location)
+# @name criar
+POST {{baseUrl}}/products
+Content-Type: application/json
+X-Correlation-Id: demo-123
+
+{
+  "name": "Teclado mecânico",
+  "price": 349.90
+}
+
+### Detalha o produto criado
+@productId = {{criar.response.body.$.id}}
+GET {{baseUrl}}/products/{{productId}}
+
+### Altera (204)
+PUT {{baseUrl}}/products/{{productId}}
+Content-Type: application/json
+
+{
+  "name": "Teclado mecânico ABNT2",
+  "price": 379.90
+}
+
+### Desativa (204)
+POST {{baseUrl}}/products/{{productId}}/deactivate
+
+### Ativa (204)
+POST {{baseUrl}}/products/{{productId}}/activate
+
+### Entrada inválida (400 ValidationProblem)
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "name": "",
+  "price": 0
+}
+
+### Inexistente (404)
+GET {{baseUrl}}/products/00000000-0000-0000-0000-000000000001
+
+### Remove (204)
+DELETE {{baseUrl}}/products/{{productId}}
+
+### OpenAPI (após habilitar AddOpenApi/MapOpenApi)
+GET {{baseUrl}}/openapi/v1.json

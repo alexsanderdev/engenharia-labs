@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PM02.LeetCode/PM02.LeetCode.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PM02.LeetCode.Tests/PM02.LeetCode.Tests.csproj" />
+  </Folder>
+</Solution>
