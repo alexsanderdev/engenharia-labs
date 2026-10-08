@@ -1,0 +1,39 @@
+# Ambiente de desenvolvimento do MP3: emulador do Service Bus + SQL Server (inbox e metadados do emulador) + smtp4dev.
+#
+#   cd projetos/MP3-worker-notificacoes/infra
+#   $env:MSSQL_SA_PASSWORD = "<escolha uma senha forte>"      # PowerShell (bash: export MSSQL_SA_PASSWORD=...)
+#   docker compose up -d
+#
+# Nada de segredo neste arquivo: a senha vem do ambiente (ou de um .env, que o .gitignore do repo ignora).
+# Portas podem ser trocadas por variáveis (SB_PORTA, SQL_PORTA, SMTP_PORTA, SMTP_UI_PORTA) se já estiverem em uso.
+name: mp3-notificacoes
+
+services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?defina MSSQL_SA_PASSWORD}
+    ports:
+      - "${SQL_PORTA:-1433}:1433"
+
+  servicebus:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    depends_on:
+      - sql
+    environment:
+      ACCEPT_EULA: "Y"
+      SQL_SERVER: sql
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?defina MSSQL_SA_PASSWORD}
+      SQL_WAIT_INTERVAL: "15"
+    volumes:
+      - ./servicebus/Config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
+    ports:
+      - "${SB_PORTA:-5672}:5672"
+
+  smtp4dev:
+    # UI em http://localhost:5000 — use com "Smtp:Modo" = "Rede" e "Smtp:Porta" = 2525.
+    image: rnwood/smtp4dev:latest
+    ports:
+      - "${SMTP_UI_PORTA:-5000}:80"
+      - "${SMTP_PORTA:-2525}:25"

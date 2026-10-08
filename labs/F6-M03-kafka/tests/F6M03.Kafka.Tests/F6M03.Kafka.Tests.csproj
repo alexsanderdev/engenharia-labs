@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.Kafka" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F6M03.Kafka\F6M03.Kafka.csproj" />
+  </ItemGroup>
+</Project>

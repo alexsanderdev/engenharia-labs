@@ -1,0 +1,18 @@
+@api = http://localhost:5608
+@cliente = 6f1c2b8e-0d3a-4c55-9a7e-2f1b9c0d4e11
+
+### 1. Cria o pedido: 202 + Location (o pedido ainda NÃO existe)
+POST {{api}}/pedidos
+Content-Type: application/json
+
+{ "clienteId": "{{cliente}}", "total": 150.00 }
+
+### 2. Consulte o Location do passo 1 até "Concluida" (copie o id)
+GET {{api}}/operacoes/COLE-O-ID-AQUI
+
+### 3. Resumo sem token: logo depois de concluir, provavelmente ainda vazio (projeção atrasada 3 s)
+GET {{api}}/clientes/{{cliente}}/resumo
+
+### 4. Resumo com o token do passo 2: read-your-writes (veja o header X-Read-Source)
+GET {{api}}/clientes/{{cliente}}/resumo
+X-Consistency-Token: COLE-O-TOKEN-AQUI

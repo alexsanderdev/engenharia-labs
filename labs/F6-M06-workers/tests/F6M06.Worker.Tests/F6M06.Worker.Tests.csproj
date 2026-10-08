@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- As esperas dos testes têm timeout próprio (Infra/Eventualmente); passar
+         TestContext.Current.CancellationToken em cada chamada só poluiria o roteiro. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F6M06.Worker\F6M06.Worker.csproj" />
+  </ItemGroup>
+</Project>

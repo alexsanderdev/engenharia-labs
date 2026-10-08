@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Os testes têm limites de tempo próprios (Eventualmente/PontoDeParada); passar
+         TestContext.Current.CancellationToken em cada chamada só poluiria os roteiros. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.MsSql" />
+    <PackageReference Include="Testcontainers.RabbitMq" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F6M04.Pedidos\F6M04.Pedidos.csproj" />
+    <ProjectReference Include="..\..\src\F6M04.Notificacoes\F6M04.Notificacoes.csproj" />
+  </ItemGroup>
+</Project>

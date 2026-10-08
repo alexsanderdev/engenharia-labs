@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <UserSecretsId>f6m06-worker-orderflow</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Health checks (IHealthCheck, HealthCheckService) vêm do framework compartilhado do ASP.NET Core:
+         sem pacote extra, e o mesmo worker pode expor /healthz com Kestrel se quiser. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>
