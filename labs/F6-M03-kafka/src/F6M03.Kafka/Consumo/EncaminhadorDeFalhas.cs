@@ -44,11 +44,37 @@ public sealed class EncaminhadorDeFalhas : IDisposable
     {
         ArgumentNullException.ThrowIfNull(falha);
         ArgumentNullException.ThrowIfNull(erro);
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 7): calcule tentativas (header x-tentativas + 1), escolha AdministradorDeTopicos.NomeRetry/NomeDlq, " +
-            "copie os headers que não começam com \"x-\", acrescente x-tentativas, x-erro-tipo, x-erro-mensagem, " +
-            "x-topico-original, x-particao-original e x-offset-original e publique com _producer.ProduceAsync(destino, ...).");
+
+        var anteriores = int.TryParse(Cabecalhos.Ler(falha.Message.Headers, Cabecalhos.Tentativas), out var n) ? n : 0;
+        var tentativas = anteriores + 1;
+
+        var destino = erro is ContratoNaoSuportadoException || tentativas >= _maxTentativas
+            ? AdministradorDeTopicos.NomeDlq(_topicoBase)
+            : AdministradorDeTopicos.NomeRetry(_topicoBase);
+
+        var headers = new Headers();
+        foreach (var h in falha.Message.Headers ?? [])
+        {
+            if (!h.Key.StartsWith("x-", StringComparison.Ordinal))
+                headers.Add(h.Key, h.GetValueBytes());
+        }
+
+        var topicoOriginal = Cabecalhos.Ler(falha.Message.Headers, Cabecalhos.TopicoOriginal) ?? falha.Topic;
+        Cabecalhos.Escrever(headers, Cabecalhos.Tentativas, tentativas.ToString(CultureInfo.InvariantCulture));
+        Cabecalhos.Escrever(headers, Cabecalhos.ErroTipo, erro.GetType().FullName ?? erro.GetType().Name);
+        Cabecalhos.Escrever(headers, Cabecalhos.ErroMensagem, erro.Message);
+        Cabecalhos.Escrever(headers, Cabecalhos.TopicoOriginal, topicoOriginal);
+        Cabecalhos.Escrever(headers, Cabecalhos.ParticaoOriginal, falha.Partition.Value.ToString(CultureInfo.InvariantCulture));
+        Cabecalhos.Escrever(headers, Cabecalhos.OffsetOriginal, falha.Offset.Value.ToString(CultureInfo.InvariantCulture));
+
+        await _producer.ProduceAsync(destino, new Message<string, byte[]>
+        {
+            Key = falha.Message.Key,
+            Value = falha.Message.Value,
+            Headers = headers,
+        }, ct);
+
+        return destino;
     }
 
     public void Dispose()

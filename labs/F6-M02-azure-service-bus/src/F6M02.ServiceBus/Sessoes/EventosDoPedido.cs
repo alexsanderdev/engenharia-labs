@@ -20,10 +20,17 @@ public sealed class PublicadorDeEventosDoPedido(ServiceBusClient cliente) : IAsy
     /// Monta a mensagem do evento: corpo JSON, <c>ContentType = application/json</c>, <c>Subject = Tipo</c>,
     /// <c>SessionId = PedidoId.ToString("N")</c> e <c>MessageId = "{PedidoId:N}-{Sequencia}"</c>.
     /// </summary>
-    public static ServiceBusMessage CriarMensagem(EventoDoPedido evento) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): corpo JSON (MensagensDePedido.Json), ContentType, Subject = Tipo, " +
-            "SessionId = PedidoId.ToString(\"N\") e MessageId = \"{PedidoId:N}-{Sequencia}\".");
+    public static ServiceBusMessage CriarMensagem(EventoDoPedido evento)
+    {
+        ArgumentNullException.ThrowIfNull(evento);
+        return new ServiceBusMessage(BinaryData.FromObjectAsJson(evento, MensagensDePedido.Json))
+        {
+            SessionId = evento.PedidoId.ToString("N"),
+            MessageId = $"{evento.PedidoId:N}-{evento.Sequencia}",
+            Subject = evento.Tipo,
+            ContentType = MensagensDePedido.ContentTypeJson,
+        };
+    }
 
     public Task PublicarAsync(EventoDoPedido evento, CancellationToken ct = default) =>
         _sender.SendMessageAsync(CriarMensagem(evento), ct);
@@ -47,9 +54,7 @@ public sealed class ProcessadorDeEventosDoPedido : IAsyncDisposable
 {
     private readonly ServiceBusSessionProcessor _processor;
     private readonly HandlerDeEventoDoPedido _handler;
-#pragma warning disable CS0649 // TODO (Passo 6): o campo é incrementado em ProcessarAsync (apague este pragma).
     private int _ignorados;
-#pragma warning restore CS0649
 
     public ProcessadorDeEventosDoPedido(ServiceBusClient cliente, HandlerDeEventoDoPedido handler, int maxConcurrentSessions = 4)
     {
@@ -69,21 +74,44 @@ public sealed class ProcessadorDeEventosDoPedido : IAsyncDisposable
     /// <c>MaxConcurrentCallsPerSession = 1</c> e <c>SessionIdleTimeout</c> curto (2 s) para liberar
     /// sessões vazias e pegar a próxima.
     /// </summary>
-    public static ServiceBusSessionProcessorOptions CriarOpcoes(int maxConcurrentSessions) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): new ServiceBusSessionProcessorOptions { PeekLock, AutoCompleteMessages = false, " +
-            "MaxConcurrentSessions, MaxConcurrentCallsPerSession = 1, SessionIdleTimeout = 2 s }.");
+    public static ServiceBusSessionProcessorOptions CriarOpcoes(int maxConcurrentSessions) => new()
+    {
+        ReceiveMode = ServiceBusReceiveMode.PeekLock,
+        AutoCompleteMessages = false,
+        MaxConcurrentSessions = maxConcurrentSessions,
+        MaxConcurrentCallsPerSession = 1,
+        SessionIdleTimeout = TimeSpan.FromSeconds(2),
+    };
 
     public Task IniciarAsync(CancellationToken ct = default) => _processor.StartProcessingAsync(ct);
 
     public Task PararAsync(CancellationToken ct = default) => _processor.StopProcessingAsync(ct);
 
-    private Task ProcessarAsync(ProcessSessionMessageEventArgs args) =>
-        // args.GetSessionStateAsync / args.SetSessionStateAsync guardam a última sequência processada da sessão.
-        // Para contar um ignorado: Interlocked.Increment(ref _ignorados).
-        throw new NotImplementedException(
-            "TODO (Passo 6): desserialize o EventoDoPedido; se Sequencia <= última do session state, conte em _ignorados e complete; " +
-            "senão chame _handler, grave a nova sequência no session state e complete.");
+    private async Task ProcessarAsync(ProcessSessionMessageEventArgs args)
+    {
+        var ct = args.CancellationToken;
+        var mensagem = args.Message;
+        var evento = mensagem.Body.ToObjectFromJson<EventoDoPedido>(MensagensDePedido.Json)
+            ?? throw new InvalidOperationException("Evento vazio.");
+
+        var estado = await args.GetSessionStateAsync(ct);
+        var ultima = estado is null ? 0 : int.Parse(estado.ToString(), CultureInfo.InvariantCulture);
+
+        if (evento.Sequencia <= ultima)
+        {
+            Interlocked.Increment(ref _ignorados);
+            await args.CompleteMessageAsync(mensagem, ct);
+            return;
+        }
+
+        await _handler(evento,
+            new ContextoDaMensagem(mensagem.MessageId, mensagem.CorrelationId, mensagem.DeliveryCount, mensagem.EnqueuedTime, mensagem.SessionId),
+            ct);
+
+        // Estado ANTES do complete: se cair entre os dois, a reentrega é reconhecida como repetida.
+        await args.SetSessionStateAsync(BinaryData.FromString(evento.Sequencia.ToString(CultureInfo.InvariantCulture)), ct);
+        await args.CompleteMessageAsync(mensagem, ct);
+    }
 
     public ValueTask DisposeAsync() => _processor.DisposeAsync();
 }

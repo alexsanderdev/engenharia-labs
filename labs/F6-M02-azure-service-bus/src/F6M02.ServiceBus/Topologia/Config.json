@@ -92,7 +92,18 @@
                   "ForwardDeadLetteredMessagesTo": "",
                   "ForwardTo": "",
                   "RequiresSession": false
-                }
+                },
+                "Rules": [
+                  {
+                    "Name": "acima-de-500",
+                    "Properties": {
+                      "FilterType": "Sql",
+                      "SqlFilter": {
+                        "SqlExpression": "valorTotal > 500"
+                      }
+                    }
+                  }
+                ]
               },
               {
                 "Name": "fidelidade",
@@ -104,7 +115,21 @@
                   "ForwardDeadLetteredMessagesTo": "",
                   "ForwardTo": "",
                   "RequiresSession": false
-                }
+                },
+                "Rules": [
+                  {
+                    "Name": "clientes-vip",
+                    "Properties": {
+                      "FilterType": "Correlation",
+                      "CorrelationFilter": {
+                        "Label": "PedidoCriado",
+                        "Properties": {
+                          "segmento": "vip"
+                        }
+                      }
+                    }
+                  }
+                ]
               }
             ]
           }

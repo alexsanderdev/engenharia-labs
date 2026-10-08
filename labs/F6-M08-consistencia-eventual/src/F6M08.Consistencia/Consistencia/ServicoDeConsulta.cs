@@ -28,15 +28,30 @@ public sealed class ServicoDeConsulta(
     IOptions<ConsistenciaOptions> opcoes,
     TimeProvider relogio)
 {
-    public Task<LeituraDoResumo> ObterResumoAsync(Guid clienteId, TokenDeConsistencia? token, CancellationToken ct = default)
+    public async Task<LeituraDoResumo> ObterResumoAsync(Guid clienteId, TokenDeConsistencia? token, CancellationToken ct = default)
     {
-        // TODO (Passo 3):
-        //   1. Sem token → projeção, Origem = Projecao.
-        //   2. Com token → projecao.AguardarVersaoAsync(...) correndo contra Task.Delay(EsperaMaximaDaLeitura, relogio, ...).
-        //      Quem vencer decide: projeção alcançou → lê a projeção; estourou → monta o resumo com fonte.ListarDoCliente(...),
-        //      Origem = Fonte. Cancele quem perdeu (CancellationTokenSource ligado ao ct).
-        //   3. Já alcançou antes de esperar? Responda na hora (sem criar timer).
-        _ = (projecao, fonte, opcoes, relogio);
-        throw new NotImplementedException("TODO: Passo 3 — implemente read-your-writes: esperar a projeção até o limite ou cair para a fonte.");
+        if (token is not { } exigido)
+            return new LeituraDoResumo(projecao.ObterResumo(clienteId), OrigemDaLeitura.Projecao);
+
+        using var cancelamento = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var alcancou = projecao.AguardarVersaoAsync(exigido.PedidoId, exigido.Versao, cancelamento.Token);
+
+        if (!alcancou.IsCompleted)
+        {
+            var limite = Task.Delay(opcoes.Value.EsperaMaximaDaLeitura, relogio, cancelamento.Token);
+            await Task.WhenAny(alcancou, limite);
+            ct.ThrowIfCancellationRequested();
+            cancelamento.Cancel(); // libera a espera ou o timer que perdeu a corrida
+
+            if (!alcancou.IsCompletedSuccessfully)
+                return new LeituraDoResumo(ResumoDaFonte(clienteId), OrigemDaLeitura.Fonte);
+        }
+
+        return new LeituraDoResumo(projecao.ObterResumo(clienteId), OrigemDaLeitura.Projecao);
     }
+
+    private ResumoDoCliente ResumoDaFonte(Guid clienteId) => new(clienteId,
+        [.. fonte.ListarDoCliente(clienteId)
+            .Select(p => new PedidoResumido(p.PedidoId, p.ClienteId, p.Status, p.Total, p.Versao))
+            .OrderBy(p => p.PedidoId)]);
 }

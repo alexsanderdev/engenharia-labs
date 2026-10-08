@@ -37,11 +37,17 @@ public sealed class OutboxInterceptor : SaveChangesInterceptor
     {
         ArgumentNullException.ThrowIfNull(contexto);
 
-        // TODO (Passo 1): hoje este método não faz nada (e por isso nenhum evento chega à Outbox).
-        //  1. contexto.ChangeTracker.Entries<ITemEventos>() → entidades com Eventos.Count > 0 → .ToList()
-        //     (materialize ANTES de adicionar entidades ao ChangeTracker);
-        //  2. para cada agregado: contexto.Set<OutboxMessage>().AddRange(OutboxMessage.DoAgregado(agregado));
-        //  3. agregado.LimparEventos() (senão um segundo SaveChanges gravaria os mesmos eventos de novo).
-        // Não lance exceção aqui: este interceptor roda em TODO SaveChanges, inclusive nos testes de demonstração.
+        // ToList: vamos adicionar entidades ao ChangeTracker enquanto iteramos.
+        var agregados = contexto.ChangeTracker.Entries<ITemEventos>()
+            .Select(e => e.Entity)
+            .Where(a => a.Eventos.Count > 0)
+            .ToList();
+
+        foreach (var agregado in agregados)
+        {
+            contexto.Set<OutboxMessage>().AddRange(OutboxMessage.DoAgregado(agregado));
+
+            agregado.LimparEventos();
+        }
     }
 }

@@ -8,6 +8,8 @@
     <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Azure.Messaging.ServiceBus" />
+    <!-- Solução: hospeda o worker inteiro (hosted services + health checks) em memória. -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\MP3.Contratos\MP3.Contratos.csproj" />

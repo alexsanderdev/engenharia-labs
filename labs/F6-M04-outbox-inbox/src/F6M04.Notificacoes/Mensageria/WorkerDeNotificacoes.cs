@@ -1,4 +1,4 @@
-using System.Text; // Encoding.UTF8.GetString(entrega.Body.Span)
+using System.Text;
 using F6M04.Notificacoes.Contratos;
 using F6M04.Notificacoes.Inbox;
 using Microsoft.Extensions.DependencyInjection;
@@ -102,13 +102,48 @@ public sealed partial class WorkerDeNotificacoes(
     /// se <c>entrega.Redelivered</c>, nack sem requeue (<see cref="DesfechoDaEntrega.Rejeitada"/>).</item>
     /// </list>
     /// </summary>
-    public Task<DesfechoDaEntrega> TratarEntregaAsync(IChannel canal, BasicDeliverEventArgs entrega, CancellationToken ct)
+    public async Task<DesfechoDaEntrega> TratarEntregaAsync(IChannel canal, BasicDeliverEventArgs entrega, CancellationToken ct)
     {
-        _ = (canal, entrega, escopos);
-        throw new NotImplementedException(
-            "TODO (Passo 8): monte a MensagemRecebida, processe num escopo novo com o ConsumidorDeNotificacoes, " +
-            "faça BasicAckAsync DEPOIS do retorno (inclusive para duplicadas); MensagemInvalidaException → BasicNackAsync(requeue: false); " +
-            "outra exceção → requeue só se !entrega.Redelivered. Use LogMensagemInvalida/LogFalhaAoProcessar.");
+        ArgumentNullException.ThrowIfNull(canal);
+        ArgumentNullException.ThrowIfNull(entrega);
+
+        var mensagem = new MensagemRecebida(
+            entrega.BasicProperties.MessageId ?? "",
+            entrega.BasicProperties.Type ?? entrega.RoutingKey,
+            Encoding.UTF8.GetString(entrega.Body.Span));
+
+        try
+        {
+            ResultadoDoProcessamento resultado;
+            await using (var escopo = escopos.CreateAsyncScope())
+            {
+                var consumidor = escopo.ServiceProvider.GetRequiredService<ConsumidorDeNotificacoes>();
+                resultado = await consumidor.ProcessarAsync(mensagem, ct);
+            }
+
+            // O efeito e a Inbox já estão commitados. Se o ack se perder, o broker reentrega e a Inbox deduplica.
+            await canal.BasicAckAsync(entrega.DeliveryTag, multiple: false, ct);
+
+            return resultado switch
+            {
+                ResultadoDoProcessamento.Processada => DesfechoDaEntrega.Processada,
+                ResultadoDoProcessamento.Duplicada => DesfechoDaEntrega.Duplicada,
+                _ => DesfechoDaEntrega.Ignorada,
+            };
+        }
+        catch (MensagemInvalidaException ex)
+        {
+            LogMensagemInvalida(mensagem.MessageId, mensagem.Tipo, ex);
+            await canal.BasicNackAsync(entrega.DeliveryTag, multiple: false, requeue: false, ct);
+            return DesfechoDaEntrega.Rejeitada;
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            var devolver = !entrega.Redelivered;
+            LogFalhaAoProcessar(mensagem.MessageId, mensagem.Tipo, devolver, ex);
+            await canal.BasicNackAsync(entrega.DeliveryTag, multiple: false, requeue: devolver, ct);
+            return devolver ? DesfechoDaEntrega.Devolvida : DesfechoDaEntrega.Rejeitada;
+        }
     }
 
     private void Contar(DesfechoDaEntrega desfecho)

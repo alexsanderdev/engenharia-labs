@@ -43,8 +43,12 @@ public sealed class ServicoDeExpiracao(
     /// </summary>
     public async Task<int> ExpirarAsync(CancellationToken ct)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 2): limite = agora − PrazoDePagamento; ListarCriadosAteAsync(limite); Cancelar(Motivo) em cada um; SalvarAsync; devolva a quantidade");
+        var limite = relogio.GetUtcNow() - opcoes.Value.PrazoDePagamento;
+        var vencidos = await repositorio.ListarCriadosAteAsync(limite, ct);
+        foreach (var pedido in vencidos)
+            pedido.Cancelar(Motivo);
+
+        await repositorio.SalvarAsync(ct);
+        return vencidos.Count;
     }
 }

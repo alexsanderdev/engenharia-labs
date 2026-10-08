@@ -16,8 +16,7 @@ public static class ChavesDeCache
     /// <summary>
     /// Passo 1: chave do produto no formato <c>catalogo:v1:produto:{id}</c> (id no formato padrão do Guid, com hífens).
     /// </summary>
-    public static string Produto(Guid id) =>
-        throw new NotImplementedException("TODO (Passo 1): devolva $\"catalogo:{Versao}:produto:{id}\".");
+    public static string Produto(Guid id) => $"catalogo:{Versao}:produto:{id}";
 
     /// <summary>Tag de um produto específico (pronto).</summary>
     public static string TagProduto(Guid id) => $"produto:{id}";

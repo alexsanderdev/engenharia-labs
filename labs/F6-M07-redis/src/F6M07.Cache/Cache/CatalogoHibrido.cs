@@ -16,19 +16,23 @@ public sealed class CatalogoHibrido(HybridCache cache, IFonteDeProdutos fonte)
     /// <see cref="ChavesDeCache.TagProduto"/>. As opções de expiração vêm do padrão registrado no DI.
     /// </summary>
     public ValueTask<Produto?> ObterAsync(Guid id, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): cache.GetOrCreateAsync(ChavesDeCache.Produto(id), (fonte, id), " +
-            "static async (estado, token) => await estado.fonte.ObterAsync(estado.id, token), " +
-            "tags: [ChavesDeCache.TagCatalogo, ChavesDeCache.TagProduto(id)], cancellationToken: ct).");
+        cache.GetOrCreateAsync(
+            ChavesDeCache.Produto(id),
+            (fonte, id),
+            static async (estado, token) => await estado.fonte.ObterAsync(estado.id, token),
+            tags: [ChavesDeCache.TagCatalogo, ChavesDeCache.TagProduto(id)],
+            cancellationToken: ct);
 
     /// <summary>Passo 6: atualiza a fonte e remove a entrada do produto (<c>RemoveAsync</c> com a chave).</summary>
-    public Task AtualizarAsync(Produto produto, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 6): await fonte.AtualizarAsync(produto, ct); await cache.RemoveAsync(ChavesDeCache.Produto(produto.Id), ct). ({cache.GetType().Name}, {fonte.GetType().Name})");
+    public async Task AtualizarAsync(Produto produto, CancellationToken ct = default)
+    {
+        await fonte.AtualizarAsync(produto, ct);
+        await cache.RemoveAsync(ChavesDeCache.Produto(produto.Id), ct);
+    }
 
     /// <summary>Passo 6: invalida TODO o catálogo de uma vez (ex.: reajuste de preços) com <c>RemoveByTagAsync</c>.</summary>
     public ValueTask InvalidarCatalogoAsync(CancellationToken ct = default) =>
-        throw new NotImplementedException("TODO (Passo 6): cache.RemoveByTagAsync(ChavesDeCache.TagCatalogo, ct).");
+        cache.RemoveByTagAsync(ChavesDeCache.TagCatalogo, ct);
 }
 
 /// <summary>Registro no DI do catálogo híbrido.</summary>
@@ -46,10 +50,20 @@ public static class ConfiguracaoDoCache
     /// </summary>
     public static IServiceCollection AddCatalogoHibrido(this IServiceCollection services, string redis, string instancia)
     {
-        // TODO (Passo 6): services.AddStackExchangeRedisCache(o => { o.Configuration = redis; o.InstanceName = instancia; });
-        // TODO (Passo 6): services.AddHybridCache(o => { o.MaximumPayloadBytes = ...; o.DefaultEntryOptions = new HybridCacheEntryOptions { ... }; });
-        // Sem o AddHybridCache, GetRequiredService<CatalogoHibrido>() falha por não achar HybridCache.
-        _ = (redis, instancia, typeof(HybridCacheEntryOptions));
+        services.AddStackExchangeRedisCache(o =>
+        {
+            o.Configuration = redis;
+            o.InstanceName = instancia;
+        });
+        services.AddHybridCache(o =>
+        {
+            o.MaximumPayloadBytes = 1024 * 1024;
+            o.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(5),
+                LocalCacheExpiration = TimeSpan.FromMinutes(1),
+            };
+        });
         services.AddSingleton<CatalogoHibrido>();
         return services;
     }

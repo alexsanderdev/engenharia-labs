@@ -54,8 +54,19 @@ public sealed class ManipuladorIdempotente(IManipuladorDeEvento interno, IRegist
     /// (duplicata). Senão, chame o <paramref name="interno"/>; se ele lançar, remova o registro
     /// (<see cref="IRegistroDeEventosProcessados.RemoverAsync"/>) e relance — a próxima entrega precisa poder processar.
     /// </summary>
-    public Task ManipularAsync(IEventoDePedido evento, CancellationToken ct) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): se registro.TentarRegistrarAsync(evento.EventoId) devolver false, retorne (duplicata); " +
-            "senão chame interno.ManipularAsync e, se ele lançar, registro.RemoverAsync + throw.");
+    public async Task ManipularAsync(IEventoDePedido evento, CancellationToken ct)
+    {
+        if (!await registro.TentarRegistrarAsync(evento.EventoId, ct))
+            return; // duplicata: o efeito já aconteceu
+
+        try
+        {
+            await interno.ManipularAsync(evento, ct);
+        }
+        catch
+        {
+            await registro.RemoverAsync(evento.EventoId, CancellationToken.None);
+            throw;
+        }
+    }
 }

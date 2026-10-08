@@ -42,13 +42,48 @@ public sealed class Reconciliador(
 {
     public RelatorioDeReconciliacao Reconciliar()
     {
-        // TODO (Passo 4):
-        //   1. Para cada pedido de fonte.Listar(): compare com projecao.ObterPedido(...) e classifique
-        //      (Ausente, Atrasado, Divergente; projeção À FRENTE do snapshot da fonte não é divergência).
-        //   2. Divergência com fonte alterada há menos que ToleranciaDaReconciliacao → só conte em AdiadasPorTolerancia.
-        //   3. Senão → projecao.Corrigir(estado da fonte) e registre a Divergencia.
-        //   4. Pedidos que só existem na projeção → Fantasma: confirme na fonte (fonte.Obter) e remova.
-        _ = (fonte, projecao, opcoes, relogio);
-        throw new NotImplementedException("TODO: Passo 4 — compare fonte e projeção, respeite a tolerância e corrija a projeção.");
+        var agora = relogio.GetUtcNow();
+        var tolerancia = opcoes.Value.ToleranciaDaReconciliacao;
+        var naFonte = fonte.Listar();
+        var corrigidas = new List<Divergencia>();
+        var adiadas = 0;
+
+        foreach (var verdade in naFonte)
+        {
+            var projetado = projecao.ObterPedido(verdade.PedidoId);
+            var tipo = Classificar(verdade, projetado);
+            if (tipo is null) continue;
+
+            if (agora - verdade.AtualizadoEm < tolerancia)
+            {
+                adiadas++;
+                continue;
+            }
+
+            projecao.Corrigir(new PedidoResumido(verdade.PedidoId, verdade.ClienteId, verdade.Status, verdade.Total, verdade.Versao));
+            corrigidas.Add(new Divergencia(verdade.PedidoId, tipo.Value, projetado?.Versao ?? 0, verdade.Versao));
+        }
+
+        var idsDaFonte = naFonte.Select(p => p.PedidoId).ToHashSet();
+        foreach (var fantasma in projecao.Todos().Where(p => !idsDaFonte.Contains(p.PedidoId)))
+        {
+            // Cuidado em produção: a leitura da fonte acima é um snapshot; um pedido criado DEPOIS dele
+            // apareceria aqui como "fantasma". Por isso relemos a fonte antes de remover.
+            if (fonte.Obter(fantasma.PedidoId) is not null) continue;
+            if (projecao.Remover(fantasma.PedidoId))
+                corrigidas.Add(new Divergencia(fantasma.PedidoId, TipoDeDivergencia.Fantasma, fantasma.Versao, 0));
+        }
+
+        return new RelatorioDeReconciliacao(naFonte.Count, corrigidas, adiadas);
     }
+
+    private static TipoDeDivergencia? Classificar(PedidoNaFonte verdade, PedidoResumido? projetado) => projetado switch
+    {
+        null => TipoDeDivergencia.Ausente,
+        _ when projetado.Versao < verdade.Versao => TipoDeDivergencia.Atrasado,
+        _ when projetado.Versao > verdade.Versao => null, // a fonte mudou depois do nosso snapshot: nada a fazer
+        _ when projetado.Status != verdade.Status || projetado.Total != verdade.Total || projetado.ClienteId != verdade.ClienteId
+            => TipoDeDivergencia.Divergente,
+        _ => null,
+    };
 }

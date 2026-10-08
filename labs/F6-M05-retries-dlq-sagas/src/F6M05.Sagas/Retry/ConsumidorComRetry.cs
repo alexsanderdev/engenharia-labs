@@ -74,50 +74,81 @@ public sealed class ConsumidorComRetry : IAsyncDisposable
     /// O coração do lab: executa o manipulador e decide entre ack, retry imediato, fila de espera
     /// ou DLQ.
     /// </summary>
-    /// <remarks>
-    /// ESTADO ATUAL (o "antes"): sem retry e sem DLQ. Qualquer exceção vira
-    /// <c>nack(requeue: false)</c>: sem dead-letter configurado, a mensagem simplesmente SOME.
-    /// (A alternativa ingênua, <c>requeue: true</c>, é pior: a mensagem venenosa volta para a
-    /// cabeça da fila e gira para sempre, queimando CPU e travando as outras.)
-    /// <para>
-    /// TODO (Passo 3):
-    /// <list type="number">
-    /// <item>Laço de <c>0..RetentativasImediatas</c>: chame o manipulador com
-    /// <c>mensagem with { TentativaImediata = tentativa }</c> e o <c>_parada.Token</c>; sucesso → ack e fim.</item>
-    /// <item><c>OperationCanceledException</c> com <c>_parada</c> cancelado (desligando): nack com requeue e fim.</item>
-    /// <item>Erro <see cref="TipoDeErro.Permanente"/> (via <c>_classificador</c>): DLQ com
-    /// <see cref="MotivoDeadLetter.ErroPermanente"/>, ack e fim. Transitório: log e próxima tentativa.</item>
-    /// <item>Esgotou as imediatas: se <c>TentativasAtrasadas + 1 ≤ Atrasos.Count</c>, publique a cópia
-    /// (<see cref="MensagemRecebida.PropriedadesParaRepublicar"/> com <see cref="Cabecalhos.Tentativas"/> = próximo nível)
-    /// em <see cref="PoliticaDeRetry.NomeDaFilaDeEspera"/> pelo exchange padrão (<c>""</c>); senão, DLQ com
-    /// <see cref="MotivoDeadLetter.RetentativasEsgotadas"/>. Depois, ack da original.</item>
-    /// <item>Se publicar a cópia falhar (erro de infraestrutura), nack COM requeue: nada se perde.</item>
-    /// </list>
-    /// </para>
-    /// </remarks>
     internal async Task ProcessarEntregaAsync(MensagemRecebida mensagem, ulong deliveryTag)
     {
         var canal = _canalDeConsumo!;
         try
         {
-            await _manipulador(mensagem, _parada.Token);
+            Exception? ultimoErro = null;
+
+            for (var tentativa = 0; tentativa <= _politica.RetentativasImediatas; tentativa++)
+            {
+                try
+                {
+                    await _manipulador(mensagem with { TentativaImediata = tentativa }, _parada.Token);
+                    await canal.BasicAckAsync(deliveryTag, multiple: false);
+                    return;
+                }
+                catch (OperationCanceledException) when (_parada.IsCancellationRequested)
+                {
+                    // Desligando: devolve para a fila sem contar tentativa.
+                    await canal.BasicNackAsync(deliveryTag, multiple: false, requeue: true);
+                    return;
+                }
+                catch (Exception erro)
+                {
+                    ultimoErro = erro;
+                    if (_classificador.Classificar(erro) == TipoDeErro.Permanente)
+                    {
+                        await EnviarParaDlqAsync(mensagem, MotivoDeadLetter.ErroPermanente, erro);
+                        await canal.BasicAckAsync(deliveryTag, multiple: false);
+                        return;
+                    }
+
+                    Log.FalhaTransitoria(_logger, erro, mensagem.MessageId, _fila, tentativa);
+                }
+            }
+
+            // Esgotou as imediatas: fila de espera do próximo nível, ou DLQ.
+            var proximoNivel = mensagem.TentativasAtrasadas + 1;
+            if (proximoNivel <= _politica.Atrasos.Count)
+            {
+                var propriedades = mensagem.PropriedadesParaRepublicar(h => h[Cabecalhos.Tentativas] = proximoNivel);
+                await _publicacao!.PublicarAsync("", PoliticaDeRetry.NomeDaFilaDeEspera(_fila, proximoNivel), propriedades, mensagem.Corpo);
+                Log.RetryAtrasado(_logger, mensagem.MessageId, proximoNivel, _politica.Atrasos[proximoNivel - 1]);
+            }
+            else
+            {
+                await EnviarParaDlqAsync(mensagem, MotivoDeadLetter.RetentativasEsgotadas, ultimoErro!);
+            }
+
             await canal.BasicAckAsync(deliveryTag, multiple: false);
         }
-        catch (Exception erro)
+        catch (Exception erroDeInfra) when (!_parada.IsCancellationRequested)
         {
-            Log.FalhaTransitoria(_logger, erro, mensagem.MessageId, _fila, 0);
-            await canal.BasicNackAsync(deliveryTag, multiple: false, requeue: false);
+            // Não conseguimos nem publicar a cópia: devolve a original para a fila (nada se perde).
+            Log.FalhaDeInfraestrutura(_logger, erroDeInfra, mensagem.MessageId);
+            if (canal.IsOpen)
+                await canal.BasicNackAsync(deliveryTag, multiple: false, requeue: true);
         }
     }
 
-    /// <summary>
-    /// Publica a cópia da mensagem na DLQ (<see cref="PoliticaDeRetry.NomeDaDlq"/>, exchange padrão) com os
-    /// headers <see cref="Cabecalhos.Motivo"/> (nome do enum), <see cref="Cabecalhos.Erro"/>
-    /// (<c>"{Tipo}: {Message}"</c>, até 500 caracteres), <see cref="Cabecalhos.FilaDeOrigem"/> e
-    /// <see cref="Cabecalhos.FalhouEm"/> (<c>_tempo.GetUtcNow().ToString("O")</c>), preservando MessageId e corpo.
-    /// </summary>
-    private Task EnviarParaDlqAsync(MensagemRecebida mensagem, MotivoDeadLetter motivo, Exception erro) =>
-        throw new NotImplementedException("TODO: publique a cópia na DLQ com motivo, erro, fila de origem e instante (Passo 3).");
+    private async Task EnviarParaDlqAsync(MensagemRecebida mensagem, MotivoDeadLetter motivo, Exception erro)
+    {
+        var descricao = $"{erro.GetType().Name}: {erro.Message}";
+        if (descricao.Length > 500) descricao = descricao[..500];
+
+        var propriedades = mensagem.PropriedadesParaRepublicar(h =>
+        {
+            h[Cabecalhos.Motivo] = motivo.ToString();
+            h[Cabecalhos.Erro] = descricao;
+            h[Cabecalhos.FilaDeOrigem] = _fila;
+            h[Cabecalhos.FalhouEm] = _tempo.GetUtcNow().ToString("O");
+        });
+
+        await _publicacao!.PublicarAsync("", PoliticaDeRetry.NomeDaDlq(_fila), propriedades, mensagem.Corpo);
+        Log.EnviadaParaDlq(_logger, erro, mensagem.MessageId, _fila, motivo);
+    }
 
     /// <summary>Para de consumir e fecha os canais. PRONTO.</summary>
     public async ValueTask DisposeAsync()

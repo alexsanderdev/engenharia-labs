@@ -32,29 +32,42 @@ public sealed class AdministradorDeTopicos(string bootstrapServers) : IDisposabl
     public async Task CriarTopicoAsync(string nome, int particoes)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(particoes, 1);
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 2): chame _admin.CreateTopicsAsync([new TopicSpecification { Name, NumPartitions, ReplicationFactor = 1 }]), " +
-            "ignore CreateTopicsException quando todos os resultados forem ErrorCode.TopicAlreadyExists " +
-            "e termine com await AguardarMetadadosAsync(nome).");
+        try
+        {
+            await _admin.CreateTopicsAsync(
+            [
+                new TopicSpecification { Name = nome, NumPartitions = particoes, ReplicationFactor = 1 },
+            ]);
+        }
+        catch (CreateTopicsException ex) when (ex.Results.All(r => r.Error.Code == ErrorCode.TopicAlreadyExists))
+        {
+            // Já existe: criar tópico é uma operação idempotente para nós.
+        }
+
+        await AguardarMetadadosAsync(nome);
     }
 
     /// <summary>
     /// Passo 2: cria a "topologia" de um fluxo: o tópico principal, o de retry (<see cref="NomeRetry"/>)
     /// e o de DLQ (<see cref="NomeDlq"/>), todos com <paramref name="particoes"/> partições.
     /// </summary>
-    public Task CriarTopologiaAsync(string topico, int particoes) =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): crie o tópico principal, NomeRetry(topico) e NomeDlq(topico) com CriarTopicoAsync.");
+    public async Task CriarTopologiaAsync(string topico, int particoes)
+    {
+        await CriarTopicoAsync(topico, particoes);
+        await CriarTopicoAsync(NomeRetry(topico), particoes);
+        await CriarTopicoAsync(NomeDlq(topico), particoes);
+    }
 
     /// <summary>
     /// Passo 2: devolve quantas partições o tópico tem, lendo os metadados do cluster
     /// (<see cref="IAdminClient.GetMetadata(string, TimeSpan)"/>). Tópico inexistente → 0.
     /// </summary>
-    public int ContarParticoes(string topico) =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): use _admin.GetMetadata(topico, TempoLimite), ache o TopicMetadata do tópico " +
-            "e devolva Partitions.Count (0 se não existir ou vier com Error.IsError).");
+    public int ContarParticoes(string topico)
+    {
+        var metadados = _admin.GetMetadata(topico, TempoLimite);
+        var t = metadados.Topics.SingleOrDefault(x => x.Topic == topico);
+        return t is null || t.Error.IsError ? 0 : t.Partitions.Count;
+    }
 
     /// <summary>
     /// Pronto: espera (polling com timeout) até os metadados do cluster mostrarem o tópico com partições.

@@ -18,9 +18,16 @@ public sealed class PublicadorDePagamentos(ServiceBusClient cliente) : IAsyncDis
     /// Mensagem com corpo JSON, <c>ContentType = application/json</c>, <c>Subject = "SolicitacaoDeCobranca"</c>
     /// e <c>MessageId = "cobranca-{PedidoId:N}"</c> (o mesmo pedido gera sempre o mesmo id).
     /// </summary>
-    public static ServiceBusMessage CriarMensagem(SolicitacaoDeCobranca solicitacao) =>
-        throw new NotImplementedException(
-            "TODO (Passo 7): corpo JSON, ContentType, Subject e MessageId = \"cobranca-{PedidoId:N}\" (nada de Guid.NewGuid()!).");
+    public static ServiceBusMessage CriarMensagem(SolicitacaoDeCobranca solicitacao)
+    {
+        ArgumentNullException.ThrowIfNull(solicitacao);
+        return new ServiceBusMessage(BinaryData.FromObjectAsJson(solicitacao, MensagensDePedido.Json))
+        {
+            MessageId = $"cobranca-{solicitacao.PedidoId:N}",
+            Subject = "SolicitacaoDeCobranca",
+            ContentType = MensagensDePedido.ContentTypeJson,
+        };
+    }
 
     public Task SolicitarCobrancaAsync(SolicitacaoDeCobranca solicitacao, CancellationToken ct = default) =>
         _sender.SendMessageAsync(CriarMensagem(solicitacao), ct);

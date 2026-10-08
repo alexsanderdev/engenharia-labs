@@ -33,9 +33,10 @@ public sealed class PublicadorDeMensagens : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(conexao);
 
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 5): crie o canal com publisher confirms e devolva new PublicadorDeMensagens(canal, relogio ?? TimeProvider.System)");
+        var canal = await conexao.CreateChannelAsync(
+            new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true),
+            ct);
+        return new PublicadorDeMensagens(canal, relogio ?? TimeProvider.System);
     }
 
     /// <summary>
@@ -62,10 +63,18 @@ public sealed class PublicadorDeMensagens : IAsyncDisposable
     private async Task<Envelope> PublicarInternoAsync<T>(T mensagem, string? correlationId, bool obrigatorio, CancellationToken ct)
         where T : IMensagem
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 5): Envelope.Criar(mensagem, correlationId, _relogio), contrato do catálogo e " +
-            "_canal.BasicPublishAsync(exchange, routingKey, mandatory: obrigatorio, propriedades, corpo, ct)");
+        var envelope = Envelope.Criar(mensagem, correlationId, _relogio);
+        var contrato = CatalogoDeContratos.De<T>();
+
+        await _canal.BasicPublishAsync(
+            contrato.Exchange,
+            contrato.RoutingKey,
+            mandatory: obrigatorio,
+            basicProperties: MapeamentoAmqp.ParaPropriedades(envelope),
+            body: envelope.Corpo,
+            cancellationToken: ct);
+
+        return envelope;
     }
 
     /// <summary>Fecha o canal. (PRONTO)</summary>

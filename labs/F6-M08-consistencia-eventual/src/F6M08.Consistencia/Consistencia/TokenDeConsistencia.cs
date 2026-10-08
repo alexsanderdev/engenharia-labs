@@ -24,7 +24,15 @@ public readonly record struct TokenDeConsistencia(Guid PedidoId, long Versao)
     /// </summary>
     public static bool TryParse(string? texto, out TokenDeConsistencia token)
     {
-        // TODO (Passo 1): separe pelo ponto, valide o GUID no formato "N" e a versão (inteiro >= 1).
-        throw new NotImplementedException("TODO: Passo 1 — implemente TokenDeConsistencia.TryParse (sem lançar para entrada inválida).");
+        token = default;
+        if (string.IsNullOrWhiteSpace(texto)) return false;
+
+        var partes = texto.Split('.');
+        if (partes.Length != 2) return false;
+        if (!Guid.TryParseExact(partes[0], "N", out var pedidoId)) return false;
+        if (!long.TryParse(partes[1], NumberStyles.None, CultureInfo.InvariantCulture, out var versao) || versao < 1) return false;
+
+        token = new TokenDeConsistencia(pedidoId, versao);
+        return true;
     }
 }

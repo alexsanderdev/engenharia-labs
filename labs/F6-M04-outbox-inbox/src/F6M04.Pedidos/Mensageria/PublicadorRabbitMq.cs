@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
@@ -22,23 +23,68 @@ public sealed class PublicadorRabbitMq(IOptions<RabbitMqOptions> opcoes) : IPubl
     private IConnection? _conexao;
     private IChannel? _canal;
 
-    /// <summary>
-    /// Publica UMA mensagem e só retorna depois do ack do broker. Erro de conexão, nack ou mensagem devolvida
-    /// (sem fila para a routing key) viram exceção — e a Outbox tenta de novo depois.
-    /// </summary>
-    public Task PublicarAsync(MensagemDeSaida mensagem, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): sob _trava, obtenha o canal (ObterCanalAsync), monte BasicProperties (MessageId, Type, " +
-            "ContentType application/json, DeliveryMode Persistent, Timestamp, header HeaderChaveDeOrdenacao) e chame " +
-            "canal.BasicPublishAsync(_opcoes.Exchange, mensagem.Tipo, mandatory: true, propriedades, corpo UTF-8, ct). " +
-            "Em exceção, descarte o canal se ele fechou (DescartarAsync) e relance.");
+    public async Task PublicarAsync(MensagemDeSaida mensagem, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(mensagem);
 
-    /// <summary>Reaproveita o canal aberto ou abre conexão + canal COM publisher confirms.</summary>
-    private Task<IChannel> ObterCanalAsync(CancellationToken ct) =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): se _canal estiver aberto, devolva-o. Senão: DescartarAsync(); ConnectionFactory { Uri, " +
-            "RequestedConnectionTimeout = _opcoes.TempoMaximoDeConexao }; _conexao = CreateConnectionAsync; _canal = " +
-            "CreateChannelAsync(new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true), ct).");
+        await _trava.WaitAsync(ct);
+        try
+        {
+            var canal = await ObterCanalAsync(ct);
+
+            var propriedades = new BasicProperties
+            {
+                MessageId = mensagem.MessageId.ToString(),
+                Type = mensagem.Tipo,
+                ContentType = "application/json",
+                ContentEncoding = "utf-8",
+                DeliveryMode = DeliveryModes.Persistent, // sobrevive a restart do broker (fila durável)
+                Timestamp = new AmqpTimestamp(mensagem.OcorridoEm.ToUnixTimeSeconds()),
+                Headers = new Dictionary<string, object?> { [HeaderChaveDeOrdenacao] = mensagem.ChaveDeOrdenacao },
+            };
+
+            // mandatory: true -> se nenhuma fila estiver ligada à routing key, o broker DEVOLVE a mensagem
+            // (basic.return) e, com o rastreamento de confirms ligado, o cliente lança PublishException
+            // em vez de "publicar no vazio".
+            await canal.BasicPublishAsync(
+                exchange: _opcoes.Exchange,
+                routingKey: mensagem.Tipo,
+                mandatory: true,
+                basicProperties: propriedades,
+                body: Encoding.UTF8.GetBytes(mensagem.Payload),
+                cancellationToken: ct);
+        }
+        catch
+        {
+            // Canal fechado (broker caiu, exchange inexistente...) não serve para a próxima tentativa.
+            if (_canal is { IsOpen: false }) await DescartarAsync();
+            throw;
+        }
+        finally
+        {
+            _trava.Release();
+        }
+    }
+
+    private async Task<IChannel> ObterCanalAsync(CancellationToken ct)
+    {
+        if (_canal is { IsOpen: true }) return _canal;
+
+        await DescartarAsync();
+
+        var fabrica = new ConnectionFactory
+        {
+            Uri = new Uri(_opcoes.ConnectionString),
+            RequestedConnectionTimeout = _opcoes.TempoMaximoDeConexao,
+            ClientProvidedName = "f6m04-outbox-publicador",
+        };
+
+        _conexao = await fabrica.CreateConnectionAsync(ct);
+        _canal = await _conexao.CreateChannelAsync(
+            new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true),
+            ct);
+        return _canal;
+    }
 
     private async Task DescartarAsync()
     {

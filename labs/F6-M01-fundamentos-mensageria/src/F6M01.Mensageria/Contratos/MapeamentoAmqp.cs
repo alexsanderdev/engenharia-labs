@@ -33,9 +33,20 @@ public static class MapeamentoAmqp
     {
         ArgumentNullException.ThrowIfNull(envelope);
 
-        throw new NotImplementedException(
-            "TODO (Passo 3): new BasicProperties { Persistent = true, ContentType, MessageId, CorrelationId, Type, " +
-            "Timestamp = new AmqpTimestamp(segundos), Headers = { [HeaderVersao] = versão, [HeaderCriadoEm] = ToString(\"O\") } }");
+        return new BasicProperties
+        {
+            Persistent = true,
+            ContentType = ContentTypeJson,
+            MessageId = envelope.MessageId.ToString("D"),
+            CorrelationId = envelope.CorrelationId,
+            Type = envelope.Tipo,
+            Timestamp = new AmqpTimestamp(envelope.CriadoEm.ToUnixTimeSeconds()),
+            Headers = new Dictionary<string, object?>
+            {
+                [HeaderVersao] = envelope.Versao,
+                [HeaderCriadoEm] = envelope.CriadoEm.ToString("O", CultureInfo.InvariantCulture),
+            },
+        };
     }
 
     /// <summary>
@@ -52,9 +63,38 @@ public static class MapeamentoAmqp
     {
         ArgumentNullException.ThrowIfNull(propriedades);
 
-        throw new NotImplementedException(
-            "TODO (Passo 3): valide MessageId (Guid) e Type, leia a versão (int) e o criado-em (LerTexto: string OU byte[]), " +
-            "copie o corpo com ToArray(); dado faltando/ inválido → ContratoIncompativelException");
+        if (!Guid.TryParse(propriedades.MessageId, out var messageId))
+            throw new ContratoIncompativelException("Mensagem sem MessageId válido.");
+        if (string.IsNullOrWhiteSpace(propriedades.Type))
+            throw new ContratoIncompativelException("Mensagem sem tipo (propriedade 'type').");
+
+        var headers = propriedades.Headers;
+        object? versaoBruta = null;
+        object? criadoEmBruto = null;
+        headers?.TryGetValue(HeaderVersao, out versaoBruta);
+        headers?.TryGetValue(HeaderCriadoEm, out criadoEmBruto);
+
+        var versao = versaoBruta switch
+        {
+            int v => v,
+            long v => (int)v,
+            _ => LerTexto(versaoBruta) is { } texto && int.TryParse(texto, CultureInfo.InvariantCulture, out var v)
+                ? v
+                : throw new ContratoIncompativelException("Mensagem sem versão de contrato."),
+        };
+
+        var criadoEm = LerTexto(criadoEmBruto) is { } textoData
+            && DateTimeOffset.TryParse(textoData, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var data)
+                ? data
+                : DateTimeOffset.FromUnixTimeSeconds(propriedades.Timestamp.UnixTime);
+
+        return new Envelope(
+            messageId,
+            string.IsNullOrWhiteSpace(propriedades.CorrelationId) ? messageId.ToString("D") : propriedades.CorrelationId,
+            propriedades.Type,
+            versao,
+            criadoEm,
+            corpo.ToArray());
     }
 
     /// <summary>Lê um header de texto que pode vir como <c>string</c> ou <c>byte[]</c> UTF-8. (PRONTO)</summary>

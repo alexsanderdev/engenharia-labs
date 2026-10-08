@@ -31,12 +31,30 @@ public sealed partial class OutboxProcessor(
     /// usando um <see cref="PeriodicTimer"/> ligado ao <see cref="TimeProvider"/> injetado (testável).
     /// Uma falha num lote é registrada e o laço continua; só o cancelamento encerra.
     /// </summary>
-    protected override Task ExecuteAsync(CancellationToken stoppingToken) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): using var timer = new PeriodicTimer(_opcoes.Intervalo, relogio); do { try { while " +
-            "(await ProcessarLoteAsync(stoppingToken) >= _opcoes.TamanhoDoLote) { } } catch (Exception ex) when " +
-            "(!stoppingToken.IsCancellationRequested) { LogFalhaNoLote(ex); } } while (await timer.WaitForNextTickAsync(stoppingToken)); " +
-            "— e trate o OperationCanceledException do encerramento.");
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var timer = new PeriodicTimer(_opcoes.Intervalo, relogio);
+        try
+        {
+            do
+            {
+                try
+                {
+                    // Se o lote veio cheio, provavelmente tem mais: não espera o próximo tick.
+                    while (await ProcessarLoteAsync(stoppingToken) >= _opcoes.TamanhoDoLote) { }
+                }
+                catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+                {
+                    LogFalhaNoLote(ex);
+                }
+            }
+            while (await timer.WaitForNextTickAsync(stoppingToken));
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // Encerramento normal do host.
+        }
+    }
 
     /// <summary>
     /// Uma rodada: reserva até <see cref="OutboxOptions.TamanhoDoLote"/> mensagens pendentes, publica cada uma,
@@ -53,32 +71,79 @@ public sealed partial class OutboxProcessor(
     /// derruba o lote. Falha ao gravar o resultado (banco caiu, processo morreu): a exceção sobe, nada é marcado e
     /// as mensagens já publicadas serão publicadas de novo.
     /// </remarks>
-    public Task<int> ProcessarLoteAsync(CancellationToken ct = default)
+    public async Task<int> ProcessarLoteAsync(CancellationToken ct = default)
     {
-        // TODO (Passos 3 a 5). Roteiro:
-        //  1. escopo = escopos.CreateAsyncScope(); db = PedidosDbContext do escopo;
-        //     await using var transacao = await db.Database.BeginTransactionAsync(ct);
-        //  2. lote = db.OutboxMessages.FromSql($"""SELECT TOP ({tamanho}) m.* FROM dbo.OutboxMessages AS m
-        //     WITH (UPDLOCK, READPAST, ROWLOCK) WHERE ... AND NOT EXISTS (...) ORDER BY m.Sequencia""").ToListAsync(ct)
-        //     (as regras do WHERE estão no <remarks> acima; use relogio.GetUtcNow() como "agora");
-        //  3. para cada mensagem: Tentativas++; try { await publicador.PublicarAsync(m.ParaMensagemDeSaida(), ct);
-        //     ProcessadoEm = agora; UltimoErro = null; ProximaTentativaEm = null }
-        //     catch (Exception ex) when (!ct.IsCancellationRequested) { UltimoErro = Truncar(...);
-        //     ProximaTentativaEm = agora + _opcoes.CalcularEspera(Tentativas); log }
-        //  4. await db.SaveChangesAsync(ct); await transacao.CommitAsync(ct); return publicadas;
-        //     NÃO engula exceções do SaveChanges/Commit: elas significam "nada foi marcado".
-        _ = (escopos, publicador, relogio, log);
-        throw new NotImplementedException("TODO (Passos 3 a 5): reservar o lote com UPDLOCK/READPAST, publicar, registrar tentativas/erro e fazer commit.");
+        await using var escopo = escopos.CreateAsyncScope();
+        var db = escopo.ServiceProvider.GetRequiredService<PedidosDbContext>();
+
+        await using var transacao = await db.Database.BeginTransactionAsync(ct);
+
+        var agora = relogio.GetUtcNow();
+        var tamanho = _opcoes.TamanhoDoLote;
+        var maximo = _opcoes.MaximoDeTentativas;
+
+        var lote = await db.OutboxMessages
+            .FromSql($"""
+                SELECT TOP ({tamanho}) m.*
+                  FROM dbo.OutboxMessages AS m WITH (UPDLOCK, READPAST, ROWLOCK)
+                 WHERE m.ProcessadoEm IS NULL
+                   AND m.Tentativas < {maximo}
+                   AND (m.ProximaTentativaEm IS NULL OR m.ProximaTentativaEm <= {agora})
+                   AND NOT EXISTS (SELECT 1
+                                     FROM dbo.OutboxMessages AS anterior
+                                    WHERE anterior.ChaveDeOrdenacao = m.ChaveDeOrdenacao
+                                      AND anterior.VersaoDoAgregado < m.VersaoDoAgregado
+                                      AND anterior.ProcessadoEm IS NULL)
+                 ORDER BY m.Sequencia
+                """)
+            .ToListAsync(ct);
+
+        if (lote.Count == 0) return 0;
+
+        var publicadas = 0;
+        foreach (var mensagem in lote)
+        {
+            mensagem.Tentativas++;
+            try
+            {
+                await publicador.PublicarAsync(mensagem.ParaMensagemDeSaida(), ct);
+
+                mensagem.ProcessadoEm = relogio.GetUtcNow();
+                mensagem.UltimoErro = null;
+                mensagem.ProximaTentativaEm = null;
+                publicadas++;
+            }
+            catch (Exception ex) when (!ct.IsCancellationRequested)
+            {
+                mensagem.UltimoErro = Truncar($"{ex.GetType().Name}: {ex.Message}", 2000);
+                mensagem.ProximaTentativaEm = relogio.GetUtcNow() + _opcoes.CalcularEspera(mensagem.Tentativas);
+
+                if (mensagem.Tentativas >= _opcoes.MaximoDeTentativas)
+                    LogMensagemEnvenenada(mensagem.Id, mensagem.Tipo, mensagem.Tentativas, ex);
+                else
+                    LogFalhaAoPublicar(mensagem.Id, mensagem.Tipo, mensagem.Tentativas, ex);
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
+        await transacao.CommitAsync(ct);
+        return publicadas;
     }
 
     /// <summary>
     /// Limpeza: apaga as mensagens JÁ publicadas há mais de <see cref="OutboxOptions.RetencaoDasProcessadas"/>.
     /// Pendentes e envenenadas nunca são apagadas aqui. Devolve quantas linhas saíram.
     /// </summary>
-    public Task<int> LimparProcessadasAsync(CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): db.OutboxMessages.Where(m => m.ProcessadoEm != null && m.ProcessadoEm < agora - retenção)" +
-            ".ExecuteDeleteAsync(ct), num escopo próprio.");
+    public async Task<int> LimparProcessadasAsync(CancellationToken ct = default)
+    {
+        await using var escopo = escopos.CreateAsyncScope();
+        var db = escopo.ServiceProvider.GetRequiredService<PedidosDbContext>();
+
+        var limite = relogio.GetUtcNow() - _opcoes.RetencaoDasProcessadas;
+        return await db.OutboxMessages
+            .Where(m => m.ProcessadoEm != null && m.ProcessadoEm < limite)
+            .ExecuteDeleteAsync(ct);
+    }
 
     private static string Truncar(string texto, int maximo) => texto.Length <= maximo ? texto : texto[..maximo];
 

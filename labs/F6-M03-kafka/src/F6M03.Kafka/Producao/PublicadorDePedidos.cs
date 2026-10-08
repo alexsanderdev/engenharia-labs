@@ -27,10 +27,15 @@ public sealed class PublicadorDePedidos : IDisposable
     /// <item><c>LingerMs = 5</c> (lote pequeno, latência baixa no teste) e <c>ClientId</c> = "orderflow-pedidos".</item>
     /// </list>
     /// </summary>
-    public static ProducerConfig CriarConfig(string bootstrapServers) =>
-        throw new NotImplementedException(
-            "TODO (Passo 3): devolva new ProducerConfig { BootstrapServers, ClientId = \"orderflow-pedidos\", " +
-            "EnableIdempotence = true, Acks = Acks.All, Partitioner = Partitioner.Murmur2Random, LingerMs = 5 }.");
+    public static ProducerConfig CriarConfig(string bootstrapServers) => new()
+    {
+        BootstrapServers = bootstrapServers,
+        ClientId = "orderflow-pedidos",
+        EnableIdempotence = true,
+        Acks = Acks.All,
+        Partitioner = Partitioner.Murmur2Random,
+        LingerMs = 5,
+    };
 
     /// <summary>
     /// Passo 3: publica o evento usando <see cref="SerializadorDeEventos.CriarMensagem"/> e espera a
@@ -38,8 +43,7 @@ public sealed class PublicadorDePedidos : IDisposable
     /// O <see cref="DeliveryResult{TKey,TValue}"/> diz em que partição e offset a mensagem ficou.
     /// </summary>
     public Task<DeliveryResult<string, byte[]>> PublicarAsync(IEventoDePedido evento, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 3): publique em '{_topico}' com _producer.ProduceAsync(_topico, SerializadorDeEventos.CriarMensagem(evento), ct).");
+        _producer.ProduceAsync(_topico, SerializadorDeEventos.CriarMensagem(evento), ct);
 
     public void Dispose()
     {

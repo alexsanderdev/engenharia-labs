@@ -31,17 +31,20 @@ public sealed class LimitadorDistribuido(IDatabase redis, int limite, TimeSpan j
     /// Passo 7: chave da janela atual: <c>ratelimit:{cliente}:{n}</c>, onde
     /// <c>n = tempo.GetUtcNow().ToUnixTimeMilliseconds() / (long)janela.TotalMilliseconds</c>.
     /// </summary>
-    public string ChaveDaJanela(string cliente) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 7): n = tempo.GetUtcNow().ToUnixTimeMilliseconds() / (long)janela.TotalMilliseconds " +
-            $"(janela = {janela}, agora = {tempo.GetUtcNow():O}); devolva $\"ratelimit:{{cliente}}:{{n}}\".");
+    public string ChaveDaJanela(string cliente)
+    {
+        var numero = tempo.GetUtcNow().ToUnixTimeMilliseconds() / (long)janela.TotalMilliseconds;
+        return $"ratelimit:{cliente}:{numero}";
+    }
 
     /// <summary>
     /// Passo 7: execute <see cref="ScriptIncrementar"/> com <c>[ChaveDaJanela(cliente)]</c> e
     /// <c>[(long)janela.TotalMilliseconds]</c>; permitido se a contagem &lt;= limite.
     /// </summary>
-    public Task<ResultadoDoLimite> TentarAsync(string cliente) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 7): contagem = (long)await redis.ScriptEvaluateAsync(ScriptIncrementar, [ChaveDaJanela(cliente)], " +
-            $"[(long)janela.TotalMilliseconds]) em {redis.Database}; devolva new ResultadoDoLimite(contagem <= {limite}, contagem, Math.Max(0, limite - contagem)).");
+    public async Task<ResultadoDoLimite> TentarAsync(string cliente)
+    {
+        var contagem = (long)await redis.ScriptEvaluateAsync(
+            ScriptIncrementar, [ChaveDaJanela(cliente)], [(long)janela.TotalMilliseconds]);
+        return new ResultadoDoLimite(contagem <= limite, contagem, Math.Max(0, limite - contagem));
+    }
 }

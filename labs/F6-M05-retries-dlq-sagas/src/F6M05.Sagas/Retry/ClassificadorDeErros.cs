@@ -41,13 +41,20 @@ public class ClassificadorDeErros
     {
         ArgumentNullException.ThrowIfNull(erro);
 
-        // TODO (Passo 1): desembrulhe com Desembrulhar(erro) e aplique as regras acima com um
-        // switch de padrões de tipo (a ORDEM importa: as exceções do lab vêm antes das genéricas).
-        // Para SqlException, use ErrosSqlTransitorios.Contains(sql.Number).
-        throw new NotImplementedException("TODO: classifique a exceção em Transitorio ou Permanente (Passo 1).");
+        erro = Desembrulhar(erro);
+
+        return erro switch
+        {
+            ErroPermanenteException => TipoDeErro.Permanente,
+            ErroTransitorioException => TipoDeErro.Transitorio,
+            JsonException or FormatException or ArgumentException or InvalidCastException or NotSupportedException
+                => TipoDeErro.Permanente,
+            TimeoutException or HttpRequestException or IOException => TipoDeErro.Transitorio,
+            SqlException sql => ErrosSqlTransitorios.Contains(sql.Number) ? TipoDeErro.Transitorio : TipoDeErro.Permanente,
+            _ => TipoDeErro.Transitorio,
+        };
     }
 
-    /// <summary>PRONTO. Tira a casca de AggregateException (com UMA interna) e TargetInvocationException.</summary>
     private static Exception Desembrulhar(Exception erro)
     {
         while (true)

@@ -60,9 +60,12 @@ public sealed class FilaDeNotificacoes
     public FilaDeNotificacoes(IOptions<NotificacoesOptions> opcoes)
     {
         ArgumentNullException.ThrowIfNull(opcoes);
-        _canal = null!;
-        throw new NotImplementedException(
-            "TODO (Passo 7): Channel.CreateBounded<Notificacao>(new BoundedChannelOptions(Capacidade) { FullMode = Wait, SingleReader = false, SingleWriter = false })");
+        _canal = Channel.CreateBounded<Notificacao>(new BoundedChannelOptions(opcoes.Value.Capacidade)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = false,
+            SingleWriter = false,
+        });
     }
 
     /// <summary>Lado de leitura (para o processador). (PRONTO)</summary>

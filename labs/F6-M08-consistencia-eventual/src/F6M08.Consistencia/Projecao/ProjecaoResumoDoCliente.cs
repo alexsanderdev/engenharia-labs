@@ -19,14 +19,16 @@ public sealed class ProjecaoResumoDoCliente
 {
     private readonly Lock trava = new();
     private readonly Dictionary<Guid, PedidoResumido> pedidos = [];
+    private readonly Dictionary<Guid, SortedDictionary<long, EventoDePedido>> adiados = [];
+    private readonly List<Espera> esperas = [];
 
-    // TODO (Passo 2): você vai precisar de mais estado, por exemplo:
-    //   - um buffer de eventos adiados por pedido, ordenado por versão (SortedDictionary<long, EventoDePedido>);
-    //   - uma lista de esperas (pedido, versão, TaskCompletionSource) para o AguardarVersaoAsync.
+    private sealed record Espera(Guid PedidoId, long Versao, TaskCompletionSource Sinal);
 
     /// <summary>Total de eventos parados no buffer esperando lacuna. Ótima métrica para alertar.</summary>
-    public int EventosAdiados =>
-        throw new NotImplementedException("TODO: Passo 2 — conte os eventos guardados no buffer de adiados.");
+    public int EventosAdiados
+    {
+        get { lock (trava) return adiados.Values.Sum(b => b.Count); }
+    }
 
     /// <summary>
     /// Aplica um evento respeitando a versão do agregado.
@@ -38,12 +40,25 @@ public sealed class ProjecaoResumoDoCliente
     /// </returns>
     public ResultadoDaAplicacao Aplicar(EventoDePedido evento)
     {
-        // TODO (Passo 2): sob a trava —
-        //   1. atual = VersaoSemTrava(evento.PedidoId); versão <= atual → Ignorado.
-        //   2. versão > atual + 1 → guarda no buffer (duplicata de adiado não substitui) → Adiado.
-        //   3. senão: aplica (PedidoCriado cria a linha; ItemAdicionado SOMA ao total; Confirmado/Cancelado mudam o status;
-        //      sempre atualizando Versao), drena os adiados contíguos e sinaliza as esperas → Aplicado.
-        throw new NotImplementedException("TODO: Passo 2 — implemente Aplicar com versão por agregado (ignorar, adiar, aplicar e drenar).");
+        ArgumentNullException.ThrowIfNull(evento);
+        lock (trava)
+        {
+            var atual = VersaoSemTrava(evento.PedidoId);
+            if (evento.Versao <= atual) return ResultadoDaAplicacao.Ignorado;
+
+            if (evento.Versao > atual + 1)
+            {
+                if (!adiados.TryGetValue(evento.PedidoId, out var buffer))
+                    adiados[evento.PedidoId] = buffer = [];
+                buffer.TryAdd(evento.Versao, evento); // duplicata de um adiado: fica a primeira
+                return ResultadoDaAplicacao.Adiado;
+            }
+
+            AplicarNaOrdem(evento);
+            DrenarAdiados(evento.PedidoId);
+            SinalizarEsperas();
+            return ResultadoDaAplicacao.Aplicado;
+        }
     }
 
     /// <summary>Última versão aplicada do pedido (0 se a projeção ainda não conhece o pedido).</summary>
@@ -81,9 +96,20 @@ public sealed class ProjecaoResumoDoCliente
     /// </summary>
     public Task AguardarVersaoAsync(Guid pedidoId, long versao, CancellationToken ct = default)
     {
-        // TODO (Passo 3): TaskCompletionSource com TaskCreationOptions.RunContinuationsAsynchronously
-        // (você vai completá-lo DENTRO da trava). ct.Register(() => tcs.TrySetCanceled(ct)).
-        throw new NotImplementedException("TODO: Passo 3 — registre a espera sob a trava e sinalize-a quando a versão for aplicada.");
+        lock (trava)
+        {
+            if (VersaoSemTrava(pedidoId) >= versao) return Task.CompletedTask;
+            if (ct.IsCancellationRequested) return Task.FromCanceled(ct);
+
+            var sinal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            esperas.Add(new Espera(pedidoId, versao, sinal));
+            if (ct.CanBeCanceled)
+            {
+                var registro = ct.Register(() => sinal.TrySetCanceled(ct));
+                sinal.Task.ContinueWith(_ => registro.Dispose(), TaskScheduler.Default);
+            }
+            return sinal.Task;
+        }
     }
 
     /// <summary>
@@ -93,7 +119,21 @@ public sealed class ProjecaoResumoDoCliente
     /// </summary>
     public void Corrigir(PedidoResumido estadoDaFonte)
     {
-        throw new NotImplementedException("TODO: Passo 4 — sobrescreva com o estado da fonte sem andar para trás, limpe/drene os adiados e sinalize as esperas.");
+        ArgumentNullException.ThrowIfNull(estadoDaFonte);
+        lock (trava)
+        {
+            if (VersaoSemTrava(estadoDaFonte.PedidoId) >= estadoDaFonte.Versao) return;
+
+            pedidos[estadoDaFonte.PedidoId] = estadoDaFonte;
+            if (adiados.TryGetValue(estadoDaFonte.PedidoId, out var buffer))
+            {
+                foreach (var versao in buffer.Keys.Where(v => v <= estadoDaFonte.Versao).ToList())
+                    buffer.Remove(versao);
+                if (buffer.Count == 0) adiados.Remove(estadoDaFonte.PedidoId);
+            }
+            DrenarAdiados(estadoDaFonte.PedidoId);
+            SinalizarEsperas();
+        }
     }
 
     /// <summary>Remove um pedido da projeção (e seus adiados). Devolve <c>false</c> se ele não existia.</summary>
@@ -101,7 +141,7 @@ public sealed class ProjecaoResumoDoCliente
     {
         lock (trava)
         {
-            // TODO (Passo 2): quando criar o buffer de adiados, remova também os adiados deste pedido.
+            adiados.Remove(pedidoId);
             return pedidos.Remove(pedidoId);
         }
     }
@@ -112,8 +152,54 @@ public sealed class ProjecaoResumoDoCliente
     /// </summary>
     public void Reconstruir(IEnumerable<EventoDePedido> historico)
     {
-        throw new NotImplementedException("TODO: Passo 2 — limpe pedidos e adiados e reaplique cada evento do histórico.");
+        ArgumentNullException.ThrowIfNull(historico);
+        lock (trava)
+        {
+            pedidos.Clear();
+            adiados.Clear();
+            foreach (var evento in historico) Aplicar(evento); // Lock é reentrante
+        }
     }
 
     private long VersaoSemTrava(Guid pedidoId) => pedidos.TryGetValue(pedidoId, out var p) ? p.Versao : 0;
+
+    private void AplicarNaOrdem(EventoDePedido evento)
+    {
+        var atual = pedidos.GetValueOrDefault(evento.PedidoId);
+        pedidos[evento.PedidoId] = (evento, atual) switch
+        {
+            (PedidoCriado c, null) => new PedidoResumido(c.PedidoId, c.ClienteId, StatusPedido.Criado, c.Total, c.Versao),
+            (ItemAdicionado i, not null) => atual with { Total = atual.Total + i.Valor, Versao = i.Versao },
+            (PedidoConfirmado c, not null) => atual with { Status = StatusPedido.Confirmado, Versao = c.Versao },
+            (PedidoCancelado c, not null) => atual with { Status = StatusPedido.Cancelado, Versao = c.Versao },
+            _ => throw new InvalidOperationException(
+                $"Evento {evento.GetType().Name} v{evento.Versao} inválido para o pedido {evento.PedidoId}."),
+        };
+    }
+
+    private void DrenarAdiados(Guid pedidoId)
+    {
+        if (!adiados.TryGetValue(pedidoId, out var buffer)) return;
+        while (buffer.Count > 0)
+        {
+            var (versao, evento) = buffer.First();
+            var atual = VersaoSemTrava(pedidoId);
+            if (versao <= atual) { buffer.Remove(versao); continue; }
+            if (versao != atual + 1) break;
+            AplicarNaOrdem(evento);
+            buffer.Remove(versao);
+        }
+        if (buffer.Count == 0) adiados.Remove(pedidoId);
+    }
+
+    private void SinalizarEsperas()
+    {
+        esperas.RemoveAll(e =>
+        {
+            if (e.Sinal.Task.IsCompleted) return true; // cancelada
+            if (VersaoSemTrava(e.PedidoId) < e.Versao) return false;
+            e.Sinal.TrySetResult();
+            return true;
+        });
+    }
 }

@@ -32,8 +32,37 @@ public static class DependencyInjection
     {
         ArgumentNullException.ThrowIfNull(configuracao);
 
-        throw new NotImplementedException(
-            "TODO (Passo 1): options com Bind/ValidateDataAnnotations/ValidateOnStart, TryAddSingleton(TimeProvider.System), " +
-            "singletons, scoped, AddHostedService dos 2 workers e AddHealthChecks().Add(new HealthCheckRegistration(...))");
+        services.AddOptions<ExpiracaoOptions>()
+            .Bind(configuracao.GetSection(ExpiracaoOptions.Secao))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddOptions<NotificacoesOptions>()
+            .Bind(configuracao.GetSection(NotificacoesOptions.Secao))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddSingleton<BancoEmMemoria>();
+        services.AddSingleton<MonitorDeWorkers>();
+        services.AddSingleton<FilaDeNotificacoes>();
+        services.TryAddSingleton<IEnviadorDeNotificacoes, EnviadorDeNotificacoesNoLog>();
+
+        services.AddScoped<IRepositorioDePedidos, RepositorioDePedidosEmMemoria>();
+        services.AddScoped<ServicoDeExpiracao>();
+
+        services.AddHostedService<ExpiracaoDePedidosWorker>();
+        services.AddHostedService<ProcessadorDeNotificacoesWorker>();
+
+        services.AddHealthChecks().Add(new HealthCheckRegistration(
+            ExpiracaoDePedidosWorker.Nome,
+            sp => new WorkerHealthCheck(
+                sp.GetRequiredService<MonitorDeWorkers>(),
+                sp.GetRequiredService<TimeProvider>(),
+                ExpiracaoDePedidosWorker.Nome,
+                sp.GetRequiredService<IOptions<ExpiracaoOptions>>().Value.ToleranciaSemBatimento),
+            failureStatus: null,
+            tags: [TagWorker]));
+
+        return services;
     }
 }

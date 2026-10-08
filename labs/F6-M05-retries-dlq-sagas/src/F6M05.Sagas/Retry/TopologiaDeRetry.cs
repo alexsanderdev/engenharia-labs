@@ -29,15 +29,37 @@ public static class TopologiaDeRetry
         ArgumentNullException.ThrowIfNull(politica);
         politica.Validar();
 
-        // TODO (Passo 2), com os nomes de PoliticaDeRetry (NomeDaDlq, NomeDoExchangeDeReentrada, NomeDaFilaDeEspera):
-        //  1. DLQ: QueueDeclareAsync(dlq, durable: true, exclusive: false, autoDelete: false).
-        //  2. Fila principal durável com "x-dead-letter-exchange" = "" e "x-dead-letter-routing-key" = dlq
-        //     (rede de segurança para nack sem requeue).
-        //  3. Exchange direct de reentrada + QueueBindAsync(fila, reentrada, routingKey: fila).
-        //  4. Para cada nível i (1..Atrasos.Count): fila de espera com
-        //     "x-message-ttl" = (int)Atrasos[i-1].TotalMilliseconds,
-        //     "x-dead-letter-exchange" = reentrada, "x-dead-letter-routing-key" = fila.
-        await Task.CompletedTask;
-        throw new NotImplementedException("TODO: declare DLQ, fila principal, exchange de reentrada e filas de espera com TTL (Passo 2).");
+        var dlq = PoliticaDeRetry.NomeDaDlq(fila);
+        var reentrada = PoliticaDeRetry.NomeDoExchangeDeReentrada(fila);
+
+        // DLQ primeiro: a fila principal aponta para ela como rede de segurança.
+        await canal.QueueDeclareAsync(dlq, durable: true, exclusive: false, autoDelete: false, arguments: null, cancellationToken: ct);
+
+        // Rede de segurança: um nack(requeue: false) fora do fluxo normal não some; vai para a DLQ
+        // (sem o motivo detalhado, só o x-death do broker). O fluxo normal publica na DLQ com motivo.
+        await canal.QueueDeclareAsync(fila, durable: true, exclusive: false, autoDelete: false,
+            arguments: new Dictionary<string, object?>
+            {
+                ["x-dead-letter-exchange"] = "",
+                ["x-dead-letter-routing-key"] = dlq,
+            },
+            cancellationToken: ct);
+
+        await canal.ExchangeDeclareAsync(reentrada, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, cancellationToken: ct);
+        await canal.QueueBindAsync(fila, reentrada, routingKey: fila, arguments: null, cancellationToken: ct);
+
+        for (var nivel = 1; nivel <= politica.Atrasos.Count; nivel++)
+        {
+            var ttl = (int)politica.Atrasos[nivel - 1].TotalMilliseconds;
+            await canal.QueueDeclareAsync(PoliticaDeRetry.NomeDaFilaDeEspera(fila, nivel),
+                durable: true, exclusive: false, autoDelete: false,
+                arguments: new Dictionary<string, object?>
+                {
+                    ["x-message-ttl"] = ttl,
+                    ["x-dead-letter-exchange"] = reentrada,
+                    ["x-dead-letter-routing-key"] = fila,
+                },
+                cancellationToken: ct);
+        }
     }
 }

@@ -33,13 +33,27 @@ public sealed class ReprocessadorDeDlq(IConnection conexao, TimeProvider? tempo 
     private readonly TimeProvider _tempo = tempo ?? TimeProvider.System;
 
     /// <summary>Lista até <paramref name="maximo"/> mensagens da DLQ de <paramref name="fila"/> SEM removê-las.</summary>
-    /// <remarks>
-    /// TODO (Passo 4): num canal novo, <c>BasicGetAsync(dlq, autoAck: false)</c> em laço até <c>null</c>
-    /// ou <paramref name="maximo"/>; converta com <c>MensagemRecebida.De(...)</c> + <see cref="Resumir"/>.
-    /// No fim, devolva TODAS para a DLQ: <c>BasicNackAsync(ultimaTag, multiple: true, requeue: true)</c>.
-    /// </remarks>
-    public Task<IReadOnlyList<MensagemNaDlq>> ListarAsync(string fila, int maximo = 100, CancellationToken ct = default) =>
-        throw new NotImplementedException("TODO: liste a DLQ com basic.get sem ack e devolva tudo com nack+requeue (Passo 4).");
+    public async Task<IReadOnlyList<MensagemNaDlq>> ListarAsync(string fila, int maximo = 100, CancellationToken ct = default)
+    {
+        await using var canal = await conexao.CreateChannelAsync(cancellationToken: ct);
+        var dlq = PoliticaDeRetry.NomeDaDlq(fila);
+        var lidas = new List<MensagemNaDlq>();
+        ulong ultimaTag = 0;
+
+        while (lidas.Count < maximo)
+        {
+            var resultado = await canal.BasicGetAsync(dlq, autoAck: false, ct);
+            if (resultado is null) break;
+            ultimaTag = resultado.DeliveryTag;
+            lidas.Add(Resumir(MensagemRecebida.De(dlq, resultado.BasicProperties, resultado.Body, resultado.Redelivered)));
+        }
+
+        // Devolve tudo para a DLQ (requeue), na mesma ordem.
+        if (ultimaTag > 0)
+            await canal.BasicNackAsync(ultimaTag, multiple: true, requeue: true, ct);
+
+        return lidas;
+    }
 
     /// <summary>
     /// Move de volta para a fila de origem as mensagens da DLQ que passam no
@@ -47,19 +61,53 @@ public sealed class ReprocessadorDeDlq(IConnection conexao, TimeProvider? tempo 
     /// Zera <see cref="Cabecalhos.Tentativas"/>, remove motivo/erro/falhou-em e incrementa
     /// <see cref="Cabecalhos.Reprocessamentos"/>. MessageId, tipo, correlação e corpo são preservados.
     /// </summary>
-    /// <remarks>
-    /// TODO (Passo 4): canal de publicação (<see cref="CanalDePublicacao.CriarAsync"/>) + canal de leitura.
-    /// Para cada <c>basic.get</c> da DLQ: fora do filtro → guarde a tag para devolver NO FIM (senão o
-    /// próximo get a leria de novo); no filtro → publique na fila de origem (header
-    /// <see cref="Cabecalhos.FilaDeOrigem"/>, ou <paramref name="fila"/>) com
-    /// <see cref="MensagemRecebida.PropriedadesParaRepublicar"/> ajustando os headers, e SÓ ENTÃO dê ack na DLQ.
-    /// Use <c>_tempo</c> para um header informativo <c>x-reprocessada-em</c> (opcional).
-    /// </remarks>
-    public Task<ResultadoReprocessamento> ReprocessarAsync(
-        string fila, Func<MensagemNaDlq, bool>? filtro = null, int maximo = 100, CancellationToken ct = default) =>
-        throw new NotImplementedException("TODO: mova as mensagens selecionadas da DLQ para a fila de origem (Passo 4).");
+    public async Task<ResultadoReprocessamento> ReprocessarAsync(
+        string fila, Func<MensagemNaDlq, bool>? filtro = null, int maximo = 100, CancellationToken ct = default)
+    {
+        await using var publicacao = await CanalDePublicacao.CriarAsync(conexao, ct);
+        await using var canal = await conexao.CreateChannelAsync(cancellationToken: ct);
+        var dlq = PoliticaDeRetry.NomeDaDlq(fila);
+        var movidas = 0;
+        var mantidas = new List<ulong>();
 
-    /// <summary>PRONTO. Resumo legível de uma mensagem da DLQ.</summary>
+        for (var lidas = 0; lidas < maximo; lidas++)
+        {
+            var resultado = await canal.BasicGetAsync(dlq, autoAck: false, ct);
+            if (resultado is null) break;
+
+            var mensagem = MensagemRecebida.De(dlq, resultado.BasicProperties, resultado.Body, resultado.Redelivered);
+            var resumo = Resumir(mensagem);
+            if (filtro is not null && !filtro(resumo))
+            {
+                mantidas.Add(resultado.DeliveryTag);
+                continue;
+            }
+
+            var destino = resumo.FilaDeOrigem ?? fila;
+            var propriedades = mensagem.PropriedadesParaRepublicar(h =>
+            {
+                h.Remove(Cabecalhos.Tentativas);
+                h.Remove(Cabecalhos.Motivo);
+                h.Remove(Cabecalhos.Erro);
+                h.Remove(Cabecalhos.FalhouEm);
+                h.Remove(Cabecalhos.FilaDeOrigem);
+                h[Cabecalhos.Reprocessamentos] = resumo.Reprocessamentos + 1;
+                h["x-reprocessada-em"] = _tempo.GetUtcNow().ToString("O");
+            });
+
+            await publicacao.PublicarAsync("", destino, propriedades, mensagem.Corpo, ct);
+            await canal.BasicAckAsync(resultado.DeliveryTag, multiple: false, ct);
+            movidas++;
+        }
+
+        // As não selecionadas voltam para a DLQ. Só no fim: se voltassem antes, o próximo
+        // basic.get as leria de novo (loop).
+        foreach (var tag in mantidas)
+            await canal.BasicNackAsync(tag, multiple: false, requeue: true, ct);
+
+        return new ResultadoReprocessamento(movidas, mantidas.Count);
+    }
+
     private static MensagemNaDlq Resumir(MensagemRecebida m) => new(
         m.MessageId,
         m.Tipo,

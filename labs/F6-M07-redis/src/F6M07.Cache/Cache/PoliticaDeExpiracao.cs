@@ -30,6 +30,5 @@ public sealed class PoliticaDeExpiracao
     /// <summary>
     /// Passo 2: devolve <c>TtlBase + aleatório em [0, JitterMaximo]</c> (use <c>_aleatorio.NextDouble()</c>).
     /// </summary>
-    public TimeSpan CalcularTtl() =>
-        throw new NotImplementedException("TODO (Passo 2): devolva TtlBase + JitterMaximo * _aleatorio.NextDouble().");
+    public TimeSpan CalcularTtl() => TtlBase + JitterMaximo * _aleatorio.NextDouble();
 }

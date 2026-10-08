@@ -55,9 +55,14 @@ public static class TopologiaOrderFlow
     {
         ArgumentNullException.ThrowIfNull(canal);
 
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 4): ExchangeDeclareAsync (direct e topic, duráveis), QueueDeclareAsync (3 filas duráveis) " +
-            "e QueueBindAsync (comando → fila do Estoque; pedido.criado → Notificação; pedido.* → Fidelidade)");
+        await canal.ExchangeDeclareAsync(ExchangeComandos, ExchangeType.Direct, durable: true, autoDelete: false, cancellationToken: ct);
+        await canal.ExchangeDeclareAsync(ExchangeEventos, ExchangeType.Topic, durable: true, autoDelete: false, cancellationToken: ct);
+
+        foreach (var fila in Filas)
+            await canal.QueueDeclareAsync(fila, durable: true, exclusive: false, autoDelete: false, cancellationToken: ct);
+
+        await canal.QueueBindAsync(FilaReservarEstoque, ExchangeComandos, FilaReservarEstoque, cancellationToken: ct);
+        await canal.QueueBindAsync(FilaNotificacaoPedidoCriado, ExchangeEventos, "pedido.criado", cancellationToken: ct);
+        await canal.QueueBindAsync(FilaFidelidadeEventosDePedido, ExchangeEventos, "pedido.*", cancellationToken: ct);
     }
 }

@@ -18,9 +18,17 @@ public sealed class AgendadorDeLembretes(ServiceBusClient cliente) : IAsyncDispo
     /// (corpo JSON, <c>MessageId = "lembrete-{PedidoId:N}"</c>, <c>Subject = "LembreteDePagamento"</c>).
     /// Devolve o <c>SequenceNumber</c> do agendamento (necessário para cancelar).
     /// </summary>
-    public Task<long> AgendarAsync(LembreteDePagamento lembrete, DateTimeOffset quando, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 7): monte a mensagem (MessageId = \"lembrete-{PedidoId:N}\") e use _sender.ScheduleMessageAsync(mensagem, quando, ct).");
+    public Task<long> AgendarAsync(LembreteDePagamento lembrete, DateTimeOffset quando, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(lembrete);
+        var mensagem = new ServiceBusMessage(BinaryData.FromObjectAsJson(lembrete, MensagensDePedido.Json))
+        {
+            MessageId = $"lembrete-{lembrete.PedidoId:N}",
+            Subject = "LembreteDePagamento",
+            ContentType = MensagensDePedido.ContentTypeJson,
+        };
+        return _sender.ScheduleMessageAsync(mensagem, quando, ct);
+    }
 
     /// <summary>
     /// Cancela um agendamento (o cliente pagou antes do lembrete).

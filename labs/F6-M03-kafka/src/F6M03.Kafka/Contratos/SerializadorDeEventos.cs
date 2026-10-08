@@ -23,20 +23,52 @@ public static class SerializadorDeEventos
     /// (<see cref="VersaoAtual"/>), <see cref="Cabecalhos.EventoId"/> e <see cref="Cabecalhos.ContentType"/> ("application/json").</item>
     /// </list>
     /// </summary>
-    public static Message<string, byte[]> CriarMensagem(IEventoDePedido evento) =>
-        throw new NotImplementedException(
-            "TODO (Passo 1): crie new Headers() e use Cabecalhos.Escrever para tipo-evento (evento.GetType().Name), " +
-            "versao-contrato (\"1\"), evento-id e content-type; devolva new Message<string, byte[]> com Key = PedidoId.ToString() " +
-            "e Value = JsonSerializer.SerializeToUtf8Bytes(evento, evento.GetType(), Opcoes).");
+    public static Message<string, byte[]> CriarMensagem(IEventoDePedido evento)
+    {
+        ArgumentNullException.ThrowIfNull(evento);
+
+        var headers = new Headers();
+        Cabecalhos.Escrever(headers, Cabecalhos.TipoEvento, evento.GetType().Name);
+        Cabecalhos.Escrever(headers, Cabecalhos.VersaoContrato, VersaoAtual.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Cabecalhos.Escrever(headers, Cabecalhos.EventoId, evento.EventoId.ToString());
+        Cabecalhos.Escrever(headers, Cabecalhos.ContentType, "application/json");
+
+        return new Message<string, byte[]>
+        {
+            Key = evento.PedidoId.ToString(),
+            Value = JsonSerializer.SerializeToUtf8Bytes(evento, evento.GetType(), Opcoes),
+            Headers = headers,
+        };
+    }
 
     /// <summary>
     /// Passo 1: lê o evento de uma mensagem. Usa o header <see cref="Cabecalhos.TipoEvento"/> para escolher o tipo
     /// (<see cref="PedidoCriado"/> ou <see cref="PedidoConfirmado"/>) e exige <see cref="Cabecalhos.VersaoContrato"/> == "1".
     /// Tipo desconhecido, versão diferente, header ausente ou JSON inválido → <see cref="ContratoNaoSuportadoException"/>.
     /// </summary>
-    public static IEventoDePedido Ler(Message<string, byte[]> mensagem) =>
-        throw new NotImplementedException(
-            "TODO (Passo 1): valide o header versao-contrato (== \"1\"), escolha o tipo pelo header tipo-evento " +
-            "(PedidoCriado/PedidoConfirmado) e desserialize com JsonSerializer.Deserialize(mensagem.Value, tipo, Opcoes). " +
-            "Qualquer problema (versão, tipo, JsonException) vira ContratoNaoSuportadoException.");
+    public static IEventoDePedido Ler(Message<string, byte[]> mensagem)
+    {
+        ArgumentNullException.ThrowIfNull(mensagem);
+
+        var versao = Cabecalhos.Ler(mensagem.Headers, Cabecalhos.VersaoContrato);
+        if (versao != VersaoAtual.ToString(System.Globalization.CultureInfo.InvariantCulture))
+            throw new ContratoNaoSuportadoException($"Versão de contrato '{versao ?? "(ausente)"}' não suportada (esperado {VersaoAtual}).");
+
+        var tipo = Cabecalhos.Ler(mensagem.Headers, Cabecalhos.TipoEvento) switch
+        {
+            nameof(PedidoCriado) => typeof(PedidoCriado),
+            nameof(PedidoConfirmado) => typeof(PedidoConfirmado),
+            var outro => throw new ContratoNaoSuportadoException($"Tipo de evento '{outro ?? "(ausente)"}' desconhecido."),
+        };
+
+        try
+        {
+            return (IEventoDePedido)(JsonSerializer.Deserialize(mensagem.Value, tipo, Opcoes)
+                ?? throw new ContratoNaoSuportadoException("Corpo vazio."));
+        }
+        catch (JsonException ex)
+        {
+            throw new ContratoNaoSuportadoException("JSON inválido para o contrato.", ex);
+        }
+    }
 }

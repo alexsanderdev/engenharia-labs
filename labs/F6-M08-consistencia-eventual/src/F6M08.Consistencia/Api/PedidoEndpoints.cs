@@ -33,11 +33,17 @@ public static class PedidoEndpoints
         FilaComAtraso<ComandoCriarPedido> fila,
         HttpContext http)
     {
-        // TODO (Passo 5): Total <= 0 → TypedResults.Problem(..., statusCode: 400).
-        // Guid novo → registro.Iniciar(...) → fila.Publicar(new ComandoCriarPedido(...)) → Retry-After: 1 →
-        // TypedResults.Accepted($"/operacoes/{id}", new RespostaDaOperacao(id, "Processando")).
-        _ = (requisicao, registro, fila, http);
-        throw new NotImplementedException("TODO: Passo 5 — valide, registre a operação, enfileire o comando e devolva 202 + Location + Retry-After.");
+        if (requisicao.Total <= 0)
+            return TypedResults.Problem(title: "Total inválido.", detail: "O total do pedido deve ser maior que zero.",
+                statusCode: StatusCodes.Status400BadRequest);
+
+        var operacaoId = Guid.NewGuid();
+        registro.Iniciar(operacaoId, requisicao.ClienteId);
+        fila.Publicar(new ComandoCriarPedido(operacaoId, requisicao.ClienteId, requisicao.Total));
+
+        http.Response.Headers.RetryAfter = "1";
+        return TypedResults.Accepted($"/operacoes/{operacaoId}",
+            new RespostaDaOperacao(operacaoId, nameof(StatusDaOperacao.Processando)));
     }
 
     /// <summary>
@@ -47,25 +53,47 @@ public static class PedidoEndpoints
     /// </summary>
     public static Results<Ok<RespostaDaOperacao>, NotFound> ObterOperacao(Guid operacaoId, RegistroDeOperacoes registro, HttpContext http)
     {
-        // TODO (Passo 5): concluída → TokenDeConsistencia = new TokenDeConsistencia(pedidoId, versao).ToString();
-        // Recurso = $"/clientes/{clienteId}/resumo".
-        _ = (operacaoId, registro, http);
-        throw new NotImplementedException("TODO: Passo 5 — devolva o status da operação (404, Processando com Retry-After, Concluida com token, Falhou).");
+        if (registro.Obter(operacaoId) is not { } operacao) return TypedResults.NotFound();
+
+        var resposta = operacao.Status switch
+        {
+            StatusDaOperacao.Concluida => new RespostaDaOperacao(
+                operacao.OperacaoId,
+                nameof(StatusDaOperacao.Concluida),
+                operacao.PedidoId,
+                operacao.Versao,
+                new TokenDeConsistencia(operacao.PedidoId!.Value, operacao.Versao!.Value).ToString(),
+                $"/clientes/{operacao.ClienteId}/resumo"),
+            StatusDaOperacao.Falhou => new RespostaDaOperacao(operacao.OperacaoId, nameof(StatusDaOperacao.Falhou), Erro: operacao.Erro),
+            _ => new RespostaDaOperacao(operacao.OperacaoId, nameof(StatusDaOperacao.Processando)),
+        };
+
+        if (operacao.Status == StatusDaOperacao.Processando) http.Response.Headers.RetryAfter = "1";
+        return TypedResults.Ok(resposta);
     }
 
     /// <summary>
     /// Lê o resumo pelo <see cref="ServicoDeConsulta"/>. Header <c>X-Consistency-Token</c> presente e inválido → 400
     /// ProblemDetails. Sempre devolve o header <c>X-Read-Source</c> (<c>projecao</c> ou <c>fonte</c>).
     /// </summary>
-    public static Task<Results<Ok<Projecao.ResumoDoCliente>, ProblemHttpResult>> ObterResumoAsync(
+    public static async Task<Results<Ok<Projecao.ResumoDoCliente>, ProblemHttpResult>> ObterResumoAsync(
         Guid clienteId,
         ServicoDeConsulta consulta,
         HttpContext http,
         CancellationToken ct)
     {
-        // TODO (Passo 5): header ausente → token null; presente e inválido → 400 ProblemDetails (TokenDeConsistencia.TryParse).
-        // Depois: await consulta.ObterResumoAsync(...) e header X-Read-Source = "projecao" ou "fonte" (Cabecalhos.OrigemDaLeitura).
-        _ = (clienteId, consulta, http, ct);
-        throw new NotImplementedException("TODO: Passo 5 — leia o X-Consistency-Token (400 se inválido), chame o ServicoDeConsulta e devolva X-Read-Source.");
+        TokenDeConsistencia? token = null;
+        if (http.Request.Headers.TryGetValue(Cabecalhos.TokenDeConsistencia, out var valor))
+        {
+            if (!TokenDeConsistencia.TryParse(valor.ToString(), out var lido))
+                return TypedResults.Problem(title: "Token de consistência inválido.",
+                    detail: $"Formato esperado em {Cabecalhos.TokenDeConsistencia}: {{pedidoId sem hífens}}.{{versao}}.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            token = lido;
+        }
+
+        var leitura = await consulta.ObterResumoAsync(clienteId, token, ct);
+        http.Response.Headers[Cabecalhos.OrigemDaLeitura] = leitura.Origem == OrigemDaLeitura.Fonte ? "fonte" : "projecao";
+        return TypedResults.Ok(leitura.Resumo);
     }
 }

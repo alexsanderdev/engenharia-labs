@@ -2,7 +2,7 @@ using System.Text.Json;
 using F6M04.Notificacoes.Contratos;
 using F6M04.Notificacoes.Dominio;
 using F6M04.Notificacoes.Infra;
-using Microsoft.Data.SqlClient; // SqlException 2627/2601
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace F6M04.Notificacoes.Inbox;
@@ -30,18 +30,37 @@ public sealed class ConsumidorDeNotificacoes(NotificacoesDbContext db, TimeProvi
     /// <see cref="MensagemInvalidaException"/> para mensagens que nunca vão funcionar (vão para a DLQ). Qualquer
     /// outra exceção significa "nada foi gravado": a mensagem pode ser reprocessada com segurança.
     /// </summary>
-    public Task<ResultadoDoProcessamento> ProcessarAsync(MensagemRecebida mensagem, CancellationToken ct = default)
+    public async Task<ResultadoDoProcessamento> ProcessarAsync(MensagemRecebida mensagem, CancellationToken ct = default)
     {
-        // TODO (Passo 7). Roteiro:
-        //  1. MessageId vazio → MensagemInvalidaException (não dá para deduplicar).
-        //  2. Já existe InboxMessage (MessageId, Nome)? → Duplicada (caminho rápido).
-        //  3. notificacao = CriarNotificacao(mensagem, agora) (pronto, lá embaixo; null = tipo ignorado);
-        //     adicione a notificação (se houver) E a InboxMessage, e chame SaveChangesAsync UMA vez (mesma transação).
-        //  4. DbUpdateException com SqlException 2627/2601 = outra entrega igual gravou primeiro → ChangeTracker.Clear()
-        //     e Duplicada. Qualquer outra exceção: deixe subir (nada foi gravado; a reentrega reprocessa).
-        //  5. Processada (ou Ignorada se não havia notificação).
-        _ = (db, relogio, mensagem);
-        throw new NotImplementedException("TODO (Passo 7): Inbox + efeito no mesmo SaveChanges; duplicata (inclusive concorrente) = ack sem efeito.");
+        ArgumentNullException.ThrowIfNull(mensagem);
+        if (string.IsNullOrWhiteSpace(mensagem.MessageId))
+            throw new MensagemInvalidaException("Mensagem sem MessageId não pode ser deduplicada.");
+
+        // 1) Caminho rápido: já processada? (a garantia de verdade é a PK, no passo 3)
+        var jaProcessada = await db.InboxMessages
+            .AnyAsync(i => i.MessageId == mensagem.MessageId && i.Consumidor == Nome, ct);
+        if (jaProcessada) return ResultadoDoProcessamento.Duplicada;
+
+        // 2) Efeito colateral + registro na Inbox, no mesmo SaveChanges (= mesma transação).
+        var agora = relogio.GetUtcNow();
+        var notificacao = CriarNotificacao(mensagem, agora);
+        if (notificacao is not null) db.Notificacoes.Add(notificacao);
+        db.InboxMessages.Add(new InboxMessage(mensagem.MessageId, Nome, mensagem.Tipo, agora));
+
+        // 3) Corrida: duas entregas iguais passaram pelo passo 1 ao mesmo tempo. A PK da Inbox deixa só uma
+        //    gravar; a outra recebe violação de chave (2627/2601), a transação dela é desfeita (o efeito
+        //    também) e ela é tratada como duplicada.
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2627 or 2601 })
+        {
+            db.ChangeTracker.Clear();
+            return ResultadoDoProcessamento.Duplicada;
+        }
+
+        return notificacao is null ? ResultadoDoProcessamento.Ignorada : ResultadoDoProcessamento.Processada;
     }
 
     private static Notificacao? CriarNotificacao(MensagemRecebida mensagem, DateTimeOffset agora)

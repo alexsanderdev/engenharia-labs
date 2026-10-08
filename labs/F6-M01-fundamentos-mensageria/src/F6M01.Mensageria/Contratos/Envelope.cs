@@ -40,9 +40,17 @@ public sealed record Envelope(
         ArgumentNullException.ThrowIfNull(mensagem);
         ArgumentNullException.ThrowIfNull(relogio);
 
-        throw new NotImplementedException(
-            "TODO (Passo 2): MessageId = Guid.CreateVersion7(agora); CorrelationId informado ou o próprio MessageId; " +
-            "Tipo/Versao do CatalogoDeContratos; CriadoEm = relogio.GetUtcNow(); Corpo = JsonSerializer.SerializeToUtf8Bytes(mensagem, OpcoesJson)");
+        var contrato = CatalogoDeContratos.De<T>();
+        var agora = relogio.GetUtcNow();
+        var id = Guid.CreateVersion7(agora);
+
+        return new Envelope(
+            id,
+            string.IsNullOrWhiteSpace(correlationId) ? id.ToString("D") : correlationId,
+            contrato.Tipo,
+            contrato.Versao,
+            agora,
+            JsonSerializer.SerializeToUtf8Bytes(mensagem, OpcoesJson));
     }
 
     /// <summary>
@@ -54,9 +62,22 @@ public sealed record Envelope(
     /// </summary>
     public T LerCorpo<T>() where T : IMensagem
     {
-        throw new NotImplementedException(
-            "TODO (Passo 2): confira Tipo e Versao contra o catálogo (senão ContratoIncompativelException) e " +
-            "desserialize com JsonSerializer.Deserialize<T>(Corpo, OpcoesJson); JsonException/nulo → ContratoIncompativelException");
+        var contrato = CatalogoDeContratos.De<T>();
+        if (Tipo != contrato.Tipo || Versao != contrato.Versao)
+        {
+            throw new ContratoIncompativelException(
+                $"Esperado {contrato.Tipo} v{contrato.Versao}, recebido {Tipo} v{Versao}.");
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<T>(Corpo, OpcoesJson)
+                ?? throw new ContratoIncompativelException($"Corpo vazio para {Tipo} v{Versao}.");
+        }
+        catch (JsonException ex)
+        {
+            throw new ContratoIncompativelException($"Corpo inválido para {Tipo} v{Versao}: {ex.Message}", ex);
+        }
     }
 }
 

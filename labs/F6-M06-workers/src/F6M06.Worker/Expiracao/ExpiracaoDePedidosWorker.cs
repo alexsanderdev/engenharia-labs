@@ -35,10 +35,42 @@ public sealed partial class ExpiracaoDePedidosWorker(
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passos 3 e 4): PeriodicTimer(Intervalo, relogio), ciclo já e a cada tick, batimento no monitor, " +
-            "falha isolada logada e loop segue; MaxFalhasConsecutivas → LogDesistindo + RegistrarFalhaFatal + throw");
+        var o = opcoes.Value;
+        using var timer = new PeriodicTimer(o.Intervalo, relogio);
+        var falhasSeguidas = 0;
+
+        try
+        {
+            do
+            {
+                try
+                {
+                    await ExecutarCicloAsync(stoppingToken);
+                    falhasSeguidas = 0;
+                    monitor.RegistrarCiclo(Nome, sucesso: true);
+                }
+                catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+                {
+                    falhasSeguidas++;
+                    monitor.RegistrarCiclo(Nome, sucesso: false);
+                    LogCicloFalhou(ex, falhasSeguidas, o.MaxFalhasConsecutivas);
+
+                    if (falhasSeguidas >= o.MaxFalhasConsecutivas)
+                    {
+                        LogDesistindo(ex, falhasSeguidas);
+                        monitor.RegistrarFalhaFatal(Nome, ex);
+                        throw;
+                    }
+                }
+            }
+            while (await timer.WaitForNextTickAsync(stoppingToken));
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // parada normal do host
+        }
+
+        LogParado();
     }
 
     /// <summary>
@@ -48,9 +80,14 @@ public sealed partial class ExpiracaoDePedidosWorker(
     /// </summary>
     private async Task ExecutarCicloAsync(CancellationToken ct)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 3): CreateAsyncScope, resolva ServicoDeExpiracao, ExpirarAsync e LogCicloConcluido(quantidade, duraçãoMs)");
+        var inicio = relogio.GetTimestamp();
+        await using var escopo = escopos.CreateAsyncScope();
+        var servico = escopo.ServiceProvider.GetRequiredService<ServicoDeExpiracao>();
+
+        var expirados = await servico.ExpirarAsync(ct);
+
+        var duracaoMs = (long)relogio.GetElapsedTime(inicio).TotalMilliseconds;
+        LogCicloConcluido(expirados, duracaoMs);
     }
 
     [LoggerMessage(EventId = 6001, Level = LogLevel.Information,

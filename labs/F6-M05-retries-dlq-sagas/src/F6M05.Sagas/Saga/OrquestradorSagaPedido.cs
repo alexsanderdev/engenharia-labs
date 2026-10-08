@@ -58,19 +58,61 @@ public sealed class OrquestradorSagaPedido(
     /// passo 1 com o estado novo, até <see cref="OpcoesDaSaga.TentativasEmConflito"/> vezes; depois, propaga
     /// (é transitória: o consumidor faz retry).
     /// </summary>
-    public Task<ResultadoSaga> ProcessarAsync(MensagemSaga mensagem, CancellationToken ct = default)
+    public async Task<ResultadoSaga> ProcessarAsync(MensagemSaga mensagem, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(mensagem);
 
-        // TODO (Passo 7): separe "uma tentativa" (carregar → deduplicar → aplicar → gravar → publicar)
-        // num método privado e chame-o num laço que captura ConflitoDeConcorrenciaException enquanto
-        // tentativa < _opcoes.TentativasEmConflito (Log.ConflitoNaSaga). Agora vem de tempo.GetUtcNow().
-        // Logs prontos em Log.cs: MensagemDuplicada, MensagemIgnorada, Transicao.
-        // ORDEM: grave o estado ANTES de publicar (veja o remarks da classe).
-        throw new NotImplementedException("TODO: carregue, deduplique, aplique, grave (otimista) e publique (Passo 7).");
+        for (var tentativa = 1; ; tentativa++)
+        {
+            try
+            {
+                return await ProcessarUmaVezAsync(mensagem, ct);
+            }
+            catch (ConflitoDeConcorrenciaException conflito) when (tentativa < _opcoes.TentativasEmConflito)
+            {
+                Log.ConflitoNaSaga(_logger, conflito.PedidoId, conflito.VersaoEsperada, mensagem.Tipo);
+            }
+        }
     }
 
-    /// <summary>PRONTO. Publica os comandos em ordem.</summary>
+    private async Task<ResultadoSaga> ProcessarUmaVezAsync(MensagemSaga mensagem, CancellationToken ct)
+    {
+        var agora = tempo.GetUtcNow();
+        var saga = await repositorio.ObterAsync(mensagem.PedidoId, ct);
+
+        if (saga is null)
+        {
+            if (mensagem is not PedidoCriado criado)
+                throw new SagaNaoEncontradaException(mensagem.PedidoId, mensagem.Tipo);
+
+            var (nova, comandosIniciais) = SagaPedido.Iniciar(criado, agora);
+            await repositorio.InserirAsync(nova, criado.MessageId, ct);
+            await PublicarAsync(comandosIniciais, ct);
+            return new ResultadoSaga(TipoDeResultado.Iniciada, nova.Status, nova.Versao, comandosIniciais);
+        }
+
+        if (saga.JaProcessou(mensagem.MessageId))
+        {
+            var republicar = saga.ComandosDoEstadoAtual();
+            await PublicarAsync(republicar, ct);
+            Log.MensagemDuplicada(_logger, mensagem.MessageId, saga.PedidoId, saga.Status);
+            return new ResultadoSaga(TipoDeResultado.Duplicada, saga.Status, saga.Versao, republicar);
+        }
+
+        var statusAnterior = saga.Status;
+        var comandos = saga.Aplicar(mensagem, agora, _opcoes);
+        if (comandos is null)
+        {
+            Log.MensagemIgnorada(_logger, mensagem.Tipo, saga.PedidoId, saga.Status);
+            return new ResultadoSaga(TipoDeResultado.Ignorada, saga.Status, saga.Versao, []);
+        }
+
+        await repositorio.AtualizarAsync(saga, mensagem.MessageId, ct);
+        await PublicarAsync(comandos, ct);
+        Log.Transicao(_logger, saga.PedidoId, statusAnterior, mensagem.Tipo, saga.Status, saga.Versao);
+        return new ResultadoSaga(TipoDeResultado.Aplicada, saga.Status, saga.Versao, comandos);
+    }
+
     private async Task PublicarAsync(IReadOnlyList<ComandoSaga> comandos, CancellationToken ct)
     {
         foreach (var comando in comandos)

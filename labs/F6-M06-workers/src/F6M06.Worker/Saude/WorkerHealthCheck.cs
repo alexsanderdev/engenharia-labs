@@ -23,8 +23,26 @@ public sealed class WorkerHealthCheck(MonitorDeWorkers monitor, TimeProvider rel
     /// </summary>
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException(
-            "TODO (Passo 5): falha fatal → Unhealthy; nunca bateu → Unhealthy; batimento mais velho que a tolerância → Unhealthy; " +
-            "falhas consecutivas → Degraded; senão Healthy. Data: ultimoBatimento e falhasConsecutivas");
+        var estado = monitor.Obter(worker);
+        var dados = new Dictionary<string, object>
+        {
+            ["ultimoBatimento"] = estado.UltimoBatimento?.ToString("O") ?? "nunca",
+            ["falhasConsecutivas"] = estado.FalhasConsecutivas,
+        };
+
+        if (estado.FalhaFatal is not null)
+            return Task.FromResult(HealthCheckResult.Unhealthy($"{worker} morreu.", estado.FalhaFatal, dados));
+
+        if (estado.UltimoBatimento is not { } batimento)
+            return Task.FromResult(HealthCheckResult.Unhealthy($"{worker} ainda não executou nenhum ciclo.", data: dados));
+
+        var idade = relogio.GetUtcNow() - batimento;
+        if (idade > tolerancia)
+            return Task.FromResult(HealthCheckResult.Unhealthy($"{worker} sem batimento há {idade} (travado?).", data: dados));
+
+        if (estado.FalhasConsecutivas > 0)
+            return Task.FromResult(HealthCheckResult.Degraded($"{worker} falhou {estado.FalhasConsecutivas} ciclo(s) seguidos.", data: dados));
+
+        return Task.FromResult(HealthCheckResult.Healthy($"{worker} ok.", dados));
     }
 }

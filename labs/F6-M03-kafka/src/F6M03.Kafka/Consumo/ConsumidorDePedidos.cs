@@ -61,10 +61,15 @@ public sealed class ConsumidorDePedidos : IDisposable
     /// <item><c>ClientId</c> = "orderflow-worker".</item>
     /// </list>
     /// </summary>
-    public static ConsumerConfig CriarConfig(string bootstrapServers, string grupo, AutoOffsetReset inicio = AutoOffsetReset.Earliest) =>
-        throw new NotImplementedException(
-            "TODO (Passo 4): devolva new ConsumerConfig { BootstrapServers, GroupId = grupo, ClientId = \"orderflow-worker\", " +
-            "EnableAutoCommit = false, EnableAutoOffsetStore = false, AutoOffsetReset = inicio }.");
+    public static ConsumerConfig CriarConfig(string bootstrapServers, string grupo, AutoOffsetReset inicio = AutoOffsetReset.Earliest) => new()
+    {
+        BootstrapServers = bootstrapServers,
+        GroupId = grupo,
+        ClientId = "orderflow-worker",
+        EnableAutoCommit = false,
+        EnableAutoOffsetStore = false,
+        AutoOffsetReset = inicio,
+    };
 
     /// <summary>
     /// Passo 5: chamado pelo client quando o grupo atribui partições a este consumidor.
@@ -72,8 +77,7 @@ public sealed class ConsumidorDePedidos : IDisposable
     /// </summary>
     private void AoAtribuir(List<TopicPartition> particoes)
     {
-        // TODO (Passo 5): registre new EventoDeRebalance("atribuidas", [.. particoes.Select(p => p.Partition.Value)])
-        // em _historico, dentro de lock (_trava).
+        lock (_trava) _historico.Add(new EventoDeRebalance("atribuidas", [.. particoes.Select(p => p.Partition.Value)]));
     }
 
     /// <summary>
@@ -83,7 +87,7 @@ public sealed class ConsumidorDePedidos : IDisposable
     /// </summary>
     private void AoRevogar(List<TopicPartitionOffset> particoes)
     {
-        // TODO (Passo 5): registre new EventoDeRebalance("revogadas", ...) em _historico, dentro de lock (_trava).
+        lock (_trava) _historico.Add(new EventoDeRebalance("revogadas", [.. particoes.Select(p => p.Partition.Value)]));
     }
 
     /// <summary>
@@ -97,11 +101,24 @@ public sealed class ConsumidorDePedidos : IDisposable
     /// Nunca trate <see cref="OperationCanceledException"/> como falha da mensagem.</item>
     /// </list>
     /// </summary>
-    public Task<bool> ProcessarProximoAsync(TimeSpan espera, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 4): var r = _consumer.Consume(espera); null → false; SerializadorDeEventos.Ler(r.Message); " +
-            "await _manipulador.ManipularAsync(...); _consumer.Commit(r); true. " +
-            "Passo 7: com _encaminhador, capture a exceção (exceto OperationCanceledException), encaminhe e faça commit.");
+    public async Task<bool> ProcessarProximoAsync(TimeSpan espera, CancellationToken ct = default)
+    {
+        var resultado = _consumer.Consume(espera);
+        if (resultado is null) return false;
+
+        try
+        {
+            var evento = SerializadorDeEventos.Ler(resultado.Message);
+            await _manipulador.ManipularAsync(evento, ct);
+        }
+        catch (Exception ex) when (_encaminhador is not null && ex is not OperationCanceledException)
+        {
+            await _encaminhador.EncaminharAsync(resultado, ex, ct);
+        }
+
+        _consumer.Commit(resultado);
+        return true;
+    }
 
     /// <summary>Faz uma volta do laço de consumo sem esperar mensagem (útil para o grupo completar o rebalance).</summary>
     public Task<bool> GirarAsync() => ProcessarProximoAsync(TimeSpan.FromMilliseconds(50));

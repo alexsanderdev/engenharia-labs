@@ -39,18 +39,55 @@ public static class MensagensDePedido
     /// <item>application properties: <c>tipo</c>, <c>valorTotal</c> (double), <c>segmento</c>, <c>canal</c>, <c>clienteId</c> (string) e <c>versao</c> = 1.</item>
     /// </list>
     /// </summary>
-    public static ServiceBusMessage CriarPedidoCriado(PedidoCriado evento, string correlationId) =>
-        throw new NotImplementedException(
-            "TODO (Passo 1): new ServiceBusMessage(BinaryData.FromObjectAsJson(evento, Json)) com MessageId determinístico, " +
-            "CorrelationId, Subject e ContentType; depois preencha mensagem.ApplicationProperties (valorTotal como double!).");
+    public static ServiceBusMessage CriarPedidoCriado(PedidoCriado evento, string correlationId)
+    {
+        ArgumentNullException.ThrowIfNull(evento);
+        ArgumentException.ThrowIfNullOrWhiteSpace(correlationId);
+
+        var mensagem = new ServiceBusMessage(BinaryData.FromObjectAsJson(evento, Json))
+        {
+            MessageId = $"pedido-criado-{evento.PedidoId:N}",
+            CorrelationId = correlationId,
+            Subject = SubjectPedidoCriado,
+            ContentType = ContentTypeJson,
+        };
+
+        // Application properties são o que os filtros enxergam: o broker NÃO abre o corpo.
+        // Tipos simples (string, double, int, bool...). valorTotal vai como double para o SQL filter comparar números.
+        mensagem.ApplicationProperties[Propriedades.Tipo] = SubjectPedidoCriado;
+        mensagem.ApplicationProperties[Propriedades.ValorTotal] = (double)evento.ValorTotal;
+        mensagem.ApplicationProperties[Propriedades.Segmento] = evento.Segmento;
+        mensagem.ApplicationProperties[Propriedades.Canal] = evento.Canal;
+        mensagem.ApplicationProperties[Propriedades.ClienteId] = evento.ClienteId.ToString();
+        mensagem.ApplicationProperties[Propriedades.VersaoDoContrato] = 1;
+        return mensagem;
+    }
 
     /// <summary>
     /// Lê o <see cref="PedidoCriado"/> de uma mensagem recebida.
     /// Lança <see cref="MensagemInvalidaException"/> se o <c>ContentType</c> não for JSON, se o corpo não for
     /// um JSON válido do evento ou se o <c>PedidoId</c> vier vazio.
     /// </summary>
-    public static PedidoCriado LerPedidoCriado(ServiceBusReceivedMessage mensagem) =>
-        throw new NotImplementedException(
-            "TODO (Passo 1): confira o ContentType, use mensagem.Body.ToObjectFromJson<PedidoCriado>(Json) e troque " +
-            "JsonException/PedidoId vazio por MensagemInvalidaException.");
+    public static PedidoCriado LerPedidoCriado(ServiceBusReceivedMessage mensagem)
+    {
+        ArgumentNullException.ThrowIfNull(mensagem);
+
+        if (!string.Equals(mensagem.ContentType, ContentTypeJson, StringComparison.OrdinalIgnoreCase))
+            throw new MensagemInvalidaException($"ContentType inesperado: '{mensagem.ContentType}'.");
+
+        PedidoCriado? evento;
+        try
+        {
+            evento = mensagem.Body.ToObjectFromJson<PedidoCriado>(Json);
+        }
+        catch (JsonException ex)
+        {
+            throw new MensagemInvalidaException($"Corpo não é um PedidoCriado válido: {ex.Message}", ex);
+        }
+
+        if (evento is null || evento.PedidoId == Guid.Empty)
+            throw new MensagemInvalidaException("PedidoCriado sem PedidoId.");
+
+        return evento;
+    }
 }

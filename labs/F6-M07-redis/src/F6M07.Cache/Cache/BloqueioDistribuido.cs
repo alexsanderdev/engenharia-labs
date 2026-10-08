@@ -24,18 +24,21 @@ public sealed class BloqueioDistribuido(IDatabase redis)
     /// Gere um token único (Guid), grave com <c>StringSetAsync(chave, token, validade, When.NotExists)</c>
     /// e devolva o token se gravou, ou <c>null</c> se outro processo já detém o lock.
     /// </summary>
-    public Task<string?> TentarAdquirirAsync(string chave, TimeSpan validade) =>
-        throw new NotImplementedException(
-            "TODO (Passo 5): token = Guid.NewGuid().ToString(\"N\"); redis.StringSetAsync(chave, token, validade, When.NotExists); " +
-            "devolva o token se gravou, senão null.");
+    public async Task<string?> TentarAdquirirAsync(string chave, TimeSpan validade)
+    {
+        var token = Guid.NewGuid().ToString("N");
+        var adquiriu = await redis.StringSetAsync(chave, token, validade, When.NotExists);
+        return adquiriu ? token : null;
+    }
 
     /// <summary>
     /// Passo 5: libera o lock SÓ se ele ainda for seu: execute <see cref="ScriptLiberar"/> com
     /// <c>ScriptEvaluateAsync(script, [chave], [token])</c> e devolva true se apagou (resultado 1).
     /// Isso impede apagar o lock de outro processo quando o seu já expirou.
     /// </summary>
-    public Task<bool> LiberarAsync(string chave, string token) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 5): execute redis.ScriptEvaluateAsync(ScriptLiberar, [chave], [token]) em {redis.Database} " +
-            "e devolva (long)resultado == 1.");
+    public async Task<bool> LiberarAsync(string chave, string token)
+    {
+        var resultado = await redis.ScriptEvaluateAsync(ScriptLiberar, [chave], [token]);
+        return (long)resultado == 1;
+    }
 }

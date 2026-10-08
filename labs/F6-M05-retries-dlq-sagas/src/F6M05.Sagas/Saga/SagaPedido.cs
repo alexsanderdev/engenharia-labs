@@ -80,9 +80,12 @@ public sealed class SagaPedido
     /// </summary>
     public static (SagaPedido Saga, IReadOnlyList<ComandoSaga> Comandos) Iniciar(PedidoCriado evento, DateTimeOffset agora)
     {
-        // TODO (Passo 5): crie a saga com o construtor privado (MessageId do evento como já processado),
-        // Status = AguardandoEstoque, e devolva [ComandoReservarEstoque()].
-        throw new NotImplementedException("TODO: inicie a saga em AguardandoEstoque e peça ReservarEstoque (Passo 5).");
+        ArgumentNullException.ThrowIfNull(evento);
+        var saga = new SagaPedido(evento.PedidoId, evento.ClienteId, evento.Valor, evento.Itens, agora, [evento.MessageId])
+        {
+            Status = StatusSaga.AguardandoEstoque,
+        };
+        return (saga, [saga.ComandoReservarEstoque()]);
     }
 
     /// <summary>
@@ -111,16 +114,25 @@ public sealed class SagaPedido
         if (mensagem.PedidoId != PedidoId)
             throw new ArgumentException($"Mensagem do pedido {mensagem.PedidoId} aplicada à saga {PedidoId}.", nameof(mensagem));
 
-        // TODO (Passo 5): um switch em (Status, mensagem) com a tabela acima. Dica de forma:
-        //   IReadOnlyList<ComandoSaga>? comandos = (Status, mensagem) switch
-        //   {
-        //       (StatusSaga.AguardandoEstoque, EstoqueReservado) => ReservouEstoque(agora, opcoes),
-        //       ...
-        //       _ => null,
-        //   };
-        // Cada transição é um método privado que muda Status/Passos/prazo/motivo e devolve os comandos
-        // (use as fábricas ComandoXxx() no fim do arquivo). Se aplicou: registre o MessageId e AtualizadaEm.
-        throw new NotImplementedException("TODO: aplique a transição (estado × mensagem) ou devolva null (Passo 5).");
+        IReadOnlyList<ComandoSaga>? comandos = (Status, mensagem) switch
+        {
+            (StatusSaga.AguardandoEstoque, EstoqueReservado) => ReservouEstoque(agora, opcoes),
+            (StatusSaga.AguardandoEstoque, EstoqueIndisponivel e) => Cancelar(MotivosDeCancelamento.EstoqueIndisponivel(e.Motivo)),
+            (StatusSaga.AguardandoPagamento, PagamentoAutorizado e) => Concluir(e.AutorizacaoId),
+            (StatusSaga.AguardandoPagamento, PagamentoRecusado e) => Compensar(MotivosDeCancelamento.PagamentoRecusado(e.Motivo)),
+            (StatusSaga.AguardandoPagamento, PrazoDoPagamentoExpirado) when agora >= PrazoPagamentoEm
+                => Compensar(MotivosDeCancelamento.PrazoDoPagamentoExpirado),
+            (StatusSaga.Compensando, EstoqueLiberado) => LiberouEstoque(),
+            (StatusSaga.Compensando or StatusSaga.Cancelada, PagamentoAutorizado e)
+                when !Passos.HasFlag(PassosDaSaga.PagamentoEstornado) => Estornar(e.AutorizacaoId),
+            _ => null,
+        };
+
+        if (comandos is null) return null;
+
+        _mensagensProcessadas.Add(mensagem.MessageId);
+        AtualizadaEm = agora;
+        return comandos;
     }
 
     /// <summary>
@@ -135,7 +147,67 @@ public sealed class SagaPedido
     /// </remarks>
     public IReadOnlyList<ComandoSaga> ComandosDoEstadoAtual()
     {
-        throw new NotImplementedException("TODO: devolva os comandos do estado atual com os mesmos MessageIds (Passo 5).");
+        List<ComandoSaga> comandos = Status switch
+        {
+            StatusSaga.AguardandoEstoque => [ComandoReservarEstoque()],
+            StatusSaga.AguardandoPagamento => [ComandoAutorizarPagamento()],
+            StatusSaga.Compensando => [ComandoLiberarEstoque()],
+            StatusSaga.Concluida => [ComandoConfirmarPedido()],
+            StatusSaga.Cancelada => [ComandoCancelarPedido()],
+            _ => [],
+        };
+
+        if (Passos.HasFlag(PassosDaSaga.PagamentoEstornado) && AutorizacaoId is not null)
+            comandos.Add(ComandoEstornarPagamento());
+
+        return comandos;
+    }
+
+    private IReadOnlyList<ComandoSaga> ReservouEstoque(DateTimeOffset agora, OpcoesDaSaga opcoes)
+    {
+        Status = StatusSaga.AguardandoPagamento;
+        Passos |= PassosDaSaga.EstoqueReservado;
+        PrazoPagamentoEm = agora + opcoes.PrazoDoPagamento;
+        return [ComandoAutorizarPagamento()];
+    }
+
+    private IReadOnlyList<ComandoSaga> Concluir(string autorizacaoId)
+    {
+        Status = StatusSaga.Concluida;
+        Passos |= PassosDaSaga.PagamentoAutorizado | PassosDaSaga.PedidoConfirmado;
+        AutorizacaoId = autorizacaoId;
+        PrazoPagamentoEm = null;
+        return [ComandoConfirmarPedido()];
+    }
+
+    private IReadOnlyList<ComandoSaga> Compensar(string motivo)
+    {
+        Status = StatusSaga.Compensando;
+        MotivoCancelamento = motivo;
+        PrazoPagamentoEm = null;
+        return [ComandoLiberarEstoque()];
+    }
+
+    private IReadOnlyList<ComandoSaga> LiberouEstoque()
+    {
+        Status = StatusSaga.Cancelada;
+        Passos |= PassosDaSaga.EstoqueLiberado | PassosDaSaga.PedidoCancelado;
+        return [ComandoCancelarPedido()];
+    }
+
+    private IReadOnlyList<ComandoSaga> Cancelar(string motivo)
+    {
+        Status = StatusSaga.Cancelada;
+        Passos |= PassosDaSaga.PedidoCancelado;
+        MotivoCancelamento = motivo;
+        return [ComandoCancelarPedido()];
+    }
+
+    private IReadOnlyList<ComandoSaga> Estornar(string autorizacaoId)
+    {
+        AutorizacaoId = autorizacaoId;
+        Passos |= PassosDaSaga.PagamentoAutorizado | PassosDaSaga.PagamentoEstornado;
+        return [ComandoEstornarPagamento()];
     }
 
     // Fábricas de comandos: PRONTAS. O MessageId é determinístico (pedido + tipo do comando).

@@ -43,11 +43,26 @@ public sealed class CatalogoComCacheAside(
     /// <see cref="CarregarComBloqueioAsync"/>.</item>
     /// </list>
     /// </summary>
-    public Task<Produto?> ObterAsync(Guid id, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 3): redis.StringGetAsync(ChavesDeCache.Produto(id)) com fallback para a fonte em " +
-            "RedisException/RedisTimeoutException; hit → Desserializar; miss → CarregarEGravarAsync " +
-            "(ou CarregarComBloqueioAsync quando houver bloqueio — Passo 5).");
+    public async Task<Produto?> ObterAsync(Guid id, CancellationToken ct = default)
+    {
+        var chave = ChavesDeCache.Produto(id);
+        RedisValue emCache;
+        try
+        {
+            emCache = await redis.StringGetAsync(chave);
+        }
+        catch (Exception ex) when (ex is RedisException or RedisTimeoutException)
+        {
+            _logger.LogWarning(ex, "Redis indisponível ao ler {Chave}; lendo da fonte", chave);
+            return await fonte.ObterAsync(id, ct);
+        }
+
+        if (emCache.HasValue) return Desserializar(emCache);
+
+        return bloqueio is null
+            ? await CarregarEGravarAsync(id, chave, ct)
+            : await CarregarComBloqueioAsync(id, chave, bloqueio, ct);
+    }
 
     /// <summary>
     /// Passo 4: invalidação. Atualize a FONTE primeiro e depois APAGUE a chave (não regrave o valor:
@@ -57,20 +72,38 @@ public sealed class CatalogoComCacheAside(
     public async Task AtualizarAsync(Produto produto, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(produto);
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 4): await fonte.AtualizarAsync(produto, ct) e depois redis.KeyDeleteAsync(ChavesDeCache.Produto(produto.Id)); " +
-            "se o Redis falhar ao apagar, logue (_logger.LogError) e siga.");
+        await fonte.AtualizarAsync(produto, ct);
+        var chave = ChavesDeCache.Produto(produto.Id);
+        try
+        {
+            await redis.KeyDeleteAsync(chave);
+        }
+        catch (Exception ex) when (ex is RedisException or RedisTimeoutException)
+        {
+            _logger.LogError(ex, "Não foi possível invalidar {Chave}; o valor antigo vive até o TTL", chave);
+        }
     }
 
     /// <summary>
     /// Passo 3: lê da fonte e grava no cache: produto → JSON com <c>politica.CalcularTtl()</c>;
     /// inexistente → <see cref="MarcadorAusente"/> com <c>politica.TtlNegativo</c>. Erro do Redis ao gravar: logue e siga.
     /// </summary>
-    private Task<Produto?> CarregarEGravarAsync(Guid id, string chave, CancellationToken ct) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 3): leia da fonte ({id}); grave em '{chave}' com redis.StringSetAsync(chave, valor, ttl, When.Always): " +
-            "JsonSerializer.Serialize(produto, Json) + politica.CalcularTtl(), ou MarcadorAusente + politica.TtlNegativo.");
+    private async Task<Produto?> CarregarEGravarAsync(Guid id, string chave, CancellationToken ct)
+    {
+        var produto = await fonte.ObterAsync(id, ct);
+        var (valor, ttl) = produto is null
+            ? ((RedisValue)MarcadorAusente, politica.TtlNegativo)
+            : ((RedisValue)JsonSerializer.Serialize(produto, Json), politica.CalcularTtl());
+        try
+        {
+            await redis.StringSetAsync(chave, valor, ttl, When.Always);
+        }
+        catch (Exception ex) when (ex is RedisException or RedisTimeoutException)
+        {
+            _logger.LogWarning(ex, "Não foi possível gravar {Chave} no cache", chave);
+        }
+        return produto;
+    }
 
     /// <summary>
     /// Passo 5: proteção contra stampede.
@@ -81,11 +114,34 @@ public sealed class CatalogoComCacheAside(
     /// <see cref="EsperaMaximaPeloBloqueio"/>; estourou → vá à fonte (degrada, mas responde).</item>
     /// </list>
     /// </summary>
-    private Task<Produto?> CarregarComBloqueioAsync(Guid id, string chave, BloqueioDistribuido trava, CancellationToken ct) =>
-        throw new NotImplementedException(
-            $"TODO (Passo 5): trava.TentarAdquirirAsync(ChavesDeCache.Bloqueio(chave), ValidadeDoBloqueio ({ValidadeDoBloqueio.TotalSeconds} s)); " +
-            "com token: releia o cache (double-check) ou CarregarEGravarAsync, e LiberarAsync no finally; " +
-            "sem token: polling do cache a cada 20 ms até EsperaMaximaPeloBloqueio, depois fonte.");
+    private async Task<Produto?> CarregarComBloqueioAsync(Guid id, string chave, BloqueioDistribuido trava, CancellationToken ct)
+    {
+        var chaveDoBloqueio = ChavesDeCache.Bloqueio(chave);
+        var token = await trava.TentarAdquirirAsync(chaveDoBloqueio, ValidadeDoBloqueio);
+        if (token is not null)
+        {
+            try
+            {
+                var deNovo = await redis.StringGetAsync(chave);
+                return deNovo.HasValue ? Desserializar(deNovo) : await CarregarEGravarAsync(id, chave, ct);
+            }
+            finally
+            {
+                await trava.LiberarAsync(chaveDoBloqueio, token);
+            }
+        }
+
+        var limite = DateTime.UtcNow + EsperaMaximaPeloBloqueio;
+        while (DateTime.UtcNow < limite)
+        {
+            await Task.Delay(20, ct);
+            var valor = await redis.StringGetAsync(chave);
+            if (valor.HasValue) return Desserializar(valor);
+        }
+
+        _logger.LogWarning("Esperou {Espera} pelo recarregamento de {Chave}; lendo da fonte", EsperaMaximaPeloBloqueio, chave);
+        return await fonte.ObterAsync(id, ct);
+    }
 
     private static Produto? Desserializar(RedisValue valor) =>
         valor == MarcadorAusente ? null : JsonSerializer.Deserialize<Produto>(valor.ToString(), Json);

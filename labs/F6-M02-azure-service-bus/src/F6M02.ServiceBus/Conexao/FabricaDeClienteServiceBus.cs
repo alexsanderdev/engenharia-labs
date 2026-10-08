@@ -24,9 +24,18 @@ public static class FabricaDeClienteServiceBus
     /// Opções do cliente: transporte AMQP sobre TCP e retry exponencial do SDK
     /// (<c>Mode = Exponential</c>, <c>MaxRetries = 3</c>, <c>Delay = 800 ms</c>, <c>MaxDelay = 30 s</c>, <c>TryTimeout = 30 s</c>).
     /// </summary>
-    public static ServiceBusClientOptions CriarOpcoesDoCliente() =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): new ServiceBusClientOptions { TransportType = AmqpTcp, RetryOptions = new ServiceBusRetryOptions { ... } }.");
+    public static ServiceBusClientOptions CriarOpcoesDoCliente() => new()
+    {
+        TransportType = ServiceBusTransportType.AmqpTcp,
+        RetryOptions = new ServiceBusRetryOptions
+        {
+            Mode = ServiceBusRetryMode.Exponential,
+            MaxRetries = 3,
+            Delay = TimeSpan.FromMilliseconds(800),
+            MaxDelay = TimeSpan.FromSeconds(30),
+            TryTimeout = TimeSpan.FromSeconds(30),
+        },
+    };
 
     /// <summary>
     /// Regras:
@@ -38,8 +47,22 @@ public static class FabricaDeClienteServiceBus
     /// <item>qualquer outra combinação → <see cref="InvalidOperationException"/>.</item>
     /// </list>
     /// </summary>
-    public static ServiceBusClient Criar(ConexaoServiceBusOptions opcoes, TokenCredential? credencial = null) =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): ambíguo → InvalidOperationException; connection string → new ServiceBusClient(cs, opções); " +
-            "namespace + credencial → new ServiceBusClient(namespace, credencial, opções); senão InvalidOperationException.");
+    public static ServiceBusClient Criar(ConexaoServiceBusOptions opcoes, TokenCredential? credencial = null)
+    {
+        ArgumentNullException.ThrowIfNull(opcoes);
+        var temConnectionString = !string.IsNullOrWhiteSpace(opcoes.ConnectionString);
+        var temNamespace = !string.IsNullOrWhiteSpace(opcoes.FullyQualifiedNamespace);
+
+        if (temConnectionString && temNamespace)
+            throw new InvalidOperationException("Configure ConnectionString OU FullyQualifiedNamespace, não os dois.");
+
+        if (temConnectionString)
+            return new ServiceBusClient(opcoes.ConnectionString, CriarOpcoesDoCliente());
+
+        if (temNamespace && credencial is not null)
+            return new ServiceBusClient(opcoes.FullyQualifiedNamespace, credencial, CriarOpcoesDoCliente());
+
+        throw new InvalidOperationException(
+            "Service Bus sem configuração: informe ConnectionString (emulador/dev) ou FullyQualifiedNamespace + TokenCredential (Managed Identity).");
+    }
 }

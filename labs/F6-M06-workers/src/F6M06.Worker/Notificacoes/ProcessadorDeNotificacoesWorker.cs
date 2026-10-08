@@ -26,10 +26,13 @@ public sealed partial class ProcessadorDeNotificacoesWorker(
     /// </summary>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 8): stoppingToken.Register(fila.Encerrar); Task.WhenAll de N LerAsync; " +
-            "no fim, LogPendentesNaoProcessadas se sobrou algo na fila");
+        using var registro = stoppingToken.Register(fila.Encerrar);
+
+        var leitores = Enumerable.Range(1, opcoes.Value.Leitores).Select(n => LerAsync(n, stoppingToken));
+        await Task.WhenAll(leitores);
+
+        if (fila.Pendentes > 0)
+            LogPendentesNaoProcessadas(fila.Pendentes);
     }
 
     /// <summary>
@@ -40,10 +43,22 @@ public sealed partial class ProcessadorDeNotificacoesWorker(
     /// </summary>
     private async Task LerAsync(int leitor, CancellationToken stoppingToken)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 8): while (!stoppingToken.IsCancellationRequested && await fila.Leitor.WaitToReadAsync(stoppingToken)) " +
-            "{ confira o token de novo; TryRead; ProcessarAsync } — OCE do stoppingToken é saída normal");
+        try
+        {
+            while (!stoppingToken.IsCancellationRequested
+                   && await fila.Leitor.WaitToReadAsync(stoppingToken))
+            {
+                if (stoppingToken.IsCancellationRequested)
+                    break;
+
+                if (fila.Leitor.TryRead(out var notificacao))
+                    await ProcessarAsync(leitor, notificacao);
+            }
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
+            // parada normal: não começa itens novos
+        }
     }
 
     /// <summary>
@@ -55,10 +70,21 @@ public sealed partial class ProcessadorDeNotificacoesWorker(
     /// </summary>
     private async Task ProcessarAsync(int leitor, Notificacao notificacao)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 8): enviador.EnviarAsync(notificacao, _abortar.Token); sucesso → LogEnviada; " +
-            "OCE com _abortar cancelado → LogInterrompida; outra exceção → LogFalhaNoEnvio e segue");
+        try
+        {
+            await enviador.EnviarAsync(notificacao, _abortar.Token);
+            LogEnviada(notificacao.Id, leitor);
+        }
+        catch (OperationCanceledException) when (_abortar.IsCancellationRequested)
+        {
+            LogInterrompida(notificacao.Id);
+        }
+#pragma warning disable CA1031 // um item com falha não pode derrubar o leitor
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            LogFalhaNoEnvio(ex, notificacao.Id);
+        }
     }
 
     /// <summary>
@@ -75,9 +101,10 @@ public sealed partial class ProcessadorDeNotificacoesWorker(
     /// </remarks>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        // TODO (Passo 9): depois do base.StopAsync, se o prazo acabou (cancellationToken.IsCancellationRequested),
-        // cancele _abortar para interromper o item em andamento.
         await base.StopAsync(cancellationToken);
+
+        if (cancellationToken.IsCancellationRequested)
+            await _abortar.CancelAsync();
     }
 
     /// <summary>(PRONTO)</summary>

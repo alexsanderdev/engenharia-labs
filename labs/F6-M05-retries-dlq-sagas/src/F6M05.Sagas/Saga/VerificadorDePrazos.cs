@@ -21,6 +21,18 @@ public sealed class VerificadorDePrazos(IRepositorioDeSagas repositorio, Orquest
     /// <see cref="PrazoDoPagamentoExpirado"/> (id de <see cref="MessageIdDoPrazo"/>) para cada uma.
     /// Devolve quantas foram efetivamente compensadas (resultado <see cref="TipoDeResultado.Aplicada"/>).
     /// </summary>
-    public Task<int> VerificarAsync(int maximo = 100, CancellationToken ct = default) =>
-        throw new NotImplementedException("TODO: liste as sagas vencidas e entregue PrazoDoPagamentoExpirado ao orquestrador (Passo 8).");
+    public async Task<int> VerificarAsync(int maximo = 100, CancellationToken ct = default)
+    {
+        var vencidas = await repositorio.ListarComPrazoVencidoAsync(tempo.GetUtcNow(), maximo, ct);
+        var compensadas = 0;
+
+        foreach (var pedidoId in vencidas)
+        {
+            var resultado = await orquestrador.ProcessarAsync(
+                new PrazoDoPagamentoExpirado(MessageIdDoPrazo(pedidoId), pedidoId), ct);
+            if (resultado.Tipo == TipoDeResultado.Aplicada) compensadas++;
+        }
+
+        return compensadas;
+    }
 }

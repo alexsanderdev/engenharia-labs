@@ -66,21 +66,71 @@ public sealed class ConsumidorDePedidos : IAsyncDisposable
     /// (quem liquida é o consumidor), <c>MaxConcurrentCalls</c> e <c>MaxAutoLockRenewalDuration</c>
     /// vindos das opções, e <c>PrefetchCount = 0</c> (prefetch com lock curto = locks expirando no buffer).
     /// </summary>
-    public static ServiceBusProcessorOptions CriarOpcoesDoProcessor(ConsumidorDePedidosOptions opcoes) =>
-        throw new NotImplementedException(
-            "TODO (Passo 4): new ServiceBusProcessorOptions { ReceiveMode = PeekLock, AutoCompleteMessages = false, " +
-            "MaxConcurrentCalls, MaxAutoLockRenewalDuration, PrefetchCount = 0 }.");
+    public static ServiceBusProcessorOptions CriarOpcoesDoProcessor(ConsumidorDePedidosOptions opcoes)
+    {
+        ArgumentNullException.ThrowIfNull(opcoes);
+        return new ServiceBusProcessorOptions
+        {
+            ReceiveMode = ServiceBusReceiveMode.PeekLock,
+            AutoCompleteMessages = false,
+            MaxConcurrentCalls = opcoes.MaxConcurrentCalls,
+            MaxAutoLockRenewalDuration = opcoes.MaxAutoLockRenewalDuration,
+            PrefetchCount = 0,
+        };
+    }
 
     public Task IniciarAsync(CancellationToken ct = default) => _processor.StartProcessingAsync(ct);
 
     public Task PararAsync(CancellationToken ct = default) => _processor.StopProcessingAsync(ct);
 
-    private Task ProcessarAsync(ProcessMessageEventArgs args) =>
-        // Use args.CompleteMessageAsync, args.AbandonMessageAsync(mensagem, UltimoMotivo(...)) e
-        // args.DeadLetterMessageAsync(mensagem, motivo, descrição). Sempre passe args.CancellationToken.
-        throw new NotImplementedException(
-            "TODO (Passo 4): leia o evento (MensagemInvalidaException → DLQ 'MensagemInvalida'), monte o ContextoDaMensagem, " +
-            "chame _handler e liquide conforme o resultado; exceção do handler → Abandon.");
+    private async Task ProcessarAsync(ProcessMessageEventArgs args)
+    {
+        var mensagem = args.Message;
+        var ct = args.CancellationToken;
+
+        PedidoCriado evento;
+        try
+        {
+            evento = MensagensDePedido.LerPedidoCriado(mensagem);
+        }
+        catch (MensagemInvalidaException ex)
+        {
+            // Veneno: tentar de novo não muda nada. DLQ já, com o motivo.
+            await args.DeadLetterMessageAsync(mensagem, MotivosDeDeadLetter.MensagemInvalida, Limitar(ex.Message), ct);
+            return;
+        }
+
+        var contexto = new ContextoDaMensagem(
+            mensagem.MessageId, mensagem.CorrelationId, mensagem.DeliveryCount, mensagem.EnqueuedTime,
+            mensagem.SessionId, mensagem.ApplicationProperties);
+
+        ResultadoDoProcessamento resultado;
+        try
+        {
+            resultado = await _handler(evento, contexto, ct);
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            // Erro inesperado: devolve. O broker conta a entrega e, no limite, manda para a DLQ sozinho.
+            await args.AbandonMessageAsync(mensagem, UltimoMotivo(ex.GetType().Name + ": " + ex.Message), ct);
+            return;
+        }
+
+        switch (resultado)
+        {
+            case ResultadoDoProcessamento.Sucesso:
+                await args.CompleteMessageAsync(mensagem, ct);
+                break;
+            case ResultadoDoProcessamento.FalhaTransitoria f:
+                await args.AbandonMessageAsync(mensagem, UltimoMotivo(f.Motivo), ct);
+                break;
+            case ResultadoDoProcessamento.FalhaPermanente f:
+                await args.DeadLetterMessageAsync(mensagem, f.Motivo, Limitar(f.Descricao), ct);
+                break;
+            default:
+                throw new InvalidOperationException($"Resultado desconhecido: {resultado}");
+        }
+    }
 
     private static Dictionary<string, object> UltimoMotivo(string motivo) =>
         new() { [PropriedadeUltimoMotivo] = Limitar(motivo) };

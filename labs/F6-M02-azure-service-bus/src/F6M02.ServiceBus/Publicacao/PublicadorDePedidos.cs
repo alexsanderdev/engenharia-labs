@@ -22,17 +22,47 @@ public sealed class PublicadorDePedidos : IAsyncDisposable
 
     /// <summary>Publica um pedido (uma mensagem montada por <see cref="MensagensDePedido.CriarPedidoCriado"/>).</summary>
     public Task PublicarAsync(PedidoCriado evento, string correlationId, CancellationToken ct = default) =>
-        throw new NotImplementedException("TODO (Passo 3): _sender.SendMessageAsync(MensagensDePedido.CriarPedidoCriado(...), ct).");
+        _sender.SendMessageAsync(MensagensDePedido.CriarPedidoCriado(evento, correlationId), ct);
 
     /// <summary>
     /// Publica vários pedidos usando <see cref="ServiceBusMessageBatch"/> (uma ida ao broker por lote,
     /// respeitando o tamanho máximo). Se uma mensagem não couber no lote atual, envie o lote e comece outro.
     /// Devolve quantos lotes foram enviados.
     /// </summary>
-    public Task<int> PublicarLoteAsync(IReadOnlyList<PedidoCriado> eventos, string correlationId, CancellationToken ct = default) =>
-        throw new NotImplementedException(
-            "TODO (Passo 3): crie o lote com await _sender.CreateMessageBatchAsync(ct) e use lote.TryAddMessage(...) para cada pedido; " +
-            "se não couber, envie o lote (SendMessagesAsync) e crie outro. Devolva quantos lotes foram enviados.");
+    public async Task<int> PublicarLoteAsync(IReadOnlyList<PedidoCriado> eventos, string correlationId, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(eventos);
+        if (eventos.Count == 0) return 0;
+
+        var lotes = 0;
+        var lote = await _sender.CreateMessageBatchAsync(ct);
+        try
+        {
+            foreach (var evento in eventos)
+            {
+                var mensagem = MensagensDePedido.CriarPedidoCriado(evento, correlationId);
+                if (lote.TryAddMessage(mensagem)) continue;
+
+                // Lote cheio: envia o que tem e começa outro.
+                if (lote.Count == 0)
+                    throw new InvalidOperationException($"O pedido {evento.PedidoId} não cabe sozinho num lote.");
+
+                await _sender.SendMessagesAsync(lote, ct);
+                lotes++;
+                lote.Dispose();
+                lote = await _sender.CreateMessageBatchAsync(ct);
+                if (!lote.TryAddMessage(mensagem))
+                    throw new InvalidOperationException($"O pedido {evento.PedidoId} não cabe sozinho num lote.");
+            }
+
+            await _sender.SendMessagesAsync(lote, ct);
+            return lotes + 1;
+        }
+        finally
+        {
+            lote.Dispose();
+        }
+    }
 
     public ValueTask DisposeAsync() => _sender.DisposeAsync();
 }

@@ -56,10 +56,15 @@ public sealed class ConsumidorDeFila : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(processar);
         ArgumentOutOfRangeException.ThrowIfZero(prefetch);
 
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 6): CreateChannelAsync, BasicQosAsync(0, prefetch, false), new ConsumidorDeFila(canal, processar), " +
-            "AsyncEventingBasicConsumer com ReceivedAsync += AoReceberAsync e BasicConsumeAsync(fila, autoAck: false, ...)");
+        var canal = await conexao.CreateChannelAsync(cancellationToken: ct);
+        await canal.BasicQosAsync(prefetchSize: 0, prefetchCount: prefetch, global: false, cancellationToken: ct);
+
+        var consumidor = new ConsumidorDeFila(canal, processar);
+        var basico = new AsyncEventingBasicConsumer(canal);
+        basico.ReceivedAsync += consumidor.AoReceberAsync;
+        await canal.BasicConsumeAsync(fila, autoAck: false, consumer: basico, cancellationToken: ct);
+
+        return consumidor;
     }
 
     /// <summary>
@@ -78,10 +83,45 @@ public sealed class ConsumidorDeFila : IAsyncDisposable
     /// </summary>
     private async Task AoReceberAsync(object sender, BasicDeliverEventArgs ea)
     {
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "TODO (Passo 7): MapeamentoAmqp.ParaEnvelope (ContratoIncompativel → Descartar), chame _processar " +
-            "(exceção → Reprocessar na 1ª entrega, Descartar se ea.Redelivered) e aplique BasicAck/BasicNack; ignore AlreadyClosedException");
+        Decisao decisao;
+        try
+        {
+            var envelope = MapeamentoAmqp.ParaEnvelope(ea.BasicProperties, ea.Body);
+            try
+            {
+                decisao = await _processar(new MensagemRecebida(envelope, ea.Redelivered, ea.RoutingKey), ea.CancellationToken);
+            }
+#pragma warning disable CA1031 // o consumidor precisa decidir algo para QUALQUER falha do handler
+            catch (Exception)
+#pragma warning restore CA1031
+            {
+                decisao = ea.Redelivered ? Decisao.Descartar : Decisao.Reprocessar;
+            }
+        }
+        catch (ContratoIncompativelException)
+        {
+            decisao = Decisao.Descartar;
+        }
+
+        try
+        {
+            switch (decisao)
+            {
+                case Decisao.Confirmar:
+                    await _canal.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                    break;
+                case Decisao.Reprocessar:
+                    await _canal.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
+                    break;
+                default:
+                    await _canal.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
+                    break;
+            }
+        }
+        catch (AlreadyClosedException)
+        {
+            // O canal caiu: a mensagem não confirmada volta para a fila sozinha (at-least-once).
+        }
     }
 
     /// <summary>Fecha o canal: as mensagens entregues e ainda não confirmadas voltam para a fila. (PRONTO)</summary>

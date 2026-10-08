@@ -59,11 +59,15 @@ public static class CatalogoDeContratos
     /// </summary>
     private static Dictionary<Type, ContratoDeMensagem> Montar()
     {
-        // TODO (Passo 1): declare os 3 contratos descritos acima. Exemplo de um item:
-        //   new(typeof(ReservarEstoque), "orderflow.estoque.reservar-estoque", 1, NaturezaDaMensagem.Comando,
-        //       TopologiaOrderFlow.ExchangeComandos, TopologiaOrderFlow.FilaReservarEstoque),
-        // Enquanto o catálogo estiver vazio, De<T>() lança KeyNotFoundException para qualquer mensagem.
-        ContratoDeMensagem[] contratos = [];
+        ContratoDeMensagem[] contratos =
+        [
+            new(typeof(ReservarEstoque), "orderflow.estoque.reservar-estoque", 1, NaturezaDaMensagem.Comando,
+                TopologiaOrderFlow.ExchangeComandos, TopologiaOrderFlow.FilaReservarEstoque),
+            new(typeof(PedidoCriado), "orderflow.pedidos.pedido-criado", 1, NaturezaDaMensagem.Evento,
+                TopologiaOrderFlow.ExchangeEventos, "pedido.criado"),
+            new(typeof(PedidoCancelado), "orderflow.pedidos.pedido-cancelado", 1, NaturezaDaMensagem.Evento,
+                TopologiaOrderFlow.ExchangeEventos, "pedido.cancelado"),
+        ];
 
         return contratos.ToDictionary(c => c.TipoClr);
     }
