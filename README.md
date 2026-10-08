@@ -46,6 +46,13 @@ dotnet test EngenhariaLabs.slnx
 | `F2-M06-testes-unitarios` | Testes Unitários | 33 |
 | `F2-M07-testes-integracao` | Testes de Integração (Docker/SQL Server) | 19 |
 | `F2-M08-arquitetura-mutacao` | Arquitetura (NetArchTest) e Mutation (Stryker) | 18 |
+| `F3-M01-modelagem-sql` | Modelagem Relacional e SQL (Docker) | 62 |
+| `F3-M02-indices-planos` | Índices e Planos de Execução (Docker) | 17 |
+| `F3-M03-transacoes-locks` | Transações, Isolamento e Locks (Docker) | 53 |
+| `F3-M04-efcore` | EF Core e Persistência (Docker) | 20 |
+| `F3-M05-efcore-avancado` | EF Core Avançado (Docker) | 14 |
+| `F3-M06-dapper` | Dapper e Consultas de Leitura (Docker) | 25 |
+| `F3-M07-migrations-paginacao` | Migrations, Concorrência e Paginação (Docker) | 28 |
 
 ## Projetos abertos
 

@@ -1,0 +1,13 @@
+-- TODO (Passo 7): locks de UMA sessão (parâmetro @sessao) no banco atual, concedidos ou em espera.
+--
+-- Colunas obrigatórias (o C# lê pelo NOME):
+--   TipoDeRecurso  nvarchar  resource_type (DATABASE, OBJECT, PAGE, KEY, RID...)
+--   Modo           nvarchar  request_mode (S, U, X, IS, IX, RangeS-U...)
+--   Status         nvarchar  request_status (GRANT, WAIT, CONVERT)
+--   Tabela         sysname   nome da tabela (NULL para DATABASE)
+--
+-- Dica: para OBJECT, resource_associated_entity_id já é o object_id; para KEY/PAGE/RID/HOBT é um
+-- hobt_id (junte com sys.partitions). Filtre por request_session_id = @sessao e resource_database_id = DB_ID().
+--
+-- Placeholder: apague a linha abaixo e escreva a consulta.
+THROW 50000, N'TODO (Passo 7): escreva a consulta de Sql/LocksDaSessao.sql', 1;

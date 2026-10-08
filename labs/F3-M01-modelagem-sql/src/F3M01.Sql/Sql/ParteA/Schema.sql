@@ -1,0 +1,43 @@
+-- =============================================================================
+-- Parte A — DDL do OrderFlow
+-- Executado UMA vez num banco vazio (F3M01Modelagem) pela fixture dos testes.
+-- Pode usar GO para separar lotes. Nomeie as constraints (PK_, FK_, UQ_, CK_, DF_).
+--
+-- TODO: escreva os CREATE TABLE abaixo. Contrato (os testes conferem nome, tipo e NULL):
+--
+-- dbo.Clientes
+--   Id            int            NOT NULL  IDENTITY, PK
+--   Nome          nvarchar(150)  NOT NULL
+--   Email         nvarchar(254)  NOT NULL  único
+--   IndicadoPorId int            NULL      FK -> Clientes(Id) (quem indicou este cliente)
+--   CriadoEm      datetime2      NOT NULL  DEFAULT: data/hora UTC atual
+--
+-- dbo.Produtos
+--   Id            int            NOT NULL  IDENTITY, PK
+--   Sku           varchar(20)    NOT NULL  único
+--   Nome          nvarchar(200)  NOT NULL
+--   Preco         decimal(18,2)  NOT NULL  nunca negativo (zero pode: brinde)
+--   Ativo         bit            NOT NULL  DEFAULT 1
+--
+-- dbo.Pedidos
+--   Id            int            NOT NULL  IDENTITY, PK
+--   ClienteId     int            NOT NULL  FK -> Clientes(Id)
+--   CriadoEm      datetime2      NOT NULL  DEFAULT: data/hora UTC atual
+--   Status        varchar(20)    NOT NULL  só 'Created', 'Confirmed', 'Completed', 'Cancelled'; DEFAULT 'Created'
+--   Total         decimal(18,2)  NOT NULL  nunca negativo; DEFAULT 0
+--
+-- dbo.ItensPedido
+--   PedidoId      int            NOT NULL  FK -> Pedidos(Id); excluir o pedido exclui os itens
+--   ProdutoId     int            NOT NULL  FK -> Produtos(Id); produto vendido não pode ser excluído
+--   Quantidade    int            NOT NULL  maior que zero
+--   PrecoUnitario decimal(18,2)  NOT NULL  nunca negativo (preço no momento da compra)
+--   PK composta (PedidoId, ProdutoId): um produto aparece uma vez por pedido
+-- =============================================================================
+
+-- TODO: CREATE TABLE dbo.Clientes ( ... );
+
+-- TODO: CREATE TABLE dbo.Produtos ( ... );
+
+-- TODO: CREATE TABLE dbo.Pedidos ( ... );
+
+-- TODO: CREATE TABLE dbo.ItensPedido ( ... );

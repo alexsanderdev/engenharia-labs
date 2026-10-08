@@ -1,0 +1,18 @@
+-- TODO (Passo 7): "quem bloqueia quem" — uma linha por sessão BLOQUEADA no banco atual.
+--
+-- Colunas obrigatórias (o C# lê pelo NOME):
+--   SessaoBloqueada    int       session_id de quem espera
+--   SessaoBloqueadora  int       blocking_session_id
+--   TipoDeEspera       nvarchar  wait_type (ex.: LCK_M_S)
+--   TempoDeEsperaMs    int       wait_time
+--   TipoDeRecurso      nvarchar  resource_type do lock ESPERADO (KEY, PAGE, OBJECT...)
+--   ModoSolicitado     nvarchar  request_mode do lock esperado (S, U, X...)
+--   Tabela             sysname   nome da tabela do recurso (pode ser NULL)
+--   ComandoBloqueado   nvarchar  texto do comando da sessão bloqueada
+--
+-- Peças: sys.dm_exec_requests (blocking_session_id <> 0); sys.dm_tran_locks (request_status = 'WAIT',
+-- resource_database_id = DB_ID()); sys.partitions (hobt_id -> object_id, para KEY/PAGE/RID/HOBT);
+-- OBJECT_NAME(...); sys.dm_exec_sql_text(sql_handle) com OUTER APPLY.
+--
+-- Placeholder: apague a linha abaixo e escreva a consulta.
+THROW 50000, N'TODO (Passo 7): escreva a consulta de Sql/QuemBloqueiaQuem.sql', 1;
