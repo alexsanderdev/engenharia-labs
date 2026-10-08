@@ -1,4 +1,5 @@
 using F5M05.Api.Autenticacao;
+using F5M05.Api.RateLimiting;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 
@@ -15,9 +16,14 @@ public static class CatalogoEndpoints
     {
         var grupo = app.MapGroup("/catalogo");
 
-        // TODO (Passo 2): política PoliticasDeLimite.Catalogo (token bucket por IP).
-        // TODO (Passo 6): output cache — expira em 5 min, varia pela query "categoria", tag TagDoCatalogo.
-        grupo.MapGet("/", Listar);
+        grupo.MapGet("/", Listar)
+            .RequireRateLimiting(PoliticasDeLimite.Catalogo)
+            // Output cache no servidor: a segunda leitura não chega ao handler (nem ao banco).
+            // Varia pela categoria; expira sozinho em 5 min; e é invalidado pela tag ao mudar preço.
+            .CacheOutput(politica => politica
+                .Expire(TimeSpan.FromMinutes(5))
+                .SetVaryByQuery("categoria")
+                .Tag(TagDoCatalogo));
 
         grupo.MapPut("/{id:guid}/preco", AtualizarPreco)
             .RequireAuthorization(p => p.RequireClaim(ApiKeyAuthenticationHandler.ClaimDoCliente, "backoffice"));
@@ -36,8 +42,8 @@ public static class CatalogoEndpoints
 
         if (!await catalogo.AtualizarPrecoAsync(id, requisicao.Preco, ct)) return TypedResults.NotFound();
 
-        // TODO (Passo 6): invalide o cache pela tag (cache.EvictByTagAsync).
-        _ = cache;
+        // Escreveu → invalida. Sem isso o cliente vê preço velho até o cache expirar.
+        await cache.EvictByTagAsync(TagDoCatalogo, ct);
         return TypedResults.NoContent();
     }
 }

@@ -9,21 +9,47 @@ namespace F5M01.Api.Http;
 public static class ETags
 {
     /// <summary>ETag FORTE do pedido: a versão entre aspas, ex.: <c>"3"</c>. (As aspas fazem parte do valor!)</summary>
-    public static string Para(Pedido pedido) =>
-        throw new NotImplementedException("TODO (passo 2): devolva a versão do pedido entre aspas duplas, ex.: \"3\".");
+    public static string Para(Pedido pedido)
+    {
+        ArgumentNullException.ThrowIfNull(pedido);
+        return $"\"{pedido.Versao}\"";
+    }
 
     /// <summary>
     /// <c>If-None-Match</c> (GET condicional → 304). Usa comparação FRACA: <c>W/"3"</c> corresponde a <c>"3"</c>.
     /// Aceita lista separada por vírgula e <c>*</c> (corresponde a qualquer representação existente).
     /// Header ausente ou vazio → false.
     /// </summary>
-    public static bool IfNoneMatchCorresponde(string? ifNoneMatch, string etagAtual) =>
-        throw new NotImplementedException("TODO (passo 2): separe por vírgula, trate '*' e compare ignorando o prefixo W/.");
+    public static bool IfNoneMatchCorresponde(string? ifNoneMatch, string etagAtual)
+    {
+        if (string.IsNullOrWhiteSpace(ifNoneMatch)) return false;
+        var atual = SemPrefixoFraco(etagAtual);
+        foreach (var candidato in Separar(ifNoneMatch))
+        {
+            if (candidato == "*") return true;
+            if (SemPrefixoFraco(candidato) == atual) return true;
+        }
+        return false;
+    }
 
     /// <summary>
     /// <c>If-Match</c> (concorrência otimista → 412 quando falha). Usa comparação FORTE: ETag fraco NUNCA corresponde.
     /// Header ausente ou vazio → true (não há pré-condição). <c>*</c> → true (o recurso existe).
     /// </summary>
-    public static bool IfMatchAtendido(string? ifMatch, string etagAtual) =>
-        throw new NotImplementedException("TODO (passo 2): sem header → true; '*' → true; senão algum candidato FORTE (sem W/) igual ao atual.");
+    public static bool IfMatchAtendido(string? ifMatch, string etagAtual)
+    {
+        if (string.IsNullOrWhiteSpace(ifMatch)) return true;
+        foreach (var candidato in Separar(ifMatch))
+        {
+            if (candidato == "*") return true;
+            if (!candidato.StartsWith("W/", StringComparison.Ordinal) && candidato == etagAtual) return true;
+        }
+        return false;
+    }
+
+    private static string[] Separar(string header) =>
+        header.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private static string SemPrefixoFraco(string etag) =>
+        etag.StartsWith("W/", StringComparison.Ordinal) ? etag[2..] : etag;
 }

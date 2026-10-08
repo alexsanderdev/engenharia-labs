@@ -35,9 +35,16 @@ public sealed record PedidoResponse(
     /// </summary>
     public static PedidoResponse De(Pedido pedido)
     {
-        throw new NotImplementedException(
-            "TODO (passo 1): mapeie Pedido → PedidoResponse. Status como texto (ToString()), endereço → EnderecoContrato, " +
-            "itens → ItemPedidoResponse.De. Sem CustoInterno, NotaInternaAntifraude nem Versao.");
+        ArgumentNullException.ThrowIfNull(pedido);
+        return new PedidoResponse(
+            pedido.Id,
+            pedido.ClienteId,
+            pedido.Status.ToString(),
+            pedido.CriadoEm,
+            pedido.Observacao,
+            pedido.EnderecoEntrega is { } e ? new EnderecoContrato(e.Logradouro, e.Cidade, e.Cep) : null,
+            [.. pedido.Itens.Select(ItemPedidoResponse.De)],
+            pedido.Total);
     }
 }
 
@@ -46,7 +53,8 @@ public sealed record ItemPedidoResponse(Guid ProdutoId, string Nome, decimal Pre
     /// <summary>Domínio → contrato (sem o custo unitário).</summary>
     public static ItemPedidoResponse De(ItemPedido item)
     {
-        throw new NotImplementedException("TODO (passo 1): mapeie ItemPedido → ItemPedidoResponse (Nome = NomeProduto; sem CustoUnitario).");
+        ArgumentNullException.ThrowIfNull(item);
+        return new ItemPedidoResponse(item.ProdutoId, item.NomeProduto, item.PrecoUnitario, item.Quantidade, item.Subtotal);
     }
 }
 
@@ -55,7 +63,8 @@ public sealed record PedidoResumoResponse(Guid Id, Guid ClienteId, string Status
 {
     public static PedidoResumoResponse De(Pedido pedido)
     {
-        throw new NotImplementedException("TODO (passo 5): mapeie Pedido → PedidoResumoResponse (QuantidadeItens = número de itens).");
+        ArgumentNullException.ThrowIfNull(pedido);
+        return new PedidoResumoResponse(pedido.Id, pedido.ClienteId, pedido.Status.ToString(), pedido.CriadoEm, pedido.Itens.Count, pedido.Total);
     }
 }
 

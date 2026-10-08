@@ -19,38 +19,101 @@ public static class ResilienciaGateway
     /// Idempotente = GET, HEAD, OPTIONS, PUT, DELETE, TRACE (RFC 9110) ou qualquer método com
     /// <see cref="CabecalhoIdempotencia"/> preenchido.
     /// </summary>
-    public static bool EhIdempotente(HttpRequestMessage requisicao) =>
-        throw new NotImplementedException("TODO (Passo 1): métodos idempotentes da RFC 9110 ou header Idempotency-Key preenchido.");
+    public static bool EhIdempotente(HttpRequestMessage requisicao)
+    {
+        ArgumentNullException.ThrowIfNull(requisicao);
+
+        var metodo = requisicao.Method;
+        if (metodo == HttpMethod.Get || metodo == HttpMethod.Head || metodo == HttpMethod.Options
+            || metodo == HttpMethod.Put || metodo == HttpMethod.Delete || metodo == HttpMethod.Trace)
+        {
+            return true;
+        }
+
+        return requisicao.Headers.TryGetValues(CabecalhoIdempotencia, out var valores)
+            && valores.Any(v => !string.IsNullOrWhiteSpace(v));
+    }
 
     /// <summary>
     /// Repetir SOMENTE se a falha for transitória (5xx, 408, 429, <c>HttpRequestException</c>,
     /// <c>TimeoutRejectedException</c>; use <c>HttpClientResiliencePredicates.IsTransient</c>) E a
     /// requisição for idempotente. Sem requisição conhecida ou com o chamador cancelando, não repete.
     /// </summary>
-    public static bool DeveRetentar(Outcome<HttpResponseMessage> resultado, HttpRequestMessage? requisicao, CancellationToken ct = default) =>
-        throw new NotImplementedException("TODO (Passo 1): transitório (HttpClientResiliencePredicates.IsTransient) E idempotente (EhIdempotente).");
+    public static bool DeveRetentar(Outcome<HttpResponseMessage> resultado, HttpRequestMessage? requisicao, CancellationToken ct = default)
+    {
+        // A sobrecarga IsTransient(outcome, ct) ainda é experimental (EXTEXP0001); checamos o ct à mão.
+#pragma warning disable CA2016
+        if (requisicao is null || ct.IsCancellationRequested || !HttpClientResiliencePredicates.IsTransient(resultado))
+#pragma warning restore CA2016
+        {
+            return false;
+        }
+
+        return EhIdempotente(requisicao);
+    }
 
     /// <summary>
     /// Retry: <c>MaxRetentativas</c>, backoff exponencial com jitter a partir de <c>AtrasoBase</c> e teto
     /// <c>AtrasoMaximo</c>, respeitando <c>Retry-After</c>, com <c>ShouldHandle</c> usando
     /// <see cref="DeveRetentar"/> (a requisição vem de <c>args.Context.GetRequestMessage()</c>).
     /// </summary>
-    public static HttpRetryStrategyOptions CriarRetry(GatewayPagamentoOptions o) =>
-        throw new NotImplementedException("TODO (Passo 1): new HttpRetryStrategyOptions { MaxRetryAttempts, BackoffType, UseJitter, Delay, MaxDelay, ShouldRetryAfterHeader, ShouldHandle }.");
+    public static HttpRetryStrategyOptions CriarRetry(GatewayPagamentoOptions o)
+    {
+        ArgumentNullException.ThrowIfNull(o);
+
+        return new HttpRetryStrategyOptions
+        {
+            Name = "retry",
+            MaxRetryAttempts = o.MaxRetentativas,
+            BackoffType = DelayBackoffType.Exponential,
+            UseJitter = true,
+            Delay = o.AtrasoBase,
+            MaxDelay = o.AtrasoMaximo,
+            ShouldRetryAfterHeader = true,
+            ShouldHandle = args => ValueTask.FromResult(
+                DeveRetentar(args.Outcome, args.Context.GetRequestMessage(), args.Context.CancellationToken)),
+        };
+    }
 
     /// <summary>Circuit breaker com taxa, vazão mínima, janela e duração aberto vindos das options.</summary>
-    public static HttpCircuitBreakerStrategyOptions CriarCircuitBreaker(GatewayPagamentoOptions o) =>
-        throw new NotImplementedException("TODO (Passo 1): new HttpCircuitBreakerStrategyOptions { FailureRatio, MinimumThroughput, SamplingDuration, BreakDuration }.");
+    public static HttpCircuitBreakerStrategyOptions CriarCircuitBreaker(GatewayPagamentoOptions o)
+    {
+        ArgumentNullException.ThrowIfNull(o);
+
+        return new HttpCircuitBreakerStrategyOptions
+        {
+            Name = "circuit-breaker",
+            FailureRatio = o.CircuitoTaxaDeFalhas,
+            MinimumThroughput = o.CircuitoVazaoMinima,
+            SamplingDuration = o.CircuitoJanela,
+            BreakDuration = o.CircuitoDuracaoAberto,
+        };
+    }
 
     /// <summary>Timeout do orçamento total (estratégia mais externa).</summary>
-    public static HttpTimeoutStrategyOptions CriarTimeoutTotal(GatewayPagamentoOptions o) =>
-        throw new NotImplementedException("TODO (Passo 1): new HttpTimeoutStrategyOptions { Timeout = o.TimeoutTotal }.");
+    public static HttpTimeoutStrategyOptions CriarTimeoutTotal(GatewayPagamentoOptions o)
+    {
+        ArgumentNullException.ThrowIfNull(o);
+        return new HttpTimeoutStrategyOptions { Name = "timeout-total", Timeout = o.TimeoutTotal };
+    }
 
     /// <summary>Timeout de cada tentativa (estratégia mais interna).</summary>
-    public static HttpTimeoutStrategyOptions CriarTimeoutPorTentativa(GatewayPagamentoOptions o) =>
-        throw new NotImplementedException("TODO (Passo 1): new HttpTimeoutStrategyOptions { Timeout = o.TimeoutPorTentativa }.");
+    public static HttpTimeoutStrategyOptions CriarTimeoutPorTentativa(GatewayPagamentoOptions o)
+    {
+        ArgumentNullException.ThrowIfNull(o);
+        return new HttpTimeoutStrategyOptions { Name = "timeout-tentativa", Timeout = o.TimeoutPorTentativa };
+    }
 
     /// <summary>Monta o pipeline na ordem: timeout total → retry → circuit breaker → timeout por tentativa.</summary>
-    public static void Configurar(ResiliencePipelineBuilder<HttpResponseMessage> builder, GatewayPagamentoOptions o) =>
-        throw new NotImplementedException("TODO (Passo 5): builder.AddTimeout(total).AddRetry(...).AddCircuitBreaker(...).AddTimeout(porTentativa).");
+    public static void Configurar(ResiliencePipelineBuilder<HttpResponseMessage> builder, GatewayPagamentoOptions o)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(o);
+
+        builder
+            .AddTimeout(CriarTimeoutTotal(o))
+            .AddRetry(CriarRetry(o))
+            .AddCircuitBreaker(CriarCircuitBreaker(o))
+            .AddTimeout(CriarTimeoutPorTentativa(o));
+    }
 }

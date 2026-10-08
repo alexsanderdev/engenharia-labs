@@ -1,5 +1,7 @@
 using F5M05.Api.Autenticacao;
 using F5M05.Api.Catalogo;
+using F5M05.Api.Idempotencia;
+using F5M05.Api.RateLimiting;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace F5M05.Api.Pedidos;
@@ -10,12 +12,12 @@ public static class PedidoEndpoints
     {
         var grupo = app.MapGroup("/pedidos").RequireAuthorization();
 
-        // TODO (Passo 2): política PoliticasDeLimite.Pedidos (janela fixa por cliente).
-        // TODO (Passo 5): .ExigirIdempotencia() (Idempotencia/Contratos.cs).
-        grupo.MapPost("/", Criar);
+        grupo.MapPost("/", Criar)
+            .RequireRateLimiting(PoliticasDeLimite.Pedidos)   // escrita: janela fixa por cliente
+            .ExigirIdempotencia();                            // retry seguro: Idempotency-Key
 
-        // TODO (Passo 2): política PoliticasDeLimite.Consultas (janela deslizante por cliente).
-        grupo.MapGet("/{id:guid}", Obter);
+        grupo.MapGet("/{id:guid}", Obter)
+            .RequireRateLimiting(PoliticasDeLimite.Consultas); // leitura: janela deslizante por cliente
 
         return app;
     }

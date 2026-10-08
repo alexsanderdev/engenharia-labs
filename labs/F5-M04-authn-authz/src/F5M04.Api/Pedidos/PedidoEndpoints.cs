@@ -31,15 +31,16 @@ public static class PedidoEndpoints
         // Sem política explícita: protegido pela FallbackPolicy (usuário autenticado).
         pedidos.MapGet("/", ListarMeus);
 
-        // TODO (Passo 2): criar exige ser Cliente E ter o escopo pedidos.write (Politicas.Cliente e Politicas.PedidosEscrita).
-        pedidos.MapPost("/", Criar);
+        // Criar: precisa ser Cliente E ter o escopo pedidos.write (várias políticas = todas precisam passar).
+        pedidos.MapPost("/", Criar)
+            .RequireAuthorization(Politicas.Cliente, Politicas.PedidosEscrita);
 
         // Ler: autenticado (fallback) + autorização por recurso dentro do handler.
         pedidos.MapGet("/{id:guid}", Obter).WithName("ObterPedido");
 
-        // TODO (Passo 2): cancelar é escrita e exige o escopo (Politicas.PedidosEscrita).
-        // Quem pode cancelar ESTE pedido é decidido no handler (Passo 4).
-        pedidos.MapPost("/{id:guid}/cancelar", Cancelar);
+        // Cancelar é escrita: exige o escopo; quem pode cancelar ESTE pedido é decidido no handler.
+        pedidos.MapPost("/{id:guid}/cancelar", Cancelar)
+            .RequireAuthorization(Politicas.PedidosEscrita);
 
         return app;
     }
@@ -86,11 +87,13 @@ public static class PedidoEndpoints
     private static async Task<Results<Ok<PedidoResponse>, NotFound>> Obter(
         Guid id, ClaimsPrincipal user, IPedidoRepositorio repositorio, IAuthorizationService autorizacao)
     {
-        // TODO (Passo 4): carregue o pedido (inexistente → 404) e chame
-        // autorizacao.AuthorizeAsync(user, pedido, OperacoesPedido.Ler). Sem permissão → o MESMO 404.
-        _ = (user, repositorio, autorizacao);
-        await Task.CompletedTask;
-        throw new NotImplementedException($"TODO (Passo 4): autorização por recurso na leitura do pedido {id}.");
+        var pedido = repositorio.Obter(id);
+        if (pedido is null) return TypedResults.NotFound();
+
+        var leitura = await autorizacao.AuthorizeAsync(user, pedido, OperacoesPedido.Ler);
+        if (!leitura.Succeeded) return TypedResults.NotFound();
+
+        return TypedResults.Ok(PedidoResponse.De(pedido));
     }
 
     /// <summary>
@@ -100,10 +103,19 @@ public static class PedidoEndpoints
     private static async Task<Results<NoContent, NotFound, ForbidHttpResult, ProblemHttpResult>> Cancelar(
         Guid id, ClaimsPrincipal user, IPedidoRepositorio repositorio, IAuthorizationService autorizacao)
     {
-        // TODO (Passo 4): inexistente → 404; não pode LER → 404; pode ler mas não pode CANCELAR → TypedResults.Forbid();
-        // pedido.Cancelar() devolveu false → TypedResults.Problem(statusCode: 409, ...); sucesso → TypedResults.NoContent().
-        _ = (user, repositorio, autorizacao);
-        await Task.CompletedTask;
-        throw new NotImplementedException($"TODO (Passo 4): autorização por recurso no cancelamento do pedido {id}.");
+        var pedido = repositorio.Obter(id);
+        if (pedido is null) return TypedResults.NotFound();
+
+        if (!(await autorizacao.AuthorizeAsync(user, pedido, OperacoesPedido.Ler)).Succeeded)
+            return TypedResults.NotFound();
+
+        if (!(await autorizacao.AuthorizeAsync(user, pedido, OperacoesPedido.Cancelar)).Succeeded)
+            return TypedResults.Forbid();
+
+        if (!pedido.Cancelar())
+            return TypedResults.Problem(statusCode: StatusCodes.Status409Conflict,
+                title: "Transição inválida", detail: $"Pedido no status {pedido.Status} não pode ser cancelado.");
+
+        return TypedResults.NoContent();
     }
 }

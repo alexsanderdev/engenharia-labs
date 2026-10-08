@@ -2,6 +2,8 @@ namespace F5M03.Api.Seguranca;
 
 /// <summary>
 /// Cabeçalhos de segurança para uma API JSON (não é site: não carrega script, estilo nem frame).
+/// Registrado via <c>Response.OnStarting</c> para valer em TODA resposta — inclusive 404 de rota
+/// e 500, depois que o tratamento de erros limpou os headers com <c>Response.Clear()</c>.
 /// </summary>
 public sealed class CabecalhosDeSegurancaMiddleware(RequestDelegate next)
 {
@@ -10,12 +12,18 @@ public sealed class CabecalhosDeSegurancaMiddleware(RequestDelegate next)
 
     public Task InvokeAsync(HttpContext context)
     {
-        // TODO (Passo 6 do Lab): adicione em TODA resposta
-        //   X-Content-Type-Options: nosniff
-        //   Content-Security-Policy: PoliticaDeConteudo
-        //   (opcionais) X-Frame-Options: DENY, Referrer-Policy: no-referrer; remova Server/X-Powered-By.
-        // Cuidado: o tratamento de erros chama Response.Clear() (apaga headers) antes de escrever o 500.
-        // Pesquise Response.OnStarting(...).
+        context.Response.OnStarting(static estado =>
+        {
+            var headers = ((HttpContext)estado).Response.Headers;
+            headers.XContentTypeOptions = "nosniff";          // navegador não "adivinha" o tipo (JSON vira HTML/script)
+            headers.ContentSecurityPolicy = PoliticaDeConteudo;
+            headers.XFrameOptions = "DENY";                   // navegadores antigos que não entendem frame-ancestors
+            headers["Referrer-Policy"] = "no-referrer";
+            headers.Remove("Server");                         // não anuncia tecnologia/versão
+            headers.Remove("X-Powered-By");
+            return Task.CompletedTask;
+        }, context);
+
         return next(context);
     }
 }

@@ -1,5 +1,8 @@
+using System.Globalization;
 using System.Threading.RateLimiting;
+using F5M05.Api.Autenticacao;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace F5M05.Api.RateLimiting;
 
@@ -14,35 +17,55 @@ public static class PoliticasDeLimite
     public const string Catalogo = "catalogo";
     public const string Relatorios = "relatorios";
 
-    // ---------- Opções de cada algoritmo (Passo 1) ----------
+    // ---------- Opções de cada algoritmo (a partir da configuração) ----------
+    // QueueLimit = 0 em todos os de taxa: numa API HTTP, enfileirar segura conexão e thread
+    // e o cliente nem sabe; responder 429 rápido com Retry-After é mais honesto e mais barato.
 
-    /// <summary>Janela fixa: PermitLimit = Limite, Window = Janela, sem fila (QueueLimit = 0).</summary>
-    public static FixedWindowRateLimiterOptions OpcoesJanelaFixa(JanelaFixaOptions o) =>
-        throw new NotImplementedException("TODO: new FixedWindowRateLimiterOptions { PermitLimit, Window, QueueLimit = 0 }.");
+    public static FixedWindowRateLimiterOptions OpcoesJanelaFixa(JanelaFixaOptions o) => new()
+    {
+        PermitLimit = o.Limite,
+        Window = o.Janela,
+        QueueLimit = 0,
+        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+    };
 
-    /// <summary>Janela deslizante: PermitLimit, Window, SegmentsPerWindow = Segmentos, sem fila.</summary>
-    public static SlidingWindowRateLimiterOptions OpcoesJanelaDeslizante(JanelaDeslizanteOptions o) =>
-        throw new NotImplementedException("TODO: new SlidingWindowRateLimiterOptions { PermitLimit, Window, SegmentsPerWindow, QueueLimit = 0 }.");
+    public static SlidingWindowRateLimiterOptions OpcoesJanelaDeslizante(JanelaDeslizanteOptions o) => new()
+    {
+        PermitLimit = o.Limite,
+        Window = o.Janela,
+        SegmentsPerWindow = o.Segmentos,
+        QueueLimit = 0,
+    };
 
-    /// <summary>Balde de tokens: TokenLimit = Capacidade, TokensPerPeriod, ReplenishmentPeriod = Periodo, sem fila.</summary>
-    public static TokenBucketRateLimiterOptions OpcoesBaldeDeTokens(BaldeDeTokensOptions o) =>
-        throw new NotImplementedException("TODO: new TokenBucketRateLimiterOptions { TokenLimit, TokensPerPeriod, ReplenishmentPeriod, QueueLimit = 0 }.");
+    public static TokenBucketRateLimiterOptions OpcoesBaldeDeTokens(BaldeDeTokensOptions o) => new()
+    {
+        TokenLimit = o.Capacidade,
+        TokensPerPeriod = o.TokensPorPeriodo,
+        ReplenishmentPeriod = o.Periodo,
+        QueueLimit = 0,
+    };
 
-    /// <summary>Concorrência: PermitLimit = Limite, QueueLimit = Fila.</summary>
-    public static ConcurrencyLimiterOptions OpcoesConcorrencia(ConcorrenciaOptions o) =>
-        throw new NotImplementedException("TODO: new ConcurrencyLimiterOptions { PermitLimit, QueueLimit }.");
+    public static ConcurrencyLimiterOptions OpcoesConcorrencia(ConcorrenciaOptions o) => new()
+    {
+        PermitLimit = o.Limite,
+        QueueLimit = o.Fila,
+        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+    };
 
-    // ---------- Chaves de partição (Passo 2) ----------
+    // ---------- Chaves de partição ----------
 
     /// <summary>"cliente:{cliente_id}" quando autenticado; senão cai para a chave do IP.</summary>
     public static string ChaveDoCliente(HttpContext contexto) =>
-        throw new NotImplementedException("TODO: use contexto.User.ClienteId() (pasta Autenticacao) ou ChaveDoIp.");
+        contexto.User.ClienteId() is { } clienteId ? $"cliente:{clienteId}" : ChaveDoIp(contexto);
 
-    /// <summary>"ip:{endereço}" a partir de Connection.RemoteIpAddress ("ip:desconhecido" se nulo).</summary>
+    /// <summary>
+    /// "ip:{endereço}". Atrás de proxy/gateway o RemoteIpAddress é o do PROXY: configure
+    /// ForwardedHeaders com KnownProxies, senão todo mundo cai na mesma partição.
+    /// </summary>
     public static string ChaveDoIp(HttpContext contexto) =>
-        throw new NotImplementedException("TODO: \"ip:\" + contexto.Connection.RemoteIpAddress.");
+        $"ip:{contexto.Connection.RemoteIpAddress?.ToString() ?? "desconhecido"}";
 
-    // ---------- Registro (Passos 2 e 3) ----------
+    // ---------- Registro ----------
 
     public static IServiceCollection AddLimitesDeTaxa(this IServiceCollection services, IConfiguration configuration)
     {
@@ -50,23 +73,59 @@ public static class PoliticasDeLimite
 
         services.AddRateLimiter(opcoes =>
         {
-            // TODO (Passo 3): RejectionStatusCode (o padrão é 503!) e OnRejected = EscreverRejeicaoAsync.
-            // TODO (Passo 2): uma política por nome, lendo os limites de IOptions<LimitesDeTaxaOptions>
-            //   (contexto.RequestServices) dentro do particionador:
-            //   - Pedidos    → RateLimitPartition.GetFixedWindowLimiter(ChaveDoCliente, ... OpcoesJanelaFixa)
-            //   - Consultas  → GetSlidingWindowLimiter(ChaveDoCliente, ... OpcoesJanelaDeslizante)
-            //   - Catalogo   → GetTokenBucketLimiter(ChaveDoIp, ... OpcoesBaldeDeTokens)
-            //   - Relatorios → GetConcurrencyLimiter(chave única, ... OpcoesConcorrencia)
-            _ = opcoes;
+            // O padrão é 503 — errado para "você excedeu o seu limite".
+            opcoes.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            opcoes.OnRejected = EscreverRejeicaoAsync;
+
+            // A fábrica de cada partição roda UMA vez por chave; os limites são lidos das options.
+            opcoes.AddPolicy(Pedidos, contexto => RateLimitPartition.GetFixedWindowLimiter(
+                ChaveDoCliente(contexto), _ => OpcoesJanelaFixa(Limites(contexto).Pedidos)));
+
+            opcoes.AddPolicy(Consultas, contexto => RateLimitPartition.GetSlidingWindowLimiter(
+                ChaveDoCliente(contexto), _ => OpcoesJanelaDeslizante(Limites(contexto).Consultas)));
+
+            opcoes.AddPolicy(Catalogo, contexto => RateLimitPartition.GetTokenBucketLimiter(
+                ChaveDoIp(contexto), _ => OpcoesBaldeDeTokens(Limites(contexto).Catalogo)));
+
+            // Uma partição só: o recurso protegido (o banco do relatório) é global.
+            opcoes.AddPolicy(Relatorios, contexto => RateLimitPartition.GetConcurrencyLimiter(
+                "relatorios", _ => OpcoesConcorrencia(Limites(contexto).Relatorios)));
         });
 
         return services;
     }
 
-    /// <summary>
-    /// 429 + header Retry-After em segundos inteiros, arredondado para cima (quando a lease tem
-    /// MetadataName.RetryAfter) + ProblemDetails (status 429) via IProblemDetailsService.
-    /// </summary>
-    public static ValueTask EscreverRejeicaoAsync(OnRejectedContext contexto, CancellationToken ct) =>
-        throw new NotImplementedException("TODO: status 429, Retry-After e ProblemDetails.");
+    private static LimitesDeTaxaOptions Limites(HttpContext contexto) =>
+        contexto.RequestServices.GetRequiredService<IOptions<LimitesDeTaxaOptions>>().Value;
+
+    /// <summary>429 + Retry-After (quando o algoritmo sabe calcular) + ProblemDetails.</summary>
+    public static async ValueTask EscreverRejeicaoAsync(OnRejectedContext contexto, CancellationToken ct)
+    {
+        var http = contexto.HttpContext;
+        http.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+        int? segundos = null;
+        if (contexto.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            segundos = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds));
+            http.Response.Headers.RetryAfter = segundos.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        var politica = http.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
+        var problemDetails = http.RequestServices.GetRequiredService<IProblemDetailsService>();
+        await problemDetails.WriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = http,
+            ProblemDetails =
+            {
+                Status = StatusCodes.Status429TooManyRequests,
+                Type = "https://www.rfc-editor.org/rfc/rfc6585#section-4",
+                Title = "Muitas requisições",
+                Detail = segundos is { } s
+                    ? $"Limite da política '{politica}' excedido. Tente novamente em {s} s."
+                    : $"Limite da política '{politica}' excedido. Tente novamente mais tarde.",
+                Extensions = { ["politica"] = politica },
+            },
+        });
+    }
 }

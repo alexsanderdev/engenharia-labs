@@ -10,13 +10,21 @@ public static class Mascaramento
     /// CPF mascarado mantendo só os 2 dígitos verificadores: "529.982.247-25" ou "52998224725" → "***.***.***-25".
     /// Entrada nula, vazia ou sem 11 dígitos → "***".
     /// </summary>
-    public static string Cpf(string? cpf) =>
-        throw new NotImplementedException("TODO: extraia os dígitos; com 11 dígitos devolva \"***.***.***-\" + os 2 últimos; senão \"***\".");
+    public static string Cpf(string? cpf)
+    {
+        var digitos = new string((cpf ?? "").Where(char.IsAsciiDigit).ToArray());
+        return digitos.Length == 11 ? $"***.***.***-{digitos[^2..]}" : "***";
+    }
 
     /// <summary>
     /// E-mail mascarado mantendo a primeira letra e o domínio: "ana.souza@exemplo.com" → "a***@exemplo.com".
     /// Entrada sem "@" (ou com "@" na primeira/última posição) → "***".
     /// </summary>
-    public static string Email(string? email) =>
-        throw new NotImplementedException("TODO: primeira letra + \"***\" + a partir do \"@\"; entradas inválidas → \"***\".");
+    public static string Email(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return "***";
+        var arroba = email.IndexOf('@');
+        if (arroba <= 0 || arroba == email.Length - 1) return "***";
+        return $"{email[0]}***{email[arroba..]}";
+    }
 }

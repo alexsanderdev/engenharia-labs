@@ -17,9 +17,17 @@ public sealed class PedidoAuthorizationHandler : AuthorizationHandler<OperationA
         OperationAuthorizationRequirement requirement,
         Pedido resource)
     {
-        // TODO (Passo 3): ehDono = context.User.TryObterClienteId(out var id) && id == resource.ClienteId;
-        // ehAdmin = context.User.IsInRole(Papeis.Admin). Ler: dono ou Admin. Cancelar: só o dono.
-        // Qualquer outra operação: negar. Para permitir, context.Succeed(requirement); para negar, não faça nada.
-        throw new NotImplementedException("TODO (Passo 3): decidir Ler/Cancelar pelo dono do pedido e pelo papel Admin.");
+        var ehDono = context.User.TryObterClienteId(out var clienteId) && clienteId == resource.ClienteId;
+        var ehAdmin = context.User.IsInRole(Papeis.Admin);
+
+        var permitido = requirement.Name switch
+        {
+            OperacoesPedido.NomeLer => ehDono || ehAdmin,
+            OperacoesPedido.NomeCancelar => ehDono,
+            _ => false, // negação por padrão: operação nova não ganha acesso "sem querer"
+        };
+
+        if (permitido) context.Succeed(requirement);
+        return Task.CompletedTask;
     }
 }

@@ -3,8 +3,8 @@ using F5M03.Api.Infra;
 namespace F5M03.Api.Seguranca;
 
 /// <summary>
-/// Configuração de segurança de borda num lugar só (secure by default).
-/// VULNERÁVEL — corrija (Passos 6, 7 e 8 do Lab).
+/// Configuração de segurança de borda num lugar só (secure by default):
+/// limites do servidor, CORS restrito, HSTS fora de Development, cabeçalhos, erros e logs seguros.
 /// </summary>
 public static class SegurancaExtensions
 {
@@ -12,30 +12,43 @@ public static class SegurancaExtensions
 
     public static WebApplicationBuilder AddSegurancaDeBorda(this WebApplicationBuilder builder)
     {
-        // VULNERÁVEL: "AllowAnyOrigin().AllowCredentials()" o próprio ASP.NET Core recusa, então alguém
-        // "resolveu" com SetIsOriginAllowed(_ => true) — que reflete QUALQUER origem com credenciais. Pior ainda.
-        // TODO: use as origens de configuração (seção SecaoDeOrigens), só os métodos GET e POST e
-        //       só os headers Content-Type e Authorization.
+        // Limites do servidor (valem no Kestrel real; TestServer não usa Kestrel).
+        builder.WebHost.ConfigureKestrel(kestrel =>
+        {
+            kestrel.AddServerHeader = false;
+            kestrel.Limits.MaxRequestBodySize = 2 * 1024 * 1024; // teto global; endpoints podem baixar
+        });
+
+        // CORS: origens explícitas vindas de configuração. Credenciais só com lista fechada.
+        var origens = builder.Configuration.GetSection(SecaoDeOrigens).Get<string[]>() ?? [];
         builder.Services.AddCors(cors => cors.AddDefaultPolicy(politica => politica
-            .SetIsOriginAllowed(_ => true)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
+            .WithOrigins(origens)
+            .WithMethods("GET", "POST")
+            .WithHeaders("Content-Type", "Authorization")
             .AllowCredentials()));
 
-        // TODO: HSTS com MaxAge de 365 dias (AddHsts).
-        // TODO (opcional, só vale no Kestrel real): builder.WebHost.ConfigureKestrel(...) com
-        //       AddServerHeader = false e Limits.MaxRequestBodySize.
+        // HSTS: 1 ano. Só é emitido em HTTPS e fora de localhost (UseHsts cuida disso).
+        builder.Services.AddHsts(hsts =>
+        {
+            hsts.MaxAge = TimeSpan.FromDays(365);
+            hsts.IncludeSubDomains = true;
+        });
 
         return builder;
     }
 
     public static WebApplication UseSegurancaDeBorda(this WebApplication app)
     {
-        // Pense na ORDEM: quem precisa envolver quem?
-        app.UseMiddleware<LogDeRequisicaoMiddleware>();
-        app.UseMiddleware<TratamentoDeErrosMiddleware>();
+        // A ordem importa:
+        // 1. Cabeçalhos primeiro (OnStarting): valem para qualquer resposta, inclusive erro.
         app.UseMiddleware<CabecalhosDeSegurancaMiddleware>();
-        // TODO: UseHsts() fora de Development.
+        // 2. Log da requisição (sem segredos), envolvendo tudo que vem depois.
+        app.UseMiddleware<LogDeRequisicaoMiddleware>();
+        // 3. Erros: converte exceção em ProblemDetails genérico.
+        app.UseMiddleware<TratamentoDeErrosMiddleware>();
+        // 4. HSTS só fora de Development (em dev, um HSTS em localhost "gruda" no navegador).
+        if (!app.Environment.IsDevelopment()) app.UseHsts();
+        // 5. CORS antes dos endpoints.
         app.UseCors();
         return app;
     }

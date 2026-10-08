@@ -24,14 +24,28 @@ public static class Versionamento
 
     public static IServiceCollection AddVersionamentoDaApi(this IServiceCollection services)
     {
-        // TODO (passo 2):
-        //  services.AddApiVersioning(options => { ... }).AddApiExplorer(options => { ... });
-        //  - DefaultApiVersion = V2; AssumeDefaultVersionWhenUnspecified = false; ReportApiVersions = true;
-        //  - ApiVersionReader = new UrlSegmentApiVersionReader();
-        //  - options.Policies.Deprecate(V1).Effective(DepreciacaoV1).Link(LinkPoliticaV1).Title(...).Type("text/html");
-        //  - options.Policies.Sunset(V1).Effective(SunsetV1).Link(LinkPoliticaV1).Title(...).Type("text/html");
-        //  - AddApiExplorer: GroupNameFormat = "'v'V" (vira o nome do documento OpenAPI) e SubstituteApiVersionInUrl = true.
-        // Enquanto este método estiver vazio, a aplicação sobe, mas nenhum endpoint versionado funciona.
+        services
+            .AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = V2;
+                options.AssumeDefaultVersionWhenUnspecified = false; // na URL a versão é obrigatória
+                options.ReportApiVersions = true;                    // api-supported-versions / api-deprecated-versions
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+
+                options.Policies.Deprecate(V1)
+                    .Effective(DepreciacaoV1)
+                    .Link(LinkPoliticaV1).Title("Política de depreciação da v1").Type("text/html");
+
+                options.Policies.Sunset(V1)
+                    .Effective(SunsetV1)
+                    .Link(LinkPoliticaV1).Title("Política de depreciação da v1").Type("text/html");
+            })
+            .AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'V";          // 1.0 → "v1"; é o nome do documento OpenAPI
+                options.SubstituteApiVersionInUrl = true;  // /v{version}/pedidos → /v1/pedidos no documento
+            });
+
         return services;
     }
 }

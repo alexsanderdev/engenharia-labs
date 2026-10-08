@@ -26,11 +26,44 @@ public sealed partial class GatewayPagamentoClient(
     /// Exceções: veja <see cref="MotivoDaFalha"/>. Cancelamento do CHAMADOR propaga.
     /// Corpo 2xx ilegível (<c>JsonException</c>) ou sem transacaoId → Indisponivel(RespostaInvalida).
     /// </summary>
-    public Task<ResultadoCobranca> CobrarAsync(SolicitacaoCobranca solicitacao, string chaveIdempotencia, CancellationToken ct = default)
+    public async Task<ResultadoCobranca> CobrarAsync(SolicitacaoCobranca solicitacao, string chaveIdempotencia, CancellationToken ct = default)
     {
-        _ = (http, ultimoStatus, logger);
-        throw new NotImplementedException(
-            "TODO (Passo 4): monte o HttpRequestMessage (JsonContent + Idempotency-Key), envie, mapeie o status e capture as exceções com MotivoDaFalha.");
+        ArgumentNullException.ThrowIfNull(solicitacao);
+        ArgumentException.ThrowIfNullOrWhiteSpace(chaveIdempotencia);
+
+        using var requisicao = new HttpRequestMessage(HttpMethod.Post, "v1/cobrancas")
+        {
+            Content = JsonContent.Create(new CobrancaRequestDto(
+                solicitacao.PedidoId, solicitacao.Valor, solicitacao.Moeda, solicitacao.TokenCartao)),
+        };
+        requisicao.Headers.Add(ResilienciaGateway.CabecalhoIdempotencia, chaveIdempotencia);
+
+        try
+        {
+            using var resposta = await http.SendAsync(requisicao, ct);
+
+            switch (resposta.StatusCode)
+            {
+                case HttpStatusCode.OK or HttpStatusCode.Created:
+                    var corpo = await resposta.Content.ReadFromJsonAsync<CobrancaResponseDto>(ct);
+                    return string.IsNullOrWhiteSpace(corpo?.TransacaoId)
+                        ? new ResultadoCobranca.Indisponivel(MotivoIndisponibilidade.RespostaInvalida)
+                        : new ResultadoCobranca.Aprovada(corpo.TransacaoId);
+
+                case HttpStatusCode.PaymentRequired:
+                    var erro = await LerErroAsync(resposta, ct);
+                    return new ResultadoCobranca.Recusada(erro?.Codigo ?? "recusada");
+            }
+
+            var falha = MapearStatusDeFalha(resposta.StatusCode);
+            LogFalhaHttp(logger, "cobrança", (int)resposta.StatusCode);
+            return falha;
+        }
+        catch (Exception ex) when (MotivoDaFalha(ex, ct) is { } motivo)
+        {
+            LogIndisponivel(logger, "cobrança", motivo, ex);
+            return new ResultadoCobranca.Indisponivel(motivo);
+        }
     }
 
     /// <summary>
@@ -39,15 +72,66 @@ public sealed partial class GatewayPagamentoClient(
     /// 404 → Desconhecido/Gateway. Qualquer outra falha (status não 2xx ou exceção mapeável) → FALLBACK:
     /// último status conhecido (Origem UltimoConhecido) ou Desconhecido (Origem Padrao).
     /// </summary>
-    public Task<ConsultaStatus> ConsultarStatusAsync(string transacaoId, CancellationToken ct = default) =>
-        throw new NotImplementedException("TODO (Passo 8): GET de status com fallback para o último status conhecido.");
+    public async Task<ConsultaStatus> ConsultarStatusAsync(string transacaoId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(transacaoId);
+
+        try
+        {
+            using var resposta = await http.GetAsync($"v1/cobrancas/{Uri.EscapeDataString(transacaoId)}", ct);
+
+            if (resposta.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new ConsultaStatus(transacaoId, StatusPagamento.Desconhecido, OrigemStatus.Gateway);
+            }
+
+            if (resposta.IsSuccessStatusCode)
+            {
+                var corpo = await resposta.Content.ReadFromJsonAsync<CobrancaResponseDto>(ct);
+                var status = ConverterStatus(corpo?.Status);
+                ultimoStatus.Registrar(transacaoId, status);
+                return new ConsultaStatus(transacaoId, status, OrigemStatus.Gateway);
+            }
+
+            LogFalhaHttp(logger, "consulta de status", (int)resposta.StatusCode);
+        }
+        catch (Exception ex) when (MotivoDaFalha(ex, ct) is { } motivo)
+        {
+            LogIndisponivel(logger, "consulta de status", motivo, ex);
+        }
+
+        return ultimoStatus.TentarObter(transacaoId, out var conhecido)
+            ? new ConsultaStatus(transacaoId, conhecido, OrigemStatus.UltimoConhecido)
+            : new ConsultaStatus(transacaoId, StatusPagamento.Desconhecido, OrigemStatus.Padrao);
+    }
 
     /// <summary>
     /// POST <c>v1/cobrancas/{id}/estornos</c> SEM Idempotency-Key. 2xx → Sucesso; 429 → LimiteDeRequisicoes;
     /// demais → ErroNoGateway; exceções mapeáveis → motivo correspondente.
     /// </summary>
-    public Task<ResultadoEstorno> EstornarAsync(string transacaoId, CancellationToken ct = default) =>
-        throw new NotImplementedException("TODO (Passo 4): POST de estorno sem chave; o pipeline não deve repeti-lo.");
+    public async Task<ResultadoEstorno> EstornarAsync(string transacaoId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(transacaoId);
+
+        try
+        {
+            using var resposta = await http.PostAsync($"v1/cobrancas/{Uri.EscapeDataString(transacaoId)}/estornos", content: null, ct);
+            if (resposta.IsSuccessStatusCode)
+            {
+                return new ResultadoEstorno(true);
+            }
+
+            LogFalhaHttp(logger, "estorno", (int)resposta.StatusCode);
+            return new ResultadoEstorno(false, resposta.StatusCode == HttpStatusCode.TooManyRequests
+                ? MotivoIndisponibilidade.LimiteDeRequisicoes
+                : MotivoIndisponibilidade.ErroNoGateway);
+        }
+        catch (Exception ex) when (MotivoDaFalha(ex, ct) is { } motivo)
+        {
+            LogIndisponivel(logger, "estorno", motivo, ex);
+            return new ResultadoEstorno(false, motivo);
+        }
+    }
 
     /// <summary>
     /// Traduz exceções da pilha HTTP/Polly: <see cref="TimeoutRejectedException"/> → Timeout;
@@ -56,10 +140,25 @@ public sealed partial class GatewayPagamentoClient(
     /// <see cref="OperationCanceledException"/> SEM o <paramref name="ct"/> do chamador cancelado → Timeout.
     /// Qualquer outra coisa (inclusive cancelamento pedido pelo chamador) → <c>null</c> (não captura: propaga).
     /// </summary>
-    public static MotivoIndisponibilidade? MotivoDaFalha(Exception ex, CancellationToken ct) =>
-        throw new NotImplementedException("TODO (Passo 4): switch por tipo de exceção; cancelamento do chamador devolve null.");
+    public static MotivoIndisponibilidade? MotivoDaFalha(Exception ex, CancellationToken ct) => ex switch
+    {
+        TimeoutRejectedException => MotivoIndisponibilidade.Timeout,
+        BrokenCircuitException => MotivoIndisponibilidade.CircuitoAberto,
+        HttpRequestException => MotivoIndisponibilidade.FalhaDeRede,
+        System.Text.Json.JsonException => MotivoIndisponibilidade.RespostaInvalida,
+        OperationCanceledException when !ct.IsCancellationRequested => MotivoIndisponibilidade.Timeout,
+        _ => null,
+    };
 
-    // ----- Prontos: use à vontade -----
+    private static ResultadoCobranca MapearStatusDeFalha(HttpStatusCode status) => status switch
+    {
+        HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity => new ResultadoCobranca.Rejeitada(MotivoRejeicao.DadosInvalidos),
+        HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => new ResultadoCobranca.Rejeitada(MotivoRejeicao.NaoAutorizado),
+        HttpStatusCode.Conflict => new ResultadoCobranca.Rejeitada(MotivoRejeicao.ConflitoDeIdempotencia),
+        HttpStatusCode.TooManyRequests => new ResultadoCobranca.Indisponivel(MotivoIndisponibilidade.LimiteDeRequisicoes),
+        >= HttpStatusCode.InternalServerError => new ResultadoCobranca.Indisponivel(MotivoIndisponibilidade.ErroNoGateway),
+        _ => new ResultadoCobranca.Rejeitada(MotivoRejeicao.Desconhecido),
+    };
 
     private static StatusPagamento ConverterStatus(string? status) => status?.ToUpperInvariant() switch
     {

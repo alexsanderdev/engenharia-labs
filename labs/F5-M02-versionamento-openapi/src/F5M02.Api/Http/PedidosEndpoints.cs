@@ -10,25 +10,40 @@ namespace F5M02.Api.Http;
 /// <summary>Endpoints versionados de Pedidos: v1 (depreciada) e v2 convivendo.</summary>
 public static class PedidosEndpoints
 {
-    /// <summary>
-    /// TODO (passo 3): mapeie as duas versões no MESMO version set.
-    /// <code>
-    /// GET  /v1/pedidos/{id}   → ObterV1 (v1 DEPRECIADA)   200 PedidoV1Response | 404
-    /// GET  /v2/pedidos/{id}   → ObterV2                   200 PedidoV2Response | 404
-    /// POST /v2/pedidos        → CriarV2                   201 + Location | 400 ValidationProblem | 422
-    /// </code>
-    /// Dicas: <c>app.NewVersionedApi("Pedidos")</c>; grupos com <c>MapGroup("/v{version:apiVersion}/pedidos")</c>;
-    /// <c>HasDeprecatedApiVersion(Versionamento.V1)</c> / <c>HasApiVersion(Versionamento.V2)</c>.
-    /// Para o OpenAPI (passo 4): <c>WithName</c> (vira operationId: ObterPedidoV1, ObterPedidoV2, CriarPedidoV2),
-    /// <c>WithSummary</c>/<c>WithDescription</c>, <c>ProducesProblem(404)</c>, <c>ProducesValidationProblem()</c>, <c>ProducesProblem(422)</c>.
-    /// </summary>
     public static IEndpointRouteBuilder MapPedidosVersionados(this IEndpointRouteBuilder app)
     {
-        // TODO: var pedidos = app.NewVersionedApi("Pedidos"); ...
+        // Um "version set" agrupa as versões da MESMA API lógica (é ele que alimenta api-supported-versions).
+        var pedidos = app.NewVersionedApi("Pedidos");
+
+        var v1 = pedidos.MapGroup("/v{version:apiVersion}/pedidos")
+            .HasDeprecatedApiVersion(Versionamento.V1)
+            .WithTags("Pedidos");
+
+        v1.MapGet("/{id:guid}", ObterV1)
+            .WithName("ObterPedidoV1")
+            .WithSummary("Obtém um pedido (v1, depreciada)")
+            .WithDescription("Contrato legado: status numérico e total sem moeda. Migre para a v2 até a data de sunset.")
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        var v2 = pedidos.MapGroup("/v{version:apiVersion}/pedidos")
+            .HasApiVersion(Versionamento.V2)
+            .WithTags("Pedidos");
+
+        v2.MapGet("/{id:guid}", ObterV2)
+            .WithName("ObterPedidoV2")
+            .WithSummary("Obtém um pedido")
+            .WithDescription("Status textual e valores monetários com moeda explícita.")
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        v2.MapPost("/", CriarV2)
+            .WithName("CriarPedidoV2")
+            .WithSummary("Cria um pedido")
+            .WithDescription("O total é calculado no servidor a partir do catálogo.")
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
         return app;
     }
-
-    // ---------------------------------------------------------------- handlers (PRONTOS)
 
     private static Results<Ok<PedidoV1Response>, ProblemHttpResult> ObterV1(Guid id, PedidoRepositorio repo) =>
         repo.Obter(id) is { } pedido

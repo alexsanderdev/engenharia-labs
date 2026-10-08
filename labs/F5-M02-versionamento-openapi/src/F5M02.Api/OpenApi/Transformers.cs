@@ -1,4 +1,8 @@
+using System.Globalization;
+using System.Text.Json.Nodes;
 using Asp.Versioning.ApiExplorer;
+using F5M02.Api.Contratos;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
 
@@ -12,14 +16,30 @@ public sealed class InfoDocumentTransformer(IApiVersionDescriptionProvider verso
 {
     public const string Titulo = "OrderFlow API";
 
-    /// <summary>
-    /// Ache em <c>versoes.ApiVersionDescriptions</c> a versão cujo <c>GroupName</c> é <c>context.DocumentName</c>.
-    /// <c>Info.Title</c> = <see cref="Titulo"/>; <c>Info.Version</c> = <c>ApiVersion.ToString()</c> ("1.0");
-    /// <c>Info.Contact</c> à sua escolha; <c>Info.Description</c> cita "RFC 9457" e, se <c>IsDeprecated</c>,
-    /// contém "depreciada" e a data de <c>SunsetPolicy.Date</c> no formato yyyy-MM-dd.
-    /// </summary>
-    public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken) =>
-        throw new NotImplementedException("TODO (passo 4): preencha document.Info a partir do IApiVersionDescriptionProvider.");
+    public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(context);
+
+        var versao = versoes.ApiVersionDescriptions.FirstOrDefault(v => v.GroupName == context.DocumentName);
+        document.Info ??= new OpenApiInfo();
+        document.Info.Title = Titulo;
+        document.Info.Version = versao?.ApiVersion.ToString() ?? context.DocumentName;
+        document.Info.Contact = new OpenApiContact { Name = "Time OrderFlow", Email = "api@orderflow.dev" };
+
+        var descricao = "API de pedidos do OrderFlow. Erros seguem ProblemDetails (RFC 9457) com as extensões `code` e `traceId`.";
+        if (versao is { IsDeprecated: true })
+        {
+            descricao += " **Esta versão está depreciada**";
+            if (versao.DeprecationPolicy?.Date is { } depreciadaEm)
+                descricao += $" desde {depreciadaEm.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
+            if (versao.SunsetPolicy?.Date is { } sunset)
+                descricao += $" e deixará de responder em {sunset.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} (sunset)";
+            descricao += ". Migre para a versão mais recente.";
+        }
+        document.Info.Description = descricao;
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>Document transformer: declara o esquema de segurança Bearer (JWT) e o exige no documento todo.</summary>
@@ -27,30 +47,63 @@ public sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransforme
 {
     public const string NomeEsquema = "Bearer";
 
-    /// <summary>
-    /// <c>document.Components.SecuritySchemes["Bearer"]</c> = <c>OpenApiSecurityScheme</c> (Http, "bearer", "JWT") e
-    /// um <c>OpenApiSecurityRequirement</c> em <c>document.Security</c> referenciando-o com
-    /// <c>new OpenApiSecuritySchemeReference("Bearer", document)</c>.
-    /// </summary>
-    public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken) =>
-        throw new NotImplementedException("TODO (passo 4): registre o esquema Bearer em Components e o requisito em Security.");
+    public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes[NomeEsquema] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Token JWT emitido pelo Entra ID (módulo 5.04). Envie em Authorization: Bearer <token>.",
+        };
+
+        document.Security ??= [];
+        document.Security.Add(new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference(NomeEsquema, document)] = [],
+        });
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>Operation transformer: marca como <c>deprecated: true</c> as operações de versões depreciadas.</summary>
 public sealed class DeprecatedOperationTransformer : IOpenApiOperationTransformer
 {
-    /// <summary>Use <c>context.Description.IsDeprecated</c> (extensão do Asp.Versioning.Mvc.ApiExplorer).</summary>
-    public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken) =>
-        throw new NotImplementedException("TODO (passo 4): operation.Deprecated = true quando a ApiDescription for de versão depreciada.");
+    public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(context);
+        if (context.Description.IsDeprecated) operation.Deprecated = true;
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>Schema transformer: exemplos nos schemas que mais confundem (dinheiro e criação de pedido).</summary>
 public sealed class ExemplosSchemaTransformer : IOpenApiSchemaTransformer
 {
-    /// <summary>
-    /// Quando <c>context.JsonTypeInfo.Type</c> for <c>DinheiroResponse</c>, adicione em <c>schema.Examples</c> um
-    /// <c>JsonObject</c> { valor: 620.00, moeda: "BRL" }; para <c>CriarPedidoV2Request</c>, um exemplo com clienteId e 1 item.
-    /// </summary>
-    public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken) =>
-        throw new NotImplementedException("TODO (passo 4): adicione exemplos (schema.Examples) para DinheiroResponse e CriarPedidoV2Request.");
+    public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(schema);
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (context.JsonTypeInfo.Type == typeof(DinheiroResponse))
+        {
+            schema.Examples = [new JsonObject { ["valor"] = 620.00m, ["moeda"] = "BRL" }];
+        }
+        else if (context.JsonTypeInfo.Type == typeof(CriarPedidoV2Request))
+        {
+            schema.Examples =
+            [
+                new JsonObject
+                {
+                    ["clienteId"] = "aaaaaaaa-0000-0000-0000-000000000001",
+                    ["itens"] = new JsonArray(new JsonObject { ["produtoId"] = "11111111-1111-1111-1111-111111111111", ["quantidade"] = 2 }),
+                },
+            ];
+        }
+        return Task.CompletedTask;
+    }
 }

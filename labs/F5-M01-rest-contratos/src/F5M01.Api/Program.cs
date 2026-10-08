@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using F5M01.Api.Dominio;
 using F5M01.Api.Http;
-using F5M01.Api.Legado;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,13 +21,11 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
-// A API REST nova (TODO: Http/PedidosEndpoints.cs).
+// A API REST nova.
 app.MapPedidosEndpoints();
 
-// A API RPC legada — o "antes" do lab. Rode o projeto e experimente com o F5M01.Api.http.
-// TODO (passo 6): quando a API REST estiver pronta, deixe de mapear o legado (o teste RpcLegado_NaoEstaMaisExposto cobra isso).
+// A API RPC legada (Legado/RpcEndpoints.cs) deixou de ser mapeada: os clientes migraram para /pedidos.
 // Em produção, você a manteria por um período de depreciação anunciado (módulo 5.02) antes de remover.
-app.MapRpcLegado();
 
 app.Run();
 

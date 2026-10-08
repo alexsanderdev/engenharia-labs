@@ -15,10 +15,16 @@ public sealed class EscopoHandler : AuthorizationHandler<EscopoRequirement>
 
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, EscopoRequirement requirement)
     {
-        // TODO (Passo 2): junte os valores dos claims TiposAceitos ("scope" e "scp"), separe por espaço e chame
-        // context.Succeed(requirement) se algum for EXATAMENTE requirement.Escopo (ordinal, sensível a maiúsculas).
-        // Não chame context.Fail(): não satisfazer já nega.
-        _ = TiposAceitos;
-        throw new NotImplementedException("TODO (Passo 2): verificar o escopo no claim scope/scp (string separada por espaços).");
+        var escopos = context.User.Claims
+            .Where(c => TiposAceitos.Contains(c.Type, StringComparer.Ordinal))
+            .SelectMany(c => c.Value.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+        // Comparação exata e sensível a maiúsculas (escopos são case-sensitive, RFC 6749 §3.3).
+        // Nunca use string.Contains no valor bruto: "pedidos.writeall" conteria "pedidos.write".
+        if (escopos.Contains(requirement.Escopo, StringComparer.Ordinal))
+            context.Succeed(requirement);
+
+        // Sem Fail(): não satisfazer já nega. Fail() impediria qualquer outro handler de aprovar.
+        return Task.CompletedTask;
     }
 }

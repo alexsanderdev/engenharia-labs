@@ -1,7 +1,7 @@
 namespace F5M03.Api.Produtos;
 
-// TODO (Passo 2 do Lab): crie o contrato de saída do catálogo (ex.: ProdutoResponse(Id, Nome, Preco)),
-// sem CustoInterno e sem os bytes da imagem.
+/// <summary>Saída pública do catálogo: sem CustoInterno.</summary>
+public sealed record ProdutoResponse(Guid Id, string Nome, decimal Preco);
 
 /// <summary>ARQUIVO PRONTO (as constantes) — limites do upload de imagem de produto.</summary>
 public static class LimitesDeUpload

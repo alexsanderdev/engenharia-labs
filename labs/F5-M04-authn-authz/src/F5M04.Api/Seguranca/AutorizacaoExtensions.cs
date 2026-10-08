@@ -10,12 +10,25 @@ public static class AutorizacaoExtensions
     /// </summary>
     public static AuthorizationBuilder AdicionarPoliticasOrderFlow(this AuthorizationBuilder builder)
     {
-        // TODO (Passo 2): registre (este método roda na inicialização, por isso não lança NotImplementedException):
-        //  - FallbackPolicy: usuário autenticado (endpoint sem metadado de autorização exige login);
-        //  - Politicas.Admin: autenticado + papel Papeis.Admin;
-        //  - Politicas.Cliente: autenticado + papel Papeis.Cliente + claim "sub";
-        //  - Politicas.PedidosEscrita: autenticado + new EscopoRequirement(Escopos.PedidosEscrita).
-        // Sem as políticas nomeadas, endpoints que as usam devolvem 500 ("The AuthorizationPolicy named ... was not found").
+        // Seguro por padrão: endpoint SEM metadado de autorização exige usuário autenticado.
+        // Endpoint público precisa dizer isso explicitamente com AllowAnonymous().
+        builder.SetFallbackPolicy(new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build());
+
+        builder.AddPolicy(Politicas.Admin, politica => politica
+            .RequireAuthenticatedUser()
+            .RequireRole(Papeis.Admin));
+
+        builder.AddPolicy(Politicas.Cliente, politica => politica
+            .RequireAuthenticatedUser()
+            .RequireRole(Papeis.Cliente)
+            .RequireClaim(TiposDeClaim.Sub));
+
+        builder.AddPolicy(Politicas.PedidosEscrita, politica => politica
+            .RequireAuthenticatedUser()
+            .AddRequirements(new EscopoRequirement(Escopos.PedidosEscrita)));
+
         return builder;
     }
 }

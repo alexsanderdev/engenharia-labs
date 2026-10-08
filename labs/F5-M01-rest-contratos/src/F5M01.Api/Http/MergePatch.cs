@@ -15,8 +15,23 @@ public static class MergePatch
     /// Aplica <paramref name="patch"/> sobre <paramref name="alvo"/> e devolve o RESULTADO, sem alterar nenhum dos dois
     /// (trabalhe sobre cópias: <c>DeepClone()</c>). <c>null</c> representa o JSON <c>null</c>.
     /// </summary>
-    public static JsonNode? Aplicar(JsonNode? alvo, JsonNode? patch) =>
-        throw new NotImplementedException(
-            "TODO (passo 4): implemente o pseudocódigo da seção 2 da RFC 7396 (recursivo). " +
-            "Patch que não é objeto substitui tudo; alvo que não é objeto vira {}; valor null remove a chave.");
+    public static JsonNode? Aplicar(JsonNode? alvo, JsonNode? patch)
+    {
+        if (patch is not JsonObject patchObjeto) return patch?.DeepClone();
+
+        var resultado = alvo is JsonObject alvoObjeto ? (JsonObject)alvoObjeto.DeepClone() : new JsonObject();
+        foreach (var (nome, valor) in patchObjeto)
+        {
+            if (valor is null)
+            {
+                resultado.Remove(nome);
+                continue;
+            }
+
+            resultado.TryGetPropertyValue(nome, out var atual);
+            resultado[nome] = Aplicar(atual, valor);
+        }
+
+        return resultado;
+    }
 }

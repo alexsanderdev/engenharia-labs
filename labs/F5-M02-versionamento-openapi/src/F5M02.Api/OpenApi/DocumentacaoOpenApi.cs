@@ -1,3 +1,5 @@
+using Scalar.AspNetCore;
+
 namespace F5M02.Api.OpenApi;
 
 /// <summary>
@@ -11,16 +13,35 @@ public static class DocumentacaoOpenApi
 
     public static IServiceCollection AddDocumentacaoOpenApi(this IServiceCollection services)
     {
-        // TODO (passo 4): para cada nome em Documentos, services.AddOpenApi(nome, options => { ... }) registrando:
-        //   AddDocumentTransformer<InfoDocumentTransformer>(), AddDocumentTransformer<BearerSecuritySchemeTransformer>(),
-        //   AddOperationTransformer<DeprecatedOperationTransformer>() e AddSchemaTransformer<ExemplosSchemaTransformer>().
+        foreach (var documento in Documentos)
+        {
+            // Por padrão, cada documento inclui só os endpoints cujo GroupName é o nome do documento —
+            // e quem define o GroupName de cada endpoint versionado é o AddApiExplorer do Asp.Versioning.
+            services.AddOpenApi(documento, options =>
+            {
+                options.AddDocumentTransformer<InfoDocumentTransformer>();
+                options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+                options.AddOperationTransformer<DeprecatedOperationTransformer>();
+                options.AddSchemaTransformer<ExemplosSchemaTransformer>();
+            });
+        }
         return services;
     }
 
     public static WebApplication MapDocumentacaoOpenApi(this WebApplication app)
     {
-        // TODO (passo 4): app.MapOpenApi() em TODOS os ambientes (o documento é o contrato) e,
-        // SÓ em Development, app.MapScalarApiReference(o => o.WithTitle(...).AddDocuments(Documentos)) (using Scalar.AspNetCore).
+        ArgumentNullException.ThrowIfNull(app);
+
+        // O documento é o CONTRATO: fica disponível em todos os ambientes (clientes geram código a partir dele).
+        app.MapOpenApi();
+
+        // A UI interativa é ferramenta de desenvolvimento: só em Development.
+        if (app.Environment.IsDevelopment())
+        {
+            app.MapScalarApiReference(options => options
+                .WithTitle(InfoDocumentTransformer.Titulo)
+                .AddDocuments(Documentos));
+        }
         return app;
     }
 }

@@ -14,15 +14,17 @@ public static class ProdutoEndpoints
 {
     public static IEndpointRouteBuilder MapProdutoEndpoints(this IEndpointRouteBuilder app)
     {
-        // TODO (Passo 2): catálogo público. Com a FallbackPolicy ativa, a leitura anônima precisa ser EXPLÍCITA no grupo.
-        var publico = app.MapGroup("/produtos");
+        // Catálogo público: leitura anônima, declarada EXPLICITAMENTE (a FallbackPolicy exige login no resto).
+        var publico = app.MapGroup("/produtos")
+            .AllowAnonymous();
         publico.MapGet("/", (ICatalogo catalogo) =>
             TypedResults.Ok(catalogo.ListarAtivos().Select(ProdutoResponse.De).ToArray()));
         publico.MapGet("/{id:guid}", Results<Ok<ProdutoResponse>, NotFound> (Guid id, ICatalogo catalogo) =>
             catalogo.Obter(id) is { Ativo: true } p ? TypedResults.Ok(ProdutoResponse.De(p)) : TypedResults.NotFound());
 
-        // TODO (Passo 2): gestão do catálogo só para Admin (Politicas.Admin). Aplique no GRUPO para nenhum endpoint novo "esquecer".
-        var gestao = app.MapGroup("/produtos");
+        // Gestão do catálogo: só Admin. A política fica no GRUPO para nenhum endpoint novo "esquecer" dela.
+        var gestao = app.MapGroup("/produtos")
+            .RequireAuthorization(Politicas.Admin);
         gestao.MapPost("/", Criar);
         gestao.MapPost("/{id:guid}/desativar", Results<NoContent, NotFound> (Guid id, ICatalogo catalogo) =>
         {

@@ -1,8 +1,8 @@
 namespace F5M03.Api.Infra;
 
 /// <summary>
-/// Tratamento global de exceções.
-/// VULNERÁVEL — corrija (Passo 4 do Lab).
+/// Exceção não tratada → 500 com ProblemDetails GENÉRICO (sem mensagem, tipo, stack trace ou SQL)
+/// e com <c>traceId</c> para correlacionar com o log. O detalhe completo vai só para o log do servidor.
 /// </summary>
 public sealed class TratamentoDeErrosMiddleware(RequestDelegate next, ILogger<TratamentoDeErrosMiddleware> logger)
 {
@@ -12,18 +12,23 @@ public sealed class TratamentoDeErrosMiddleware(RequestDelegate next, ILogger<Tr
         {
             await next(context);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!context.Response.HasStarted && !context.RequestAborted.IsCancellationRequested)
         {
-            // VULNERÁVEL: "ajuda a depurar" — e entrega ao atacante stack trace, tipo da exceção,
-            // nome do servidor e o SQL. E nada vai para o log.
-            // TODO: logue a exceção completa (LogError) e devolva 500 com ProblemDetails GENÉRICO via
-            //       problemDetails.WriteAsync(...) (application/problem+json, com traceId, sem ex.Message).
-            //       Só trate se a resposta ainda não começou (context.Response.HasStarted).
-            _ = logger;
-            _ = problemDetails;
+            logger.LogError(ex, "Erro não tratado em {Metodo} {Caminho}", context.Request.Method, context.Request.Path);
+
+            context.Response.Clear();
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            context.Response.ContentType = "text/plain; charset=utf-8";
-            await context.Response.WriteAsync(ex.ToString());
+            await problemDetails.WriteAsync(new ProblemDetailsContext
+            {
+                HttpContext = context,
+                Exception = ex, // disponível para customização; o writer padrão NÃO serializa a exceção
+                ProblemDetails =
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Title = "Erro interno",
+                    Detail = "Ocorreu um erro inesperado. Informe o traceId ao suporte.",
+                },
+            });
         }
     }
 }

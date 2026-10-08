@@ -14,8 +14,11 @@ public sealed partial class CheckoutService(IGatewayPagamento gateway, ILogger<C
     /// O mesmo pedido na mesma tentativa sempre gera a mesma chave (clique duplo, retry do pipeline,
     /// reprocessamento por job), então o gateway cobra no máximo uma vez.
     /// </summary>
-    public static string ChaveDeIdempotencia(Pedido pedido) =>
-        throw new NotImplementedException("TODO (Passo 9): $\"pedido-{pedido.Id:N}-pagamento-{pedido.TentativaDePagamento}\".");
+    public static string ChaveDeIdempotencia(Pedido pedido)
+    {
+        ArgumentNullException.ThrowIfNull(pedido);
+        return $"pedido-{pedido.Id:N}-pagamento-{pedido.TentativaDePagamento}";
+    }
 
     /// <summary>
     /// Cobra o pedido e atualiza a situação:
@@ -23,10 +26,39 @@ public sealed partial class CheckoutService(IGatewayPagamento gateway, ILogger<C
     /// Indisponivel → <c>MarcarPagamentoPendente</c> (não é erro do cliente: reconciliar depois);
     /// Rejeitada → <c>MarcarErroDeIntegracao</c> + log de erro. Nunca lança por falha do gateway.
     /// </summary>
-    public Task<ResultadoCheckout> PagarAsync(Pedido pedido, string tokenCartao, CancellationToken ct = default)
+    public async Task<ResultadoCheckout> PagarAsync(Pedido pedido, string tokenCartao, CancellationToken ct = default)
     {
-        _ = (gateway, logger);
-        throw new NotImplementedException("TODO (Passo 9): chame gateway.CobrarAsync com a chave do pedido e faça switch no ResultadoCobranca.");
+        ArgumentNullException.ThrowIfNull(pedido);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tokenCartao);
+
+        var resultado = await gateway.CobrarAsync(
+            new SolicitacaoCobranca(pedido.Id, pedido.Total, pedido.Moeda, tokenCartao),
+            ChaveDeIdempotencia(pedido),
+            ct);
+
+        switch (resultado)
+        {
+            case ResultadoCobranca.Aprovada aprovada:
+                pedido.ConfirmarPagamento(aprovada.TransacaoId);
+                return new ResultadoCheckout(SituacaoPagamento.Pago, "Pagamento aprovado.");
+
+            case ResultadoCobranca.Recusada recusada:
+                pedido.RegistrarRecusa();
+                return new ResultadoCheckout(SituacaoPagamento.Recusado, recusada.Motivo);
+
+            case ResultadoCobranca.Indisponivel indisponivel:
+                pedido.MarcarPagamentoPendente();
+                return new ResultadoCheckout(SituacaoPagamento.PagamentoPendente,
+                    $"Gateway indisponível ({indisponivel.Motivo}); o pagamento será confirmado em seguida.");
+
+            case ResultadoCobranca.Rejeitada rejeitada:
+                LogRejeicao(logger, pedido.Id, rejeitada.Motivo);
+                pedido.MarcarErroDeIntegracao();
+                return new ResultadoCheckout(SituacaoPagamento.ErroDeIntegracao, "Não foi possível processar o pagamento.");
+
+            default:
+                throw new InvalidOperationException($"Resultado de cobrança não tratado: {resultado}");
+        }
     }
 
     [LoggerMessage(Level = LogLevel.Error, Message = "Gateway rejeitou a cobrança do pedido {PedidoId}: {Motivo}")]

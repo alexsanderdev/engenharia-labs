@@ -20,8 +20,17 @@ public sealed class CorrelacaoEApiKeyHandler(IOptionsMonitor<GatewayPagamentoOpt
     /// </summary>
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        _ = options;
-        throw new NotImplementedException(
-            "TODO (Passo 3): adicione X-Api-Key (options.CurrentValue.ApiKey) e X-Correlation-Id (se ausente) e chame base.SendAsync.");
+        ArgumentNullException.ThrowIfNull(request);
+
+        request.Headers.Remove(CabecalhoApiKey);
+        request.Headers.TryAddWithoutValidation(CabecalhoApiKey, options.CurrentValue.ApiKey);
+
+        if (!request.Headers.Contains(CabecalhoCorrelacao))
+        {
+            var correlacao = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
+            request.Headers.TryAddWithoutValidation(CabecalhoCorrelacao, correlacao);
+        }
+
+        return base.SendAsync(request, cancellationToken);
     }
 }

@@ -25,8 +25,36 @@ public static class DependencyInjection
     /// com as options lidas de <c>context.GetOptions&lt;GatewayPagamentoOptions&gt;()</c>.</item>
     /// </list>
     /// </summary>
-    public static IHttpClientBuilder AddGatewayPagamento(this IServiceCollection services, Action<GatewayPagamentoOptions> configurar) =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): options + TryAdds + AddHttpClient<IGatewayPagamento, GatewayPagamentoClient>(NomeCliente, ...) " +
-            "+ AddHttpMessageHandler (Passo 3) + AddResilienceHandler (Passo 5).");
+    public static IHttpClientBuilder AddGatewayPagamento(this IServiceCollection services, Action<GatewayPagamentoOptions> configurar)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configurar);
+
+        services.AddOptions<GatewayPagamentoOptions>()
+            .Configure(configurar)
+            .ValidateDataAnnotations();
+
+        services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<UltimoStatusConhecido>();
+        services.TryAddTransient<CorrelacaoEApiKeyHandler>();
+        services.TryAddTransient<CheckoutService>();
+
+        var builder = services
+            .AddHttpClient<IGatewayPagamento, GatewayPagamentoClient>(NomeCliente, (sp, http) =>
+            {
+                var o = sp.GetRequiredService<IOptions<GatewayPagamentoOptions>>().Value;
+                http.BaseAddress = o.BaseAddress;
+                http.Timeout = Timeout.InfiniteTimeSpan;
+                http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddHttpMessageHandler<CorrelacaoEApiKeyHandler>();
+
+        builder.AddResilienceHandler(ResilienciaGateway.NomePipeline, (pipeline, contexto) =>
+        {
+            contexto.EnableReloads<GatewayPagamentoOptions>();
+            ResilienciaGateway.Configurar(pipeline, contexto.GetOptions<GatewayPagamentoOptions>());
+        });
+
+        return builder;
+    }
 }

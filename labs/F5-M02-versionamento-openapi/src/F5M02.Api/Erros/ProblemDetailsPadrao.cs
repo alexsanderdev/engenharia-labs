@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace F5M02.Api.Erros;
 
 /// <summary>
@@ -21,15 +23,46 @@ public static class ProblemDetailsPadrao
     /// <item>500: NUNCA exponha detalhes da exceção; <c>title</c> "Erro interno" e <c>detail</c> genérico que cite o traceId.</item>
     /// </list>
     /// </summary>
-    public static void Customizar(ProblemDetailsContext contexto) =>
-        throw new NotImplementedException(
-            "TODO (passo 1): acrescente traceId, code (padrão por status), type (TipoBase + code), instance e trate o 500 genérico.");
+    public static void Customizar(ProblemDetailsContext contexto)
+    {
+        ArgumentNullException.ThrowIfNull(contexto);
+        var problema = contexto.ProblemDetails;
+        var http = contexto.HttpContext;
+        var status = problema.Status ?? http.Response.StatusCode;
+
+        problema.Extensions.TryAdd("traceId", Activity.Current?.Id ?? http.TraceIdentifier);
+
+        if (!problema.Extensions.TryGetValue("code", out var code) || code is null)
+        {
+            code = CodigoPadrao(status);
+            problema.Extensions["code"] = code;
+        }
+
+        if (code is string texto && texto.Contains('.', StringComparison.Ordinal))
+            problema.Type = TipoBase + texto;
+
+        problema.Instance ??= http.Request.Path;
+
+        if (status >= StatusCodes.Status500InternalServerError)
+        {
+            problema.Title = "Erro interno";
+            problema.Detail = "Ocorreu um erro inesperado. Informe o traceId ao suporte.";
+            problema.Extensions.Remove("exception");
+        }
+    }
 
     /// <summary>
     /// Código padrão por status para erros que não passaram pelo <see cref="Problemas"/>:
     /// 400 <c>requisicao.invalida</c>, 404 <c>recurso.nao_encontrado</c>, 405 <c>metodo.nao_permitido</c>,
     /// 415 <c>requisicao.media_type_nao_suportado</c>, 500 <c>erro.interno</c>; outros: <c>http.{status}</c>.
     /// </summary>
-    public static string CodigoPadrao(int status) =>
-        throw new NotImplementedException("TODO (passo 1): switch por status com os códigos da documentação acima.");
+    public static string CodigoPadrao(int status) => status switch
+    {
+        StatusCodes.Status400BadRequest => "requisicao.invalida",
+        StatusCodes.Status404NotFound => "recurso.nao_encontrado",
+        StatusCodes.Status405MethodNotAllowed => "metodo.nao_permitido",
+        StatusCodes.Status415UnsupportedMediaType => "requisicao.media_type_nao_suportado",
+        StatusCodes.Status500InternalServerError => "erro.interno",
+        _ => $"http.{status}",
+    };
 }
