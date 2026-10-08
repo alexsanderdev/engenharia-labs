@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/F3M06.Dapper.Benchmarks/F3M06.Dapper.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/F3M06.Dapper/F3M06.Dapper.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/F3M06.Dapper.Tests/F3M06.Dapper.Tests.csproj" />
+  </Folder>
+</Solution>

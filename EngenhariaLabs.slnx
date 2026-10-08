@@ -125,6 +125,58 @@
     <Project Path="labs/F2-M08-arquitetura-mutacao/tests/F2M08.Arquitetura.Tests/F2M08.Arquitetura.Tests.csproj" />
     <Project Path="labs/F2-M08-arquitetura-mutacao/tests/F2M08.Domain.Tests/F2M08.Domain.Tests.csproj" />
   </Folder>
+  <Folder Name="/labs/F3-M01-modelagem-sql/" />
+  <Folder Name="/labs/F3-M01-modelagem-sql/src/">
+    <Project Path="labs/F3-M01-modelagem-sql/src/F3M01.Sql/F3M01.Sql.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M01-modelagem-sql/tests/">
+    <Project Path="labs/F3-M01-modelagem-sql/tests/F3M01.Sql.Tests/F3M01.Sql.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M02-indices-planos/" />
+  <Folder Name="/labs/F3-M02-indices-planos/src/">
+    <Project Path="labs/F3-M02-indices-planos/src/F3M02.Indices/F3M02.Indices.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M02-indices-planos/tests/">
+    <Project Path="labs/F3-M02-indices-planos/tests/F3M02.Indices.Tests/F3M02.Indices.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M03-transacoes-locks/" />
+  <Folder Name="/labs/F3-M03-transacoes-locks/src/">
+    <Project Path="labs/F3-M03-transacoes-locks/src/F3M03.Transacoes/F3M03.Transacoes.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M03-transacoes-locks/tests/">
+    <Project Path="labs/F3-M03-transacoes-locks/tests/F3M03.Transacoes.Tests/F3M03.Transacoes.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M04-efcore/" />
+  <Folder Name="/labs/F3-M04-efcore/src/">
+    <Project Path="labs/F3-M04-efcore/src/F3M04.EfCore/F3M04.EfCore.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M04-efcore/tests/">
+    <Project Path="labs/F3-M04-efcore/tests/F3M04.EfCore.Tests/F3M04.EfCore.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M05-efcore-avancado/" />
+  <Folder Name="/labs/F3-M05-efcore-avancado/src/">
+    <Project Path="labs/F3-M05-efcore-avancado/src/F3M05.EfAvancado/F3M05.EfAvancado.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M05-efcore-avancado/tests/">
+    <Project Path="labs/F3-M05-efcore-avancado/tests/F3M05.EfAvancado.Tests/F3M05.EfAvancado.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M06-dapper/" />
+  <Folder Name="/labs/F3-M06-dapper/benchmarks/">
+    <Project Path="labs/F3-M06-dapper/benchmarks/F3M06.Dapper.Benchmarks/F3M06.Dapper.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M06-dapper/src/">
+    <Project Path="labs/F3-M06-dapper/src/F3M06.Dapper/F3M06.Dapper.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M06-dapper/tests/">
+    <Project Path="labs/F3-M06-dapper/tests/F3M06.Dapper.Tests/F3M06.Dapper.Tests.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M07-migrations-paginacao/" />
+  <Folder Name="/labs/F3-M07-migrations-paginacao/src/">
+    <Project Path="labs/F3-M07-migrations-paginacao/src/F3M07.Dados/F3M07.Dados.csproj" />
+  </Folder>
+  <Folder Name="/labs/F3-M07-migrations-paginacao/tests/">
+    <Project Path="labs/F3-M07-migrations-paginacao/tests/F3M07.Dados.Tests/F3M07.Dados.Tests.csproj" />
+  </Folder>
   <Folder Name="/labs/P-M01-estruturas-de-dados/" />
   <Folder Name="/labs/P-M01-estruturas-de-dados/src/">
     <Project Path="labs/P-M01-estruturas-de-dados/src/PM01.Estruturas/PM01.Estruturas.csproj" />

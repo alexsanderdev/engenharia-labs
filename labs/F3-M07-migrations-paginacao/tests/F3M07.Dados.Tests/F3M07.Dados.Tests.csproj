@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.MsSql" />
+    <PackageReference Include="Respawn" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F3M07.Dados\F3M07.Dados.csproj" />
+  </ItemGroup>
+</Project>

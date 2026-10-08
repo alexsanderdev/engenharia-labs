@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- SQL em arquivo: versionado, revisável em PR e copiado para o output (lido em runtime). -->
+    <None Include="Sql\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

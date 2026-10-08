@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/F3M04.EfCore/F3M04.EfCore.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/F3M04.EfCore.Tests/F3M04.EfCore.Tests.csproj" />
+  </Folder>
+</Solution>

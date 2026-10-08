@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Consultas de diagnóstico: o aluno escreve o T-SQL; o C# só lê o arquivo e mapeia as colunas. -->
+    <None Include="Sql\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

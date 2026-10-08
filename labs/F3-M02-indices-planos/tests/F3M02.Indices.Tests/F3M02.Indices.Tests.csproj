@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.MsSql" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\F3M02.Indices\F3M02.Indices.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Infra\*.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

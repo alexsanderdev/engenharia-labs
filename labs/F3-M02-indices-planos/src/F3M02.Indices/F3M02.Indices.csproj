@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- O "código" deste lab são os arquivos .sql: eles vão para o output e os testes os executam no SQL Server. -->
+  <ItemGroup>
+    <None Update="Sql\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
