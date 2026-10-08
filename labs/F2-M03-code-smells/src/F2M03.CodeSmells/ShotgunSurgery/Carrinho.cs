@@ -1,19 +1,15 @@
 namespace F2M03.CodeSmells.ShotgunSurgery;
 
-/// <summary>
-/// Carrinho de compras: acumula quantidades por SKU.
-/// SMELL: Shotgun Surgery — a regra "1 a 10" está aqui, no <see cref="Checkout"/> e no
-/// <see cref="ImportadorDePedidosCsv"/>. Mudar o limite exige caçar o 10 em três lugares.
-/// </summary>
+/// <summary>Carrinho de compras: acumula quantidades por SKU.</summary>
 public sealed class Carrinho
 {
     private readonly Dictionary<string, int> _itens = [];
+    private readonly PoliticaDeQuantidade _politica;
 
-    public Carrinho() { }
+    /// <summary>Usa a <see cref="PoliticaDeQuantidade.Padrao"/>.</summary>
+    public Carrinho() : this(PoliticaDeQuantidade.Padrao) { }
 
-    /// <summary>Carrinho com uma política de quantidade explícita.</summary>
-    public Carrinho(PoliticaDeQuantidade politica) =>
-        throw new NotImplementedException("TODO: guarde a política e faça o construtor sem parâmetros usar PoliticaDeQuantidade.Padrao.");
+    public Carrinho(PoliticaDeQuantidade politica) => _politica = politica;
 
     /// <summary>Itens atuais (SKU → quantidade).</summary>
     public IReadOnlyDictionary<string, int> Itens => _itens;
@@ -25,12 +21,10 @@ public sealed class Carrinho
     /// <exception cref="ArgumentOutOfRangeException">Quantidade ou total fora da política.</exception>
     public void Adicionar(string sku, int quantidade)
     {
-        if (quantidade < 1 || quantidade > 10)
-            throw new ArgumentOutOfRangeException(nameof(quantidade), quantidade, "Quantidade deve estar entre 1 e 10.");
+        _politica.Validar(quantidade);
 
         var total = _itens.GetValueOrDefault(sku) + quantidade;
-        if (total > 10)
-            throw new ArgumentOutOfRangeException(nameof(quantidade), total, "Quantidade deve estar entre 1 e 10.");
+        _politica.Validar(total);
 
         _itens[sku] = total;
     }

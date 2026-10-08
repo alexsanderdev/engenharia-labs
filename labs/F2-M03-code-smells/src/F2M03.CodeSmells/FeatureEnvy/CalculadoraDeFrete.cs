@@ -1,12 +1,16 @@
 namespace F2M03.CodeSmells.FeatureEnvy;
 
 /// <summary>
-/// SMELL: Feature Envy. Este método mexe muito mais nos dados de <see cref="Pedido"/>, <see cref="ItemDoPedido"/>
-/// e <see cref="EnderecoDeEntrega"/> do que em qualquer coisa da própria calculadora.
-/// Refatoração: Move Method — cada cálculo vai para quem tem os dados, e aqui sobra só a orquestração.
+/// SMELL (antes): Feature Envy. O método original lia os itens, somava preço e peso e decidia a região da UF:
+/// usava muito mais os dados de <see cref="Pedido"/> e <see cref="EnderecoDeEntrega"/> do que os próprios.
+/// Depois de "mover método", a calculadora só orquestra.
 /// </summary>
 public sealed class CalculadoraDeFrete
 {
+    /// <summary>Peso incluso na taxa base; cada kg (ou fração) acima disso custa <see cref="ValorPorKgExcedente"/>.</summary>
+    public const decimal PesoInclusoKg = 5m;
+    public const decimal ValorPorKgExcedente = 2.5m;
+
     /// <summary>
     /// Frete = 0 se o subtotal ≥ R$ 300; senão taxa base da região + R$ 2,50 por kg (arredondado para cima)
     /// acima de 5 kg.
@@ -15,27 +19,10 @@ public sealed class CalculadoraDeFrete
     {
         ArgumentNullException.ThrowIfNull(pedido);
 
-        decimal subtotal = 0;
-        decimal peso = 0;
-        foreach (var item in pedido.Itens)
-        {
-            subtotal += item.PrecoUnitario * item.Quantidade;
-            peso += item.PesoUnitarioKg * item.Quantidade;
-        }
-
-        if (subtotal >= 300m)
+        if (pedido.TemFreteGratis())
             return 0m;
 
-        decimal taxaBase;
-        var uf = pedido.Entrega.Uf.ToUpperInvariant();
-        if (uf == "SP" || uf == "RJ" || uf == "MG" || uf == "ES")
-            taxaBase = 15m;
-        else if (uf == "PR" || uf == "SC" || uf == "RS")
-            taxaBase = 20m;
-        else
-            taxaBase = 35m;
-
-        var adicionalPeso = peso > 5m ? Math.Ceiling(peso - 5m) * 2.5m : 0m;
-        return taxaBase + adicionalPeso;
+        var excedenteKg = Math.Max(0m, pedido.PesoTotalKg() - PesoInclusoKg);
+        return pedido.Entrega.TaxaBaseDeFrete() + Math.Ceiling(excedenteKg) * ValorPorKgExcedente;
     }
 }

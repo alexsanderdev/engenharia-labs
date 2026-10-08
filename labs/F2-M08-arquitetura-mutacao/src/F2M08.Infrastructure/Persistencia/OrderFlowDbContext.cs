@@ -11,8 +11,7 @@ public sealed class OrderFlowDbContext(DbContextOptions<OrderFlowDbContext> opti
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // TODO (Passo 1): troque por modelBuilder.ApplyConfiguration(new PedidoConfiguration()).
-        Pedido.ConfigurarMapeamento(modelBuilder);
+        modelBuilder.ApplyConfiguration(new PedidoConfiguration());
 
         modelBuilder.Entity<Produto>(b =>
         {

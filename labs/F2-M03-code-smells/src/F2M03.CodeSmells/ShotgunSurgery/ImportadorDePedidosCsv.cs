@@ -3,13 +3,12 @@ namespace F2M03.CodeSmells.ShotgunSurgery;
 /// <summary>Importa linhas "SKU;QUANTIDADE" vindas de um parceiro.</summary>
 public sealed class ImportadorDePedidosCsv
 {
-    private const int QuantidadeMaxima = 10; // e de novo, agora com outro nome
+    private readonly PoliticaDeQuantidade _politica;
 
-    public ImportadorDePedidosCsv() { }
+    /// <summary>Usa a <see cref="PoliticaDeQuantidade.Padrao"/>.</summary>
+    public ImportadorDePedidosCsv() : this(PoliticaDeQuantidade.Padrao) { }
 
-    /// <summary>Importador com uma política de quantidade explícita.</summary>
-    public ImportadorDePedidosCsv(PoliticaDeQuantidade politica) =>
-        throw new NotImplementedException("TODO: guarde a política e faça o construtor sem parâmetros usar PoliticaDeQuantidade.Padrao.");
+    public ImportadorDePedidosCsv(PoliticaDeQuantidade politica) => _politica = politica;
 
     /// <summary>
     /// Devolve as linhas válidas. Linhas mal formadas, sem SKU, com quantidade não numérica
@@ -26,7 +25,7 @@ public sealed class ImportadorDePedidosCsv
             if (partes.Length != 2 || string.IsNullOrWhiteSpace(partes[0]))
                 continue;
 
-            if (int.TryParse(partes[1].Trim(), out var quantidade) && quantidade >= 1 && quantidade <= QuantidadeMaxima)
+            if (int.TryParse(partes[1].Trim(), out var quantidade) && _politica.Permite(quantidade))
                 resultado.Add((partes[0].Trim(), quantidade));
         }
 

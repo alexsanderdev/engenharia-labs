@@ -9,23 +9,31 @@ public sealed class ItemDoPedido(string sku, decimal precoUnitario, int quantida
     public decimal PesoUnitarioKg { get; } = pesoUnitarioKg;
 
     /// <summary>Preço unitário × quantidade.</summary>
-    public decimal Subtotal() => throw new NotImplementedException("TODO: preço unitário × quantidade.");
+    public decimal Subtotal() => PrecoUnitario * Quantidade;
 
     /// <summary>Peso unitário × quantidade.</summary>
-    public decimal PesoTotalKg() => throw new NotImplementedException("TODO: peso unitário × quantidade.");
+    public decimal PesoTotalKg() => PesoUnitarioKg * Quantidade;
 }
 
 /// <summary>Endereço de entrega (só o que o frete precisa).</summary>
 public sealed class EnderecoDeEntrega(string uf)
 {
+    private static readonly string[] Sudeste = ["SP", "RJ", "MG", "ES"];
+    private static readonly string[] Sul = ["PR", "SC", "RS"];
+
     public string Uf { get; } = uf;
 
     /// <summary>
     /// Taxa base do frete pela região da UF (sem diferenciar maiúsculas):
     /// Sudeste R$ 15, Sul R$ 20, demais R$ 35.
     /// </summary>
-    public decimal TaxaBaseDeFrete() =>
-        throw new NotImplementedException("TODO: mova para cá a decisão de região que hoje está em CalculadoraDeFrete.");
+    public decimal TaxaBaseDeFrete()
+    {
+        var uf = Uf.ToUpperInvariant();
+        if (Sudeste.Contains(uf)) return 15m;
+        if (Sul.Contains(uf)) return 20m;
+        return 35m;
+    }
 }
 
 /// <summary>Pedido do OrderFlow, reduzido ao que o cálculo de frete usa.</summary>
@@ -38,11 +46,11 @@ public sealed class Pedido(EnderecoDeEntrega entrega, IReadOnlyList<ItemDoPedido
     public IReadOnlyList<ItemDoPedido> Itens { get; } = itens;
 
     /// <summary>Soma dos subtotais dos itens.</summary>
-    public decimal Subtotal() => throw new NotImplementedException("TODO: some ItemDoPedido.Subtotal() de cada item.");
+    public decimal Subtotal() => Itens.Sum(i => i.Subtotal());
 
     /// <summary>Soma dos pesos dos itens, em kg.</summary>
-    public decimal PesoTotalKg() => throw new NotImplementedException("TODO: some ItemDoPedido.PesoTotalKg() de cada item.");
+    public decimal PesoTotalKg() => Itens.Sum(i => i.PesoTotalKg());
 
     /// <summary>Verdadeiro quando o subtotal atinge <see cref="LimiteFreteGratis"/>.</summary>
-    public bool TemFreteGratis() => throw new NotImplementedException("TODO: Subtotal() >= LimiteFreteGratis.");
+    public bool TemFreteGratis() => Subtotal() >= LimiteFreteGratis;
 }

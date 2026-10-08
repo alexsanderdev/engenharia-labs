@@ -10,6 +10,5 @@ public static class ErrosDeBanco
     /// no SQL Server (erros 2601 e 2627).
     /// </summary>
     public static bool EhViolacaoDeUnicidade(DbUpdateException ex) =>
-        throw new NotImplementedException(
-            "TODO (Passo 5): devolva true se ex.InnerException for SqlException (Microsoft.Data.SqlClient) com Number 2601 ou 2627.");
+        ex.InnerException is SqlException { Number: 2601 or 2627 };
 }

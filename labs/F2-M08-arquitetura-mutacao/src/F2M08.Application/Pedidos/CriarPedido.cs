@@ -1,6 +1,6 @@
 using F2M08.Application.Abstracoes;
 using F2M08.Domain.Entidades;
-using F2M08.Infrastructure.Persistencia;
+using F2M08.Domain.Repositorios;
 
 namespace F2M08.Application.Pedidos;
 
@@ -8,13 +8,8 @@ public sealed record ItemDoPedido(Guid ProdutoId, int Quantidade);
 
 public sealed record CriarPedido(Guid ClienteId, IReadOnlyList<ItemDoPedido> Itens);
 
-/// <summary>Caso de uso "criar pedido".</summary>
-/// <remarks>
-/// TODO (Passo 2): o handler recebe as classes CONCRETAS da Infrastructure. Troque por
-/// <c>IPedidoRepository</c> e <c>IProdutoRepository</c> (já existem em F2M08.Domain.Repositorios)
-/// e depois remova o ProjectReference para a Infrastructure do F2M08.Application.csproj.
-/// </remarks>
-public sealed class CriarPedidoHandler(PedidoRepositorioEmMemoria pedidos, ProdutoRepositorioEmMemoria produtos)
+/// <summary>Caso de uso "criar pedido". Depende só de abstrações do domínio (DIP).</summary>
+public sealed class CriarPedidoHandler(IPedidoRepository pedidos, IProdutoRepository produtos)
     : ICommandHandler<CriarPedido, Guid>
 {
     public async Task<Guid> HandleAsync(CriarPedido command, CancellationToken ct)

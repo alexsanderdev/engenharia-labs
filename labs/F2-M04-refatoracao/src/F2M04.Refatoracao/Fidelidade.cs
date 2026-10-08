@@ -43,14 +43,28 @@ public sealed record RegrasDaCategoria(
     decimal ValorMinimoAniversario,
     int Teto)
 {
+    private static readonly Dictionary<Categoria, RegrasDaCategoria> Tabela = new()
+    {
+        [Categoria.Bronze] = new(Multiplicador: 1m, BonusPix: 0.10m, BonusCartao: 0m, ValorMinimoAniversario: 200m, Teto: 1_000),
+        [Categoria.Prata] = new(Multiplicador: 1.5m, BonusPix: 0.10m, BonusCartao: 0m, ValorMinimoAniversario: 100m, Teto: 3_000),
+        [Categoria.Ouro] = new(Multiplicador: 2m, BonusPix: 0.10m, BonusCartao: 0.05m, ValorMinimoAniversario: 0m, Teto: 5_000),
+        [Categoria.Diamante] = new(Multiplicador: 3m, BonusPix: 0.10m, BonusCartao: 0.10m, ValorMinimoAniversario: 0m, Teto: 10_000),
+    };
+
     /// <summary>Regras de uma categoria.</summary>
     /// <exception cref="ArgumentOutOfRangeException">Categoria fora do enum.</exception>
     public static RegrasDaCategoria De(Categoria categoria) =>
-        throw new NotImplementedException("TODO: monte uma tabela (Dictionary<Categoria, RegrasDaCategoria>) com os números que hoje estão nos if/else do legado.");
+        Tabela.TryGetValue(categoria, out var regras)
+            ? regras
+            : throw new ArgumentOutOfRangeException(nameof(categoria), categoria, "Categoria sem regras cadastradas.");
 
     /// <summary>Percentual de bônus para a forma de pagamento.</summary>
-    public decimal BonusPara(FormaDePagamento pagamento) =>
-        throw new NotImplementedException("TODO: Pix → BonusPix; Cartao → BonusCartao; demais → 0.");
+    public decimal BonusPara(FormaDePagamento pagamento) => pagamento switch
+    {
+        FormaDePagamento.Pix => BonusPix,
+        FormaDePagamento.Cartao => BonusCartao,
+        _ => 0m,
+    };
 }
 
 /// <summary>
@@ -70,6 +84,34 @@ public sealed class ProgramaDeFidelidade
 
     /// <summary>Calcula os pontos de uma compra.</summary>
     /// <exception cref="ArgumentOutOfRangeException">Valor negativo.</exception>
-    public int CalcularPontos(Compra compra) =>
-        throw new NotImplementedException("TODO: mova a lógica de CalculadoraDePontos.Calcular para cá (em passos pequenos) e faça o legado delegar.");
+    public int CalcularPontos(Compra compra)
+    {
+        ArgumentNullException.ThrowIfNull(compra);
+        ArgumentOutOfRangeException.ThrowIfNegative(compra.Valor);
+
+        if (compra.Valor < ValorMinimoParaPontuar)
+            return PontosDeBoasVindas(compra);
+
+        var regras = RegrasDaCategoria.De(compra.Categoria);
+
+        var pontos = PontosBase(compra, regras) + BonusDePagamento(compra, regras);
+        if (DobraNoAniversario(compra, regras))
+            pontos *= 2;
+        if (compra.PrimeiraCompra)
+            pontos += BonusPrimeiraCompra;
+
+        return Math.Min(pontos, regras.Teto);
+    }
+
+    private static int PontosDeBoasVindas(Compra compra) =>
+        compra.PrimeiraCompra && compra.Pagamento != FormaDePagamento.Boleto ? BonusBoasVindas : 0;
+
+    private static int PontosBase(Compra compra, RegrasDaCategoria regras) =>
+        (int)Math.Floor(compra.Valor * regras.Multiplicador);
+
+    private static int BonusDePagamento(Compra compra, RegrasDaCategoria regras) =>
+        (int)Math.Floor(compra.Valor * regras.Multiplicador * regras.BonusPara(compra.Pagamento));
+
+    private static bool DobraNoAniversario(Compra compra, RegrasDaCategoria regras) =>
+        compra.MesDeAniversario && compra.Valor >= regras.ValorMinimoAniversario;
 }

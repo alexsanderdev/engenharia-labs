@@ -11,17 +11,24 @@ public readonly record struct Dinheiro
 
     /// <summary>Cria um valor monetário.</summary>
     /// <exception cref="ArgumentException">Valor negativo.</exception>
-    public Dinheiro(decimal valor) =>
-        throw new NotImplementedException("TODO: rejeite negativo (ArgumentException) e guarde em Valor arredondado para 2 casas com MidpointRounding.AwayFromZero.");
+    public Dinheiro(decimal valor)
+    {
+        if (valor < 0)
+            throw new ArgumentException("Valor monetário não pode ser negativo.", nameof(valor));
+
+        Valor = Math.Round(valor, 2, MidpointRounding.AwayFromZero);
+    }
 
     /// <summary>R$ 0,00.</summary>
-    public static Dinheiro Zero => throw new NotImplementedException("TODO: devolva new(0m).");
+    public static Dinheiro Zero => new(0m);
 
     /// <summary>Soma dois valores.</summary>
-    public static Dinheiro operator +(Dinheiro a, Dinheiro b) => throw new NotImplementedException("TODO: some os valores.");
+    public static Dinheiro operator +(Dinheiro a, Dinheiro b) => new(a.Valor + b.Valor);
 
     /// <summary>Multiplica por uma quantidade (ex.: preço unitário × quantidade).</summary>
     /// <exception cref="ArgumentException">Quantidade negativa.</exception>
     public static Dinheiro operator *(Dinheiro preco, int quantidade) =>
-        throw new NotImplementedException("TODO: multiplique pela quantidade (negativa lança ArgumentException).");
+        quantidade < 0
+            ? throw new ArgumentException("Quantidade não pode ser negativa.", nameof(quantidade))
+            : new(preco.Valor * quantidade);
 }

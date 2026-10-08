@@ -1,4 +1,6 @@
 #nullable disable
+// Contrato legado (outros sistemas leem estes campos públicos): exceção documentada às regras CA1051/CA2211.
+#pragma warning disable CA1051, CA2211
 namespace MP2.OrderCalc;
 
 // "Banco de dados" do sistema legado. Na vida real era um monte de SqlCommand espalhado;

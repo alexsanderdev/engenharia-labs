@@ -43,22 +43,60 @@ public static class PedidoEndpoints
     /// 400 (ValidationProblem) para formato inválido; 422 (ProblemDetails) para produto inexistente
     /// ou inativo; 201 com Location e o pedido com total calculado no servidor.
     /// </summary>
-    public static Task<Results<Created<PedidoResponse>, ValidationProblem, ProblemHttpResult>> Criar(
+    public static async Task<Results<Created<PedidoResponse>, ValidationProblem, ProblemHttpResult>> Criar(
         CriarPedidoRequest request,
         ClaimsPrincipal user,
         PedidosDbContext db,
         TimeProvider relogio,
-        CancellationToken ct) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): valide com PedidoValidator (400); carregue os produtos dos itens numa única " +
-            "consulta; se algum não existir ou estiver inativo devolva TypedResults.Problem com 422; senão " +
-            "crie o Pedido (cliente = user.ObterClienteId(), data = relogio.GetUtcNow()), adicione os itens, " +
-            "salve e devolva TypedResults.Created(\"/pedidos/{id}\", PedidoResponse.De(pedido)).");
+        CancellationToken ct)
+    {
+        var erros = PedidoValidator.Validar(request);
+        if (erros.Count > 0) return TypedResults.ValidationProblem(erros);
+
+        var ids = request.Itens!.Select(i => i.ProdutoId).Distinct().ToArray();
+        var produtos = await db.Produtos
+            .Where(p => ids.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, ct);
+
+        var indisponiveis = ids
+            .Where(id => !produtos.TryGetValue(id, out var produto) || !produto.Ativo)
+            .ToArray();
+        if (indisponiveis.Length > 0)
+        {
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Produto indisponível",
+                detail: $"Produtos inexistentes ou inativos: {string.Join(", ", indisponiveis)}.");
+        }
+
+        var pedido = new Pedido(Guid.NewGuid(), user.ObterClienteId(), relogio.GetUtcNow());
+        foreach (var item in request.Itens!)
+            pedido.AdicionarItem(produtos[item.ProdutoId], item.Quantidade);
+
+        db.Pedidos.Add(pedido);
+        await db.SaveChangesAsync(ct);
+
+        return TypedResults.Created($"/pedidos/{pedido.Id}", PedidoResponse.De(pedido));
+    }
 
     /// <summary>204 se cancelou; 404 se não existe (ou é de outro cliente); 409 se o status não permite.</summary>
-    public static Task<Results<NoContent, NotFound, ProblemHttpResult>> Cancelar(
-        Guid id, ClaimsPrincipal user, PedidosDbContext db, CancellationToken ct) =>
-        throw new NotImplementedException(
-            "TODO (Passo 6): busque o pedido do cliente (404 se não achar); se !pedido.PodeCancelar devolva " +
-            "TypedResults.Problem com 409; senão chame pedido.Cancelar(), salve e devolva 204.");
+    public static async Task<Results<NoContent, NotFound, ProblemHttpResult>> Cancelar(
+        Guid id, ClaimsPrincipal user, PedidosDbContext db, CancellationToken ct)
+    {
+        var clienteId = user.ObterClienteId();
+        var pedido = await db.Pedidos.SingleOrDefaultAsync(p => p.Id == id && p.ClienteId == clienteId, ct);
+        if (pedido is null) return TypedResults.NotFound();
+
+        if (!pedido.PodeCancelar)
+        {
+            return TypedResults.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Pedido não pode ser cancelado",
+                detail: $"Pedidos com status {pedido.Status} não podem ser cancelados.");
+        }
+
+        pedido.Cancelar();
+        await db.SaveChangesAsync(ct);
+        return TypedResults.NoContent();
+    }
 }

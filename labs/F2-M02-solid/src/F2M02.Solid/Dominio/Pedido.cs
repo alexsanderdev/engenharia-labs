@@ -54,8 +54,28 @@ public sealed class Pedido
     /// </summary>
     public static Pedido Criar(Guid clienteId, IReadOnlyList<LinhaDoPedido> linhas, IPoliticaDeDesconto politica)
     {
-        // Mova para cá as etapas 1 e 3 do PedidoService (validação e desconto). Sem I/O aqui.
-        throw new NotImplementedException("TODO: valide as linhas, monte os ItemPedido e aplique a política de desconto ao subtotal");
+        ArgumentNullException.ThrowIfNull(politica);
+
+        if (linhas is not { Count: > 0 })
+        {
+            throw new PedidoInvalidoException("Pedido precisa de ao menos um item");
+        }
+
+        if (linhas.Any(l => l.Quantidade <= 0))
+        {
+            throw new PedidoInvalidoException("Quantidade deve ser maior que zero");
+        }
+
+        var inativo = linhas.FirstOrDefault(l => !l.Produto.Ativo);
+        if (inativo is not null)
+        {
+            throw new PedidoInvalidoException($"Produto inativo: {inativo.Produto.Nome}");
+        }
+
+        var itens = linhas.Select(l => new ItemPedido(l.Produto.Id, l.Produto.Nome, l.Produto.Preco, l.Quantidade)).ToList();
+        var subtotal = itens.Sum(i => i.Subtotal);
+
+        return new Pedido(Guid.NewGuid(), clienteId, itens, politica.CalcularDesconto(subtotal));
     }
 
     public void Cancelar()

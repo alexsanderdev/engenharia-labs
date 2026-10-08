@@ -1,4 +1,6 @@
 #nullable disable
+// Contrato legado (outros sistemas leem estes campos públicos): exceção documentada às regras CA1051/CA2211.
+#pragma warning disable CA1051, CA2211
 namespace MP2.OrderCalc;
 
 // DTO de saída consumido pela tela antiga e por um relatório em VB6 (sim).

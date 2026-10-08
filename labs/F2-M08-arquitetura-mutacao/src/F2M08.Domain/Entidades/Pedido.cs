@@ -1,5 +1,4 @@
 using F2M08.Domain.Descontos;
-using Microsoft.EntityFrameworkCore;
 
 namespace F2M08.Domain.Entidades;
 
@@ -20,11 +19,8 @@ public sealed class Pedido
     }
 
     public Guid Id { get; private set; }
-
-    // TODO (Passo 3): com setter público, "pedido.Status = StatusPedido.Completed" pula todas as transições.
-    public Guid ClienteId { get; set; }
-    public StatusPedido Status { get; set; }
-
+    public Guid ClienteId { get; private set; }
+    public StatusPedido Status { get; private set; }
     public IReadOnlyList<ItemPedido> Itens => _itens;
 
     public int Unidades => _itens.Sum(i => i.Quantidade);
@@ -70,37 +66,5 @@ public sealed class Pedido
         if (Status != de)
             throw new InvalidOperationException($"Transição inválida: {Status} → {para}.");
         Status = para;
-    }
-
-    /// <summary>
-    /// "Atalho" que alguém achou prático: a entidade se mapeia sozinha.
-    /// TODO (Passo 1): isto arrasta EF Core para dentro do domínio. Mova este código para
-    /// <c>F2M08.Infrastructure/Persistencia/PedidoConfiguration.cs</c> (uma
-    /// <c>IEntityTypeConfiguration&lt;Pedido&gt;</c>), aplique-a no <c>OrderFlowDbContext</c>,
-    /// apague este método e a referência a EF Core do <c>F2M08.Domain.csproj</c>.
-    /// </summary>
-    public static void ConfigurarMapeamento(ModelBuilder modelBuilder)
-    {
-        ArgumentNullException.ThrowIfNull(modelBuilder);
-        var builder = modelBuilder.Entity<Pedido>();
-        builder.ToTable("Pedidos");
-        builder.HasKey(p => p.Id);
-        builder.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
-        builder.HasIndex(p => p.ClienteId);
-        builder.Ignore(p => p.Unidades);
-        builder.Ignore(p => p.Subtotal);
-        builder.Ignore(p => p.Desconto);
-        builder.Ignore(p => p.Total);
-
-        builder.OwnsMany(p => p.Itens, item =>
-        {
-            item.ToTable("ItensPedido");
-            item.WithOwner().HasForeignKey("PedidoId");
-            item.Property<int>("ItemId");
-            item.HasKey("ItemId");
-            item.Property(i => i.PrecoUnitario).HasPrecision(18, 2);
-            item.Ignore(i => i.Subtotal);
-        });
-        builder.Navigation(p => p.Itens).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

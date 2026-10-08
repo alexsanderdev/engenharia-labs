@@ -9,9 +9,9 @@ namespace F2M02.Solid.Aplicacao;
 public sealed class ResumoDeComprasDoCliente(ILeitorDePedidos leitor)
 {
     /// <summary>Soma o <see cref="Pedido.Total"/> dos pedidos do cliente, ignorando os cancelados.</summary>
-    public Task<decimal> TotalGastoAsync(Guid clienteId, CancellationToken ct)
+    public async Task<decimal> TotalGastoAsync(Guid clienteId, CancellationToken ct)
     {
-        _ = leitor;
-        throw new NotImplementedException("TODO: liste os pedidos do cliente e some o Total dos que não estão Cancelled");
+        var pedidos = await leitor.ListarDoClienteAsync(clienteId, ct);
+        return pedidos.Where(p => p.Status != StatusPedido.Cancelled).Sum(p => p.Total);
     }
 }

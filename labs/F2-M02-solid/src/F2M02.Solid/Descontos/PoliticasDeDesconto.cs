@@ -16,7 +16,7 @@ public interface IPoliticaDeDesconto
     decimal CalcularDesconto(decimal subtotal);
 }
 
-/// <summary>Null Object: evita <c>if (cupom is null)</c> espalhado pelo código. (Pronta — use como modelo.)</summary>
+/// <summary>Null Object: evita <c>if (cupom is null)</c> espalhado pelo código.</summary>
 public sealed class SemDesconto : IPoliticaDeDesconto
 {
     public static readonly SemDesconto Instancia = new();
@@ -34,7 +34,8 @@ public sealed class DescontoPercentual : IPoliticaDeDesconto
     /// <param name="percentual">Entre 0 e 1 (0,20 = 20%). Fora disso: <see cref="ArgumentOutOfRangeException"/>.</param>
     public DescontoPercentual(string cupom, decimal percentual)
     {
-        // TODO: valide o percentual (ArgumentOutOfRangeException.ThrowIfNegative / ThrowIfGreaterThan).
+        ArgumentOutOfRangeException.ThrowIfNegative(percentual);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(percentual, 1m);
         Cupom = cupom;
         _percentual = percentual;
     }
@@ -42,16 +43,17 @@ public sealed class DescontoPercentual : IPoliticaDeDesconto
     public string Cupom { get; }
 
     public decimal CalcularDesconto(decimal subtotal) =>
-        throw new NotImplementedException($"TODO: subtotal × {_percentual}, arredondado para 2 casas (AwayFromZero) — veja o case BLACKFRIDAY do legado");
+        Math.Round(subtotal * _percentual, 2, MidpointRounding.AwayFromZero);
 }
 
 /// <summary>Percentual com teto em reais (ex.: PRIMEIRACOMPRA = 10% limitado a R$ 50).</summary>
 public sealed class DescontoPercentualComTeto(string cupom, decimal percentual, decimal teto) : IPoliticaDeDesconto
 {
+    private readonly DescontoPercentual _percentual = new(cupom, percentual);
+
     public string Cupom => cupom;
 
-    public decimal CalcularDesconto(decimal subtotal) =>
-        throw new NotImplementedException($"TODO: o menor entre {percentual:P0} do subtotal e {teto} (dica: reaproveite DescontoPercentual por composição)");
+    public decimal CalcularDesconto(decimal subtotal) => Math.Min(_percentual.CalcularDesconto(subtotal), teto);
 }
 
 /// <summary>
@@ -62,8 +64,7 @@ public sealed class DescontoFixo(string cupom, decimal valor) : IPoliticaDeDesco
 {
     public string Cupom => cupom;
 
-    public decimal CalcularDesconto(decimal subtotal) =>
-        throw new NotImplementedException($"TODO: desconto de {valor}, limitado ao subtotal (contrato LSP)");
+    public decimal CalcularDesconto(decimal subtotal) => Math.Min(valor, subtotal);
 }
 
 /// <summary>
@@ -72,12 +73,11 @@ public sealed class DescontoFixo(string cupom, decimal valor) : IPoliticaDeDesco
 /// </summary>
 public sealed class CatalogoDePoliticasDeDesconto
 {
-    private readonly IReadOnlyList<IPoliticaDeDesconto> _politicas;
+    private readonly Dictionary<string, IPoliticaDeDesconto> _porCupom;
 
     public CatalogoDePoliticasDeDesconto(IEnumerable<IPoliticaDeDesconto> politicas)
     {
-        // Dica: troque por um Dictionary<string, IPoliticaDeDesconto> com StringComparer.OrdinalIgnoreCase.
-        _politicas = [.. politicas];
+        _porCupom = politicas.ToDictionary(p => p.Cupom, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>Os cupons que o legado conhecia: BLACKFRIDAY (20%), PRIMEIRACOMPRA (10% até R$ 50), BEMVINDO30 (R$ 30).</summary>
@@ -94,7 +94,13 @@ public sealed class CatalogoDePoliticasDeDesconto
     /// </summary>
     public IPoliticaDeDesconto Obter(string? cupom)
     {
-        _ = _politicas;
-        throw new NotImplementedException("TODO: substitua o switch do legado por uma busca no catálogo (OCP)");
+        if (string.IsNullOrWhiteSpace(cupom))
+        {
+            return SemDesconto.Instancia;
+        }
+
+        return _porCupom.TryGetValue(cupom.Trim(), out var politica)
+            ? politica
+            : throw new Dominio.PedidoInvalidoException($"Cupom inválido: {cupom}");
     }
 }

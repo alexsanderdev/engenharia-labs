@@ -12,11 +12,23 @@ public sealed record Email
 
     /// <summary>
     /// Cria um e-mail. Regras: exatamente um '@', parte local não vazia, domínio com '.'
-    /// que não começa nem termina com '.', sem espaços internos.
+    /// que não começa nem termina com '.'.
     /// </summary>
     /// <exception cref="ArgumentException">E-mail inválido.</exception>
-    public static Email Criar(string? valor) =>
-        throw new NotImplementedException("TODO: mova para cá a normalização e a validação de e-mail de CadastroDeClientes.Cadastrar.");
+    public static Email Criar(string? valor)
+    {
+        var normalizado = (valor ?? string.Empty).Trim().ToLowerInvariant();
+        var partes = normalizado.Split('@');
+
+        var valido = partes.Length == 2
+            && partes[0].Length > 0
+            && partes[1].Contains('.')
+            && !partes[1].StartsWith('.')
+            && !partes[1].EndsWith('.')
+            && !normalizado.Contains(' ');
+
+        return valido ? new Email(normalizado) : throw new ArgumentException("E-mail inválido.", nameof(valor));
+    }
 
     /// <inheritdoc />
     public override string ToString() => Endereco;

@@ -1,0 +1,2052 @@
+[
+  {
+    "Cenario": "normal-sp-simples",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 89.90,
+      "Desconto": 0,
+      "Frete": 15,
+      "Imposto": 16.18,
+      "Total": 121.08,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x1 = 89.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 199"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 121.08,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "normal-sp-frete-gratis-acima-300",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 412.88,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 412.88,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "normal-rj-expresso-vale20",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 4559.80,
+      "Desconto": 20,
+      "Frete": 36.0,
+      "Imposto": 911.96,
+      "Total": 5487.76,
+      "PrazoEntrega": "2026-03-12T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "NB-001 x1 = 4500.00",
+        "CB-008 x2 = 59.80"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "NB-001": "10 -> 9",
+        "CB-008": "500 -> 498"
+      },
+      "UsosDeCupom": {
+        "VALE20": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 5487.76,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "normal-ba-expresso-prazo-mais-2",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 0,
+      "Frete": 63.0,
+      "Imposto": 59.48,
+      "Total": 472.38,
+      "PrazoEntrega": "2026-03-16T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 472.38,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "normal-pr-normal-abaixo-300",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 179.80,
+      "Desconto": 0,
+      "Frete": 25,
+      "Imposto": 30.57,
+      "Total": 235.37,
+      "PrazoEntrega": "2026-03-19T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x2 = 179.80"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 198"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 235.37,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-mg-frete-gratis",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 4500.00,
+      "Desconto": 225.00,
+      "Frete": 0,
+      "Imposto": 765.00,
+      "Total": 5040.00,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "NB-001 x1 = 4500.00"
+      ],
+      "Mensagens": [
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "NB-001": "10 -> 9"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C2",
+          "Total": 5040.00,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-cupom-percentual-maior-substitui",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 699.80,
+      "Desconto": 69.98,
+      "Frete": 27.0,
+      "Imposto": 125.96,
+      "Total": 782.78,
+      "PrazoEntrega": "2026-03-12T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x2 = 699.80"
+      ],
+      "Mensagens": [
+        "Cupom substitui desconto VIP"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 48"
+      },
+      "UsosDeCupom": {
+        "BEMVINDO10": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C2",
+          "Total": 782.78,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-cupom-valor-acumula",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 699.80,
+      "Desconto": 54.99,
+      "Frete": 36.0,
+      "Imposto": 118.97,
+      "Total": 799.78,
+      "PrazoEntrega": "2026-03-12T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x2 = 699.80"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 48"
+      },
+      "UsosDeCupom": {
+        "VALE20": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C2",
+          "Total": 799.78,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-black-friday",
+    "Resultado": {
+      "Numero": "PED-20261127090000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 4500.00,
+      "Desconto": 450.00,
+      "Frete": 45.0,
+      "Imposto": 765.00,
+      "Total": 4860.00,
+      "PrazoEntrega": "2026-12-03T00:00:00",
+      "CriadoEm": "2026-11-27T09:00:00",
+      "Linhas": [
+        "NB-001 x1 = 4500.00"
+      ],
+      "Mensagens": [
+        "Black Friday VIP: +5%"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "NB-001": "10 -> 9"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20261127090000-0001",
+          "ClienteId": "C5",
+          "Total": 4860.00,
+          "CriadoEm": "2026-11-27T09:00:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-black-friday-cupom-empata-mantem-vip",
+    "Resultado": {
+      "Numero": "PED-20261127090000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 35.00,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 377.88,
+      "PrazoEntrega": "2026-12-04T00:00:00",
+      "CriadoEm": "2026-11-27T09:00:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Black Friday VIP: +5%",
+        "Desconto VIP mantido (cupom não acumula)",
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {
+        "BEMVINDO10": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20261127090000-0001",
+          "ClienteId": "C2",
+          "Total": 377.88,
+          "CriadoEm": "2026-11-27T09:00:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-dia-23-11-sem-black-friday",
+    "Resultado": {
+      "Numero": "PED-20261123120000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 17.50,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 395.38,
+      "PrazoEntrega": "2026-11-30T00:00:00",
+      "CriadoEm": "2026-11-23T12:00:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20261123120000-0001",
+          "ClienteId": "C2",
+          "Total": 395.38,
+          "CriadoEm": "2026-11-23T12:00:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-dia-30-11-ainda-black-friday",
+    "Resultado": {
+      "Numero": "PED-20261130235900-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 35.00,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 377.88,
+      "PrazoEntrega": "2026-12-07T00:00:00",
+      "CriadoEm": "2026-11-30T23:59:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Black Friday VIP: +5%",
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20261130235900-0001",
+          "ClienteId": "C2",
+          "Total": 377.88,
+          "CriadoEm": "2026-11-30T23:59:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-dia-01-12-acabou",
+    "Resultado": {
+      "Numero": "PED-20261201000000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 17.50,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 395.38,
+      "PrazoEntrega": "2026-12-08T00:00:00",
+      "CriadoEm": "2026-12-01T00:00:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20261201000000-0001",
+          "ClienteId": "C2",
+          "Total": 395.38,
+          "CriadoEm": "2026-12-01T00:00:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "novo-boas-vindas",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 189.00,
+      "Desconto": 10,
+      "Frete": 15,
+      "Imposto": 0.00,
+      "Total": 194.00,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "LV-004 x1 = 189.00"
+      ],
+      "Mensagens": [
+        "Desconto de boas-vindas"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "LV-004": "30 -> 29"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {
+        "C3": "NOVO -> NORMAL"
+      },
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C3",
+          "Total": 194.00,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "novo-abaixo-100-sem-boas-vindas",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 59.80,
+      "Desconto": 0,
+      "Frete": 35,
+      "Imposto": 10.17,
+      "Total": 104.97,
+      "PrazoEntrega": "2026-03-19T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "CB-008 x2 = 59.80"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "CB-008": "500 -> 498"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {
+        "C3": "NOVO -> NORMAL"
+      },
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C3",
+          "Total": 104.97,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "novo-desconto-tira-do-frete-gratis",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 308.60,
+      "Desconto": 10,
+      "Frete": 15,
+      "Imposto": 21.53,
+      "Total": 335.13,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "LV-004 x1 = 189.00",
+        "CB-008 x4 = 119.60"
+      ],
+      "Mensagens": [
+        "Desconto de boas-vindas"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "LV-004": "30 -> 29",
+        "CB-008": "500 -> 496"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {
+        "C3": "NOVO -> NORMAL"
+      },
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C3",
+          "Total": 335.13,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "volume-10-unidades-5pct",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 899.00,
+      "Desconto": 44.95,
+      "Frete": 0,
+      "Imposto": 153.73,
+      "Total": 1007.78,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x10 = 854.05"
+      ],
+      "Mensagens": [
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 190"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 1007.78,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "volume-50-unidades-10pct",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 1495.00,
+      "Desconto": 149.50,
+      "Frete": 63.0,
+      "Imposto": 228.74,
+      "Total": 1637.24,
+      "PrazoEntrega": "2026-03-16T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "CB-008 x50 = 1345.50"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "CB-008": "500 -> 450"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 1637.24,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "teto-30pct-mega40",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 4500.00,
+      "Desconto": 1350.00,
+      "Frete": 0,
+      "Imposto": 810.00,
+      "Total": 3960.00,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "NB-001 x1 = 4500.00"
+      ],
+      "Mensagens": [
+        "Desconto limitado a 30%",
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "NB-001": "10 -> 9"
+      },
+      "UsosDeCupom": {
+        "MEGA40": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 3960.00,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "teto-30pct-volume-e-mega40",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 5394.00,
+      "Desconto": 1618.20,
+      "Frete": 0,
+      "Imposto": 873.83,
+      "Total": 4649.63,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x60 = 4854.60"
+      ],
+      "Mensagens": [
+        "Desconto limitado a 30%",
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 140"
+      },
+      "UsosDeCupom": {
+        "MEGA40": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 4649.63,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "cupom-expirado",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 412.88,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Cupom expirado: EXPIRADO",
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 412.88,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "cupom-esgotado",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 412.88,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Cupom esgotado: ESGOTADO",
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 412.88,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "cupom-inexistente-minusculo",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 412.88,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Cupom inválido: XYZ",
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 412.88,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "cupom-vazio",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 412.88,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 412.88,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "cupom-abaixo-do-minimo",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 29.90,
+      "Desconto": 0,
+      "Frete": 15,
+      "Imposto": 5.38,
+      "Total": 50.28,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "CB-008 x1 = 29.90"
+      ],
+      "Mensagens": [
+        "Pedido abaixo do mínimo do cupom: VALE20"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "CB-008": "500 -> 499"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 50.28,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "cupom-minusculo-valido",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 20,
+      "Frete": 0,
+      "Imposto": 62.98,
+      "Total": 392.88,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {
+        "VALE20": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 392.88,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "cupom-frete-gratis-no-expresso",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 59.48,
+      "Total": 409.38,
+      "PrazoEntrega": "2026-03-16T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Frete grátis (cupom)"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {
+        "FRETEGRATIS": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 409.38,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "cupom-frete-gratis-duas-mensagens",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 4500.00,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 810.00,
+      "Total": 5310.00,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "NB-001 x1 = 4500.00"
+      ],
+      "Mensagens": [
+        "Frete grátis",
+        "Frete grátis (cupom)"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "NB-001": "10 -> 9"
+      },
+      "UsosDeCupom": {
+        "FRETEGRATIS": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 5310.00,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-cupom-frete",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 349.90,
+      "Desconto": 17.50,
+      "Frete": 0,
+      "Imposto": 69.98,
+      "Total": 402.38,
+      "PrazoEntrega": "2026-03-12T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "TC-003 x1 = 349.90"
+      ],
+      "Mensagens": [
+        "Frete grátis (cupom)"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "TC-003": "50 -> 49"
+      },
+      "UsosDeCupom": {
+        "FRETEGRATIS": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C2",
+          "Total": 402.38,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-cupom-mega40-teto",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 4500.00,
+      "Desconto": 1350.00,
+      "Frete": 0,
+      "Imposto": 810.00,
+      "Total": 3960.00,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "NB-001 x1 = 4500.00"
+      ],
+      "Mensagens": [
+        "Cupom substitui desconto VIP",
+        "Desconto limitado a 30%",
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "NB-001": "10 -> 9"
+      },
+      "UsosDeCupom": {
+        "MEGA40": "1000 -> 999"
+      },
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C2",
+          "Total": 3960.00,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "peso-acima-10kg",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 1299.00,
+      "Desconto": 0,
+      "Frete": 103.50,
+      "Imposto": 220.83,
+      "Total": 1623.33,
+      "PrazoEntrega": "2026-03-16T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "CD-006 x1 = 1299.00"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "CD-006": "3 -> 2"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 1623.33,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "peso-double-101-mouses",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 9079.90,
+      "Desconto": 907.99,
+      "Frete": 49.50,
+      "Imposto": 1389.22,
+      "Total": 9610.63,
+      "PrazoEntrega": "2026-03-16T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x101 = 8171.91"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 99"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 9610.63,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "livros-isentos-rj",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 537.90,
+      "Desconto": 0,
+      "Frete": 36.0,
+      "Imposto": 0.00,
+      "Total": 573.90,
+      "PrazoEntrega": "2026-03-12T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "LV-004 x2 = 378.00",
+        "LV-005 x1 = 159.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "LV-004": "30 -> 28",
+        "LV-005": "5 -> 4"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 573.90,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "uf-desconhecida-xx",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 89.90,
+      "Desconto": 0,
+      "Frete": 35,
+      "Imposto": 15.28,
+      "Total": 140.18,
+      "PrazoEntrega": "2026-03-19T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x1 = 89.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 199"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 140.18,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "uf-minuscula",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 89.90,
+      "Desconto": 0,
+      "Frete": 15,
+      "Imposto": 16.18,
+      "Total": 121.08,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x1 = 89.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 199"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 121.08,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "itens-com-espacos-e-vazios",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 209.70,
+      "Desconto": 0,
+      "Frete": 15,
+      "Imposto": 37.75,
+      "Total": 262.45,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x2 = 179.80",
+        "CB-008 x1 = 29.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 198",
+        "CB-008": "500 -> 499"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 262.45,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "sku-duplicado-estoque-negativo",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 5196.00,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 935.28,
+      "Total": 6131.28,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "CD-006 x2 = 2598.00",
+        "CD-006 x2 = 2598.00"
+      ],
+      "Mensagens": [
+        "Frete grátis"
+      ]
+    },
+    "Efeitos": {
+      "Estoque": {
+        "CD-006": "3 -> -1"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C1",
+          "Total": 6131.28,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "vip-arredondamento-bancario-4485-vira-448",
+    "Resultado": {
+      "Numero": "PED-20260310103000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 89.70,
+      "Desconto": 4.48,
+      "Frete": 36.0,
+      "Imposto": 15.25,
+      "Total": 136.47,
+      "PrazoEntrega": "2026-03-12T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "CB-008 x3 = 89.70"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "CB-008": "500 -> 497"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260310103000-0001",
+          "ClienteId": "C2",
+          "Total": 136.47,
+          "CriadoEm": "2026-03-10T10:30:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "sabado-prazo",
+    "Resultado": {
+      "Numero": "PED-20260314150000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 89.90,
+      "Desconto": 0,
+      "Frete": 15,
+      "Imposto": 16.18,
+      "Total": 121.08,
+      "PrazoEntrega": "2026-03-20T00:00:00",
+      "CriadoEm": "2026-03-14T15:00:00",
+      "Linhas": [
+        "MS-002 x1 = 89.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 199"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260314150000-0001",
+          "ClienteId": "C1",
+          "Total": 121.08,
+          "CriadoEm": "2026-03-14T15:00:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "sexta-expresso-prazo",
+    "Resultado": {
+      "Numero": "PED-20260313180000-0001",
+      "Status": "OK",
+      "Erro": null,
+      "Subtotal": 89.90,
+      "Desconto": 0,
+      "Frete": 27.0,
+      "Imposto": 16.18,
+      "Total": 133.08,
+      "PrazoEntrega": "2026-03-17T00:00:00",
+      "CriadoEm": "2026-03-13T18:00:00",
+      "Linhas": [
+        "MS-002 x1 = 89.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {
+        "MS-002": "200 -> 199"
+      },
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [
+        {
+          "Numero": "PED-20260313180000-0001",
+          "ClienteId": "C1",
+          "Total": 133.08,
+          "CriadoEm": "2026-03-13T18:00:00"
+        }
+      ],
+      "ProximoId": 2
+    }
+  },
+  {
+    "Cenario": "erro-cliente-vazio",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Cliente obrigatório",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-cliente-nulo",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Cliente obrigatório",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-cliente-inexistente",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Cliente não encontrado: C9",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-cliente-bloqueado",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Cliente bloqueado",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-uf-curta",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "UF inválida",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-uf-nula",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "UF inválida",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-frete-minusculo",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Tipo de frete inválido: normal",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-frete-desconhecido",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Tipo de frete inválido: DRONE",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-frete-nulo",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Tipo de frete inválido: ",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-itens-vazio",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Pedido sem itens",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-itens-nulo",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Pedido sem itens",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-itens-so-separadores",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Pedido sem itens",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-item-sem-quantidade",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Item inválido: NB-001",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-item-com-dois-separadores",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Item inválido: NB-001:1:2",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-quantidade-texto",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Quantidade inválida: NB-001:x",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-quantidade-zero",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Quantidade deve ser maior que zero: NB-001",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-quantidade-negativa",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Quantidade deve ser maior que zero: NB-001",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-produto-inexistente",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Produto não encontrado: XX-999",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [
+        "MS-002 x1 = 89.90"
+      ],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-produto-inativo",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Produto inativo: MN-007",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-estoque-insuficiente",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Estoque insuficiente: LV-005",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-produto-do-item-1-vence-quantidade-do-item-2",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Produto não encontrado: XX-999",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-cliente-validado-antes-da-uf",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Cliente bloqueado",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  },
+  {
+    "Cenario": "erro-primeiro-item-invalido-vence",
+    "Resultado": {
+      "Numero": null,
+      "Status": "ERRO",
+      "Erro": "Quantidade deve ser maior que zero: MS-002",
+      "Subtotal": 0,
+      "Desconto": 0,
+      "Frete": 0,
+      "Imposto": 0,
+      "Total": 0,
+      "PrazoEntrega": "0001-01-01T00:00:00",
+      "CriadoEm": "2026-03-10T10:30:00",
+      "Linhas": [],
+      "Mensagens": []
+    },
+    "Efeitos": {
+      "Estoque": {},
+      "UsosDeCupom": {},
+      "TipoDeCliente": {},
+      "PedidosGravados": [],
+      "ProximoId": 1
+    }
+  }
+]

@@ -20,9 +20,13 @@ public sealed class TestAuthHandler(
     public const string SchemeName = "Test";
     public const string HeaderClienteId = "X-Test-ClienteId";
 
-    protected override Task<AuthenticateResult> HandleAuthenticateAsync() =>
-        throw new NotImplementedException(
-            "TODO (Passo 4): sem o header X-Test-ClienteId (ou com valor que não é Guid) devolva " +
-            "AuthenticateResult.NoResult(); com ele, crie uma ClaimsIdentity (authenticationType = SchemeName) " +
-            "com a claim ClaimTypes.NameIdentifier = clienteId e devolva AuthenticateResult.Success(ticket).");
+    protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+    {
+        if (!Request.Headers.TryGetValue(HeaderClienteId, out var valor) || !Guid.TryParse(valor, out var clienteId))
+            return Task.FromResult(AuthenticateResult.NoResult());
+
+        var identity = new ClaimsIdentity([new Claim(ClaimTypes.NameIdentifier, clienteId.ToString())], SchemeName);
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName);
+        return Task.FromResult(AuthenticateResult.Success(ticket));
+    }
 }

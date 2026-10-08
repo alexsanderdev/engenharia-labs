@@ -1,4 +1,5 @@
 using F2M06.TestesUnitarios.Aplicacao;
+using NSubstitute;
 
 namespace F2M06.TestesUnitarios.Tests.Dubles;
 
@@ -13,9 +14,9 @@ public static class VerificacoesDoPublicador
     /// <see cref="PedidoCriado"/> é um record: igualdade por valor deixa o match exato e legível.
     /// </summary>
     public static void DeveTerPublicadoUmaVez(this IPublicadorDeEventos publicador, PedidoCriado esperado) =>
-        throw new NotImplementedException("TODO (Passo 6): publicador.Received(1).PublicarAsync(esperado, Arg.Any<CancellationToken>()).");
+        publicador.Received(1).PublicarAsync(esperado, Arg.Any<CancellationToken>());
 
     /// <summary>Verifica que nenhum evento foi publicado (com quaisquer argumentos).</summary>
     public static void NaoDeveTerPublicadoNada(this IPublicadorDeEventos publicador) =>
-        throw new NotImplementedException("TODO (Passo 6): publicador.DidNotReceiveWithAnyArgs().PublicarAsync(default!, default).");
+        publicador.DidNotReceiveWithAnyArgs().PublicarAsync(default!, default);
 }

@@ -6,6 +6,10 @@ namespace F2M01.CleanCode;
 /// </summary>
 public sealed class CalculadoraDePedido(ValidadorDePedido validador, RegrasDeFrete regrasDeFrete)
 {
+    public const decimal PercentualDeDescontoVip = 0.10m;
+    public const decimal PercentualDeDescontoPorVolume = 0.05m;
+    public const decimal ValorMinimoParaDescontoPorVolume = 500m;
+
     public CalculadoraDePedido() : this(new ValidadorDePedido(), new RegrasDeFrete())
     {
     }
@@ -21,9 +25,34 @@ public sealed class CalculadoraDePedido(ValidadorDePedido validador, RegrasDeFre
     /// </summary>
     public ResumoDoPedido Calcular(PedidoParaCalculo pedido)
     {
-        _ = validador;
-        _ = regrasDeFrete;
-        // Meta: o corpo deste método deve ler como uma frase — garantir válido, somar, descontar, calcular frete.
-        throw new NotImplementedException("TODO: use o validador e as regras de frete; extraia CalcularDesconto com constantes nomeadas");
+        GarantirQueEhValido(pedido);
+
+        var subtotal = pedido.Itens.Sum(item => item.Subtotal);
+        var desconto = CalcularDesconto(subtotal, pedido.Cliente);
+        var frete = regrasDeFrete.Calcular(pedido.Uf, subtotal - desconto, pedido.Entrega);
+
+        return new ResumoDoPedido(subtotal, desconto, frete);
     }
+
+    private void GarantirQueEhValido(PedidoParaCalculo pedido)
+    {
+        var resultado = validador.Validar(pedido);
+        if (!resultado.EhValido)
+        {
+            throw new PedidoInvalidoException(resultado.Erros);
+        }
+    }
+
+    private static decimal CalcularDesconto(decimal subtotal, TipoDeCliente cliente)
+    {
+        var percentual = PercentualDeDesconto(subtotal, cliente);
+        return Math.Round(subtotal * percentual, 2, MidpointRounding.AwayFromZero);
+    }
+
+    private static decimal PercentualDeDesconto(decimal subtotal, TipoDeCliente cliente) => cliente switch
+    {
+        TipoDeCliente.Vip => PercentualDeDescontoVip,
+        _ when subtotal >= ValorMinimoParaDescontoPorVolume => PercentualDeDescontoPorVolume,
+        _ => 0m,
+    };
 }

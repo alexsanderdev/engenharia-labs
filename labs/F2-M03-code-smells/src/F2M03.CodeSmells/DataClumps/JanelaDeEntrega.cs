@@ -1,7 +1,7 @@
 namespace F2M03.CodeSmells.DataClumps;
 
 /// <summary>
-/// O par (início, fim) que anda sempre junto vira um tipo com a invariante "fim ≥ início".
+/// O par (início, fim) que andava sempre junto vira um tipo com a invariante "fim ≥ início".
 /// </summary>
 public readonly record struct JanelaDeEntrega
 {
@@ -9,11 +9,17 @@ public readonly record struct JanelaDeEntrega
     public DateOnly Fim { get; }
 
     /// <exception cref="ArgumentException">Fim antes do início.</exception>
-    public JanelaDeEntrega(DateOnly inicio, DateOnly fim) =>
-        throw new NotImplementedException("TODO: valide fim >= início (ArgumentException) e guarde as datas.");
+    public JanelaDeEntrega(DateOnly inicio, DateOnly fim)
+    {
+        if (fim < inicio)
+            throw new ArgumentException("A janela termina antes de começar.", nameof(fim));
+
+        Inicio = inicio;
+        Fim = fim;
+    }
 
     /// <summary>Verdadeiro se a data está dentro da janela (inclusive nas pontas).</summary>
-    public bool Contem(DateOnly data) => throw new NotImplementedException("TODO: Inicio <= data <= Fim.");
+    public bool Contem(DateOnly data) => data >= Inicio && data <= Fim;
 }
 
 /// <summary>

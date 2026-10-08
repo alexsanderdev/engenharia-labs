@@ -1,5 +1,6 @@
 using F2M07.Api.Infrastructure;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Respawn;
 using Testcontainers.MsSql;
@@ -19,9 +20,8 @@ public sealed class ApiFixture : IAsyncLifetime
     /// <summary>Nome do banco de teste criado dentro do container.</summary>
     public const string NomeDoBanco = "F2M07Pedidos";
 
-#pragma warning disable CS0649 // TODO (Passo 1): o campo é preenchido em SubirContainerAsync (apague este pragma).
     private MsSqlContainer? _container;
-#pragma warning restore CS0649
+    private Respawner? _respawner;
 
     /// <summary>Connection string apontando para <see cref="NomeDoBanco"/> no container.</summary>
     public string ConnectionString { get; private set; } = "";
@@ -45,52 +45,62 @@ public sealed class ApiFixture : IAsyncLifetime
     /// Passo 1: cria e inicia o container com a imagem <see cref="Imagem"/> e preenche
     /// <see cref="ConnectionString"/> apontando para o banco <see cref="NomeDoBanco"/>.
     /// </summary>
-    private Task SubirContainerAsync() =>
-        throw new NotImplementedException(
-            "TODO (Passo 1): crie o container com new MsSqlBuilder(Imagem).Build(), guarde em _container, " +
-            "chame StartAsync e monte ConnectionString a partir de _container.GetConnectionString() " +
-            "trocando o InitialCatalog para NomeDoBanco (use SqlConnectionStringBuilder).");
+    private async Task SubirContainerAsync()
+    {
+        _container = new MsSqlBuilder(Imagem).Build();
+        await _container.StartAsync(TestContext.Current.CancellationToken);
+
+        // A connection string do container aponta para "master"; usamos um banco próprio.
+        ConnectionString = new SqlConnectionStringBuilder(_container.GetConnectionString())
+        {
+            InitialCatalog = NomeDoBanco,
+        }.ConnectionString;
+    }
 
     /// <summary>
     /// Passo 2: cria o banco e as tabelas UMA vez, usando o DbContext da própria API
     /// (se o override da connection string não funcionou, falha aqui).
     /// </summary>
-    private static Task CriarSchemaAsync()
-    {
-        // TODO (Passo 2): use ComBancoAsync para chamar db.Database.EnsureCreatedAsync().
-        return Task.CompletedTask;
-    }
+    private Task CriarSchemaAsync() =>
+        ComBancoAsync(async db => { await db.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken); });
 
     /// <summary>
     /// Passo 3: cria o <see cref="Respawner"/>, que lê o grafo de FKs uma vez e depois
     /// apaga os dados na ordem certa a cada reset.
     /// </summary>
-    private static Task PrepararRespawnAsync()
+    private async Task PrepararRespawnAsync()
     {
-        // TODO (Passo 3): crie um campo "Respawner? _respawner" e preencha com
-        // Respawner.CreateAsync(ConnectionString, new RespawnerOptions { DbAdapter = DbAdapter.SqlServer, ... }).
-        return Task.CompletedTask;
+        _respawner = await Respawner.CreateAsync(ConnectionString, new RespawnerOptions
+        {
+            DbAdapter = DbAdapter.SqlServer,
+            SchemasToInclude = ["dbo"],
+        });
     }
 
     /// <summary>Passo 3: apaga os dados de todas as tabelas (mantém o schema). Chamado antes de cada teste.</summary>
-    public Task ResetarBancoAsync()
+    public async Task ResetarBancoAsync()
     {
-        // TODO (Passo 3): chame _respawner.ResetAsync(ConnectionString).
-        // Enquanto isto não for feito, os dados de um teste vazam para o próximo.
-        _ = ConnectionString;
-        return Task.CompletedTask;
+        if (_respawner is null)
+            throw new InvalidOperationException("A fixture não foi inicializada.");
+
+        await _respawner.ResetAsync(ConnectionString);
     }
 
     /// <summary>Passo 2: executa uma ação com um DbContext novo (escopo próprio), fora do pipeline HTTP.</summary>
-    public Task ComBancoAsync(Func<PedidosDbContext, Task> acao) =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): crie um escopo com Factory.Services.CreateAsyncScope(), resolva o " +
-            "PedidosDbContext do escopo e execute a ação.");
+    public async Task ComBancoAsync(Func<PedidosDbContext, Task> acao)
+    {
+        await using var scope = Factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<PedidosDbContext>();
+        await acao(db);
+    }
 
     /// <summary>Passo 2: executa uma consulta com um DbContext novo e devolve o resultado.</summary>
-    public Task<T> ComBancoAsync<T>(Func<PedidosDbContext, Task<T>> consulta) =>
-        throw new NotImplementedException(
-            "TODO (Passo 2): igual ao ComBancoAsync acima, devolvendo o resultado da consulta.");
+    public async Task<T> ComBancoAsync<T>(Func<PedidosDbContext, Task<T>> consulta)
+    {
+        await using var scope = Factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<PedidosDbContext>();
+        return await consulta(db);
+    }
 
     public async ValueTask DisposeAsync()
     {

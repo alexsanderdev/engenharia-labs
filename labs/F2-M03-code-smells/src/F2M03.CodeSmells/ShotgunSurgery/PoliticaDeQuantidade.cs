@@ -15,9 +15,13 @@ public sealed class PoliticaDeQuantidade
     public PoliticaDeQuantidade(int maximoPorItem) => MaximoPorItem = maximoPorItem;
 
     /// <summary>Verdadeiro se 1 ≤ quantidade ≤ <see cref="MaximoPorItem"/>.</summary>
-    public bool Permite(int quantidade) => throw new NotImplementedException("TODO: 1 <= quantidade <= MaximoPorItem.");
+    public bool Permite(int quantidade) => quantidade >= 1 && quantidade <= MaximoPorItem;
 
     /// <summary>Lança se a quantidade não for permitida.</summary>
     /// <exception cref="ArgumentOutOfRangeException">Mensagem: "Quantidade deve estar entre 1 e {máximo}."</exception>
-    public void Validar(int quantidade) => throw new NotImplementedException("TODO: use Permite e lance ArgumentOutOfRangeException com a mensagem.");
+    public void Validar(int quantidade)
+    {
+        if (!Permite(quantidade))
+            throw new ArgumentOutOfRangeException(nameof(quantidade), quantidade, $"Quantidade deve estar entre 1 e {MaximoPorItem}.");
+    }
 }
