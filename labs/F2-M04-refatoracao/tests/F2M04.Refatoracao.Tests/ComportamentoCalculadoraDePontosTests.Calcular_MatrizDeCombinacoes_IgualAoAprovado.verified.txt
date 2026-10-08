@@ -1,0 +1,720 @@
+[BRONZE]   |     0.00 | PIX      | primeira=N | aniversario=N => 0
+[BRONZE]   |     0.00 | PIX      | primeira=N | aniversario=S => 0
+[BRONZE]   |     0.00 | PIX      | primeira=S | aniversario=N => 10
+[BRONZE]   |     0.00 | PIX      | primeira=S | aniversario=S => 10
+[BRONZE]   |     0.00 | CARTAO   | primeira=N | aniversario=N => 0
+[BRONZE]   |     0.00 | CARTAO   | primeira=N | aniversario=S => 0
+[BRONZE]   |     0.00 | CARTAO   | primeira=S | aniversario=N => 10
+[BRONZE]   |     0.00 | CARTAO   | primeira=S | aniversario=S => 10
+[BRONZE]   |     0.00 | BOLETO   | primeira=N | aniversario=N => 0
+[BRONZE]   |     0.00 | BOLETO   | primeira=N | aniversario=S => 0
+[BRONZE]   |     0.00 | BOLETO   | primeira=S | aniversario=N => 0
+[BRONZE]   |     0.00 | BOLETO   | primeira=S | aniversario=S => 0
+[BRONZE]   |     0.00 | DINHEIRO | primeira=N | aniversario=N => 0
+[BRONZE]   |     0.00 | DINHEIRO | primeira=N | aniversario=S => 0
+[BRONZE]   |     0.00 | DINHEIRO | primeira=S | aniversario=N => 10
+[BRONZE]   |     0.00 | DINHEIRO | primeira=S | aniversario=S => 10
+[BRONZE]   |    49.99 | PIX      | primeira=N | aniversario=N => 0
+[BRONZE]   |    49.99 | PIX      | primeira=N | aniversario=S => 0
+[BRONZE]   |    49.99 | PIX      | primeira=S | aniversario=N => 10
+[BRONZE]   |    49.99 | PIX      | primeira=S | aniversario=S => 10
+[BRONZE]   |    49.99 | CARTAO   | primeira=N | aniversario=N => 0
+[BRONZE]   |    49.99 | CARTAO   | primeira=N | aniversario=S => 0
+[BRONZE]   |    49.99 | CARTAO   | primeira=S | aniversario=N => 10
+[BRONZE]   |    49.99 | CARTAO   | primeira=S | aniversario=S => 10
+[BRONZE]   |    49.99 | BOLETO   | primeira=N | aniversario=N => 0
+[BRONZE]   |    49.99 | BOLETO   | primeira=N | aniversario=S => 0
+[BRONZE]   |    49.99 | BOLETO   | primeira=S | aniversario=N => 0
+[BRONZE]   |    49.99 | BOLETO   | primeira=S | aniversario=S => 0
+[BRONZE]   |    49.99 | DINHEIRO | primeira=N | aniversario=N => 0
+[BRONZE]   |    49.99 | DINHEIRO | primeira=N | aniversario=S => 0
+[BRONZE]   |    49.99 | DINHEIRO | primeira=S | aniversario=N => 10
+[BRONZE]   |    49.99 | DINHEIRO | primeira=S | aniversario=S => 10
+[BRONZE]   |    50.00 | PIX      | primeira=N | aniversario=N => 55
+[BRONZE]   |    50.00 | PIX      | primeira=N | aniversario=S => 55
+[BRONZE]   |    50.00 | PIX      | primeira=S | aniversario=N => 155
+[BRONZE]   |    50.00 | PIX      | primeira=S | aniversario=S => 155
+[BRONZE]   |    50.00 | CARTAO   | primeira=N | aniversario=N => 50
+[BRONZE]   |    50.00 | CARTAO   | primeira=N | aniversario=S => 50
+[BRONZE]   |    50.00 | CARTAO   | primeira=S | aniversario=N => 150
+[BRONZE]   |    50.00 | CARTAO   | primeira=S | aniversario=S => 150
+[BRONZE]   |    50.00 | BOLETO   | primeira=N | aniversario=N => 50
+[BRONZE]   |    50.00 | BOLETO   | primeira=N | aniversario=S => 50
+[BRONZE]   |    50.00 | BOLETO   | primeira=S | aniversario=N => 150
+[BRONZE]   |    50.00 | BOLETO   | primeira=S | aniversario=S => 150
+[BRONZE]   |    50.00 | DINHEIRO | primeira=N | aniversario=N => 50
+[BRONZE]   |    50.00 | DINHEIRO | primeira=N | aniversario=S => 50
+[BRONZE]   |    50.00 | DINHEIRO | primeira=S | aniversario=N => 150
+[BRONZE]   |    50.00 | DINHEIRO | primeira=S | aniversario=S => 150
+[BRONZE]   |    99.99 | PIX      | primeira=N | aniversario=N => 108
+[BRONZE]   |    99.99 | PIX      | primeira=N | aniversario=S => 108
+[BRONZE]   |    99.99 | PIX      | primeira=S | aniversario=N => 208
+[BRONZE]   |    99.99 | PIX      | primeira=S | aniversario=S => 208
+[BRONZE]   |    99.99 | CARTAO   | primeira=N | aniversario=N => 99
+[BRONZE]   |    99.99 | CARTAO   | primeira=N | aniversario=S => 99
+[BRONZE]   |    99.99 | CARTAO   | primeira=S | aniversario=N => 199
+[BRONZE]   |    99.99 | CARTAO   | primeira=S | aniversario=S => 199
+[BRONZE]   |    99.99 | BOLETO   | primeira=N | aniversario=N => 99
+[BRONZE]   |    99.99 | BOLETO   | primeira=N | aniversario=S => 99
+[BRONZE]   |    99.99 | BOLETO   | primeira=S | aniversario=N => 199
+[BRONZE]   |    99.99 | BOLETO   | primeira=S | aniversario=S => 199
+[BRONZE]   |    99.99 | DINHEIRO | primeira=N | aniversario=N => 99
+[BRONZE]   |    99.99 | DINHEIRO | primeira=N | aniversario=S => 99
+[BRONZE]   |    99.99 | DINHEIRO | primeira=S | aniversario=N => 199
+[BRONZE]   |    99.99 | DINHEIRO | primeira=S | aniversario=S => 199
+[BRONZE]   |   100.00 | PIX      | primeira=N | aniversario=N => 110
+[BRONZE]   |   100.00 | PIX      | primeira=N | aniversario=S => 110
+[BRONZE]   |   100.00 | PIX      | primeira=S | aniversario=N => 210
+[BRONZE]   |   100.00 | PIX      | primeira=S | aniversario=S => 210
+[BRONZE]   |   100.00 | CARTAO   | primeira=N | aniversario=N => 100
+[BRONZE]   |   100.00 | CARTAO   | primeira=N | aniversario=S => 100
+[BRONZE]   |   100.00 | CARTAO   | primeira=S | aniversario=N => 200
+[BRONZE]   |   100.00 | CARTAO   | primeira=S | aniversario=S => 200
+[BRONZE]   |   100.00 | BOLETO   | primeira=N | aniversario=N => 100
+[BRONZE]   |   100.00 | BOLETO   | primeira=N | aniversario=S => 100
+[BRONZE]   |   100.00 | BOLETO   | primeira=S | aniversario=N => 200
+[BRONZE]   |   100.00 | BOLETO   | primeira=S | aniversario=S => 200
+[BRONZE]   |   100.00 | DINHEIRO | primeira=N | aniversario=N => 100
+[BRONZE]   |   100.00 | DINHEIRO | primeira=N | aniversario=S => 100
+[BRONZE]   |   100.00 | DINHEIRO | primeira=S | aniversario=N => 200
+[BRONZE]   |   100.00 | DINHEIRO | primeira=S | aniversario=S => 200
+[BRONZE]   |   199.99 | PIX      | primeira=N | aniversario=N => 218
+[BRONZE]   |   199.99 | PIX      | primeira=N | aniversario=S => 218
+[BRONZE]   |   199.99 | PIX      | primeira=S | aniversario=N => 318
+[BRONZE]   |   199.99 | PIX      | primeira=S | aniversario=S => 318
+[BRONZE]   |   199.99 | CARTAO   | primeira=N | aniversario=N => 199
+[BRONZE]   |   199.99 | CARTAO   | primeira=N | aniversario=S => 199
+[BRONZE]   |   199.99 | CARTAO   | primeira=S | aniversario=N => 299
+[BRONZE]   |   199.99 | CARTAO   | primeira=S | aniversario=S => 299
+[BRONZE]   |   199.99 | BOLETO   | primeira=N | aniversario=N => 199
+[BRONZE]   |   199.99 | BOLETO   | primeira=N | aniversario=S => 199
+[BRONZE]   |   199.99 | BOLETO   | primeira=S | aniversario=N => 299
+[BRONZE]   |   199.99 | BOLETO   | primeira=S | aniversario=S => 299
+[BRONZE]   |   199.99 | DINHEIRO | primeira=N | aniversario=N => 199
+[BRONZE]   |   199.99 | DINHEIRO | primeira=N | aniversario=S => 199
+[BRONZE]   |   199.99 | DINHEIRO | primeira=S | aniversario=N => 299
+[BRONZE]   |   199.99 | DINHEIRO | primeira=S | aniversario=S => 299
+[BRONZE]   |   200.00 | PIX      | primeira=N | aniversario=N => 220
+[BRONZE]   |   200.00 | PIX      | primeira=N | aniversario=S => 440
+[BRONZE]   |   200.00 | PIX      | primeira=S | aniversario=N => 320
+[BRONZE]   |   200.00 | PIX      | primeira=S | aniversario=S => 540
+[BRONZE]   |   200.00 | CARTAO   | primeira=N | aniversario=N => 200
+[BRONZE]   |   200.00 | CARTAO   | primeira=N | aniversario=S => 400
+[BRONZE]   |   200.00 | CARTAO   | primeira=S | aniversario=N => 300
+[BRONZE]   |   200.00 | CARTAO   | primeira=S | aniversario=S => 500
+[BRONZE]   |   200.00 | BOLETO   | primeira=N | aniversario=N => 200
+[BRONZE]   |   200.00 | BOLETO   | primeira=N | aniversario=S => 400
+[BRONZE]   |   200.00 | BOLETO   | primeira=S | aniversario=N => 300
+[BRONZE]   |   200.00 | BOLETO   | primeira=S | aniversario=S => 500
+[BRONZE]   |   200.00 | DINHEIRO | primeira=N | aniversario=N => 200
+[BRONZE]   |   200.00 | DINHEIRO | primeira=N | aniversario=S => 400
+[BRONZE]   |   200.00 | DINHEIRO | primeira=S | aniversario=N => 300
+[BRONZE]   |   200.00 | DINHEIRO | primeira=S | aniversario=S => 500
+[BRONZE]   |  1234.56 | PIX      | primeira=N | aniversario=N => 1000
+[BRONZE]   |  1234.56 | PIX      | primeira=N | aniversario=S => 1000
+[BRONZE]   |  1234.56 | PIX      | primeira=S | aniversario=N => 1000
+[BRONZE]   |  1234.56 | PIX      | primeira=S | aniversario=S => 1000
+[BRONZE]   |  1234.56 | CARTAO   | primeira=N | aniversario=N => 1000
+[BRONZE]   |  1234.56 | CARTAO   | primeira=N | aniversario=S => 1000
+[BRONZE]   |  1234.56 | CARTAO   | primeira=S | aniversario=N => 1000
+[BRONZE]   |  1234.56 | CARTAO   | primeira=S | aniversario=S => 1000
+[BRONZE]   |  1234.56 | BOLETO   | primeira=N | aniversario=N => 1000
+[BRONZE]   |  1234.56 | BOLETO   | primeira=N | aniversario=S => 1000
+[BRONZE]   |  1234.56 | BOLETO   | primeira=S | aniversario=N => 1000
+[BRONZE]   |  1234.56 | BOLETO   | primeira=S | aniversario=S => 1000
+[BRONZE]   |  1234.56 | DINHEIRO | primeira=N | aniversario=N => 1000
+[BRONZE]   |  1234.56 | DINHEIRO | primeira=N | aniversario=S => 1000
+[BRONZE]   |  1234.56 | DINHEIRO | primeira=S | aniversario=N => 1000
+[BRONZE]   |  1234.56 | DINHEIRO | primeira=S | aniversario=S => 1000
+[BRONZE]   |  3000.00 | PIX      | primeira=N | aniversario=N => 1000
+[BRONZE]   |  3000.00 | PIX      | primeira=N | aniversario=S => 1000
+[BRONZE]   |  3000.00 | PIX      | primeira=S | aniversario=N => 1000
+[BRONZE]   |  3000.00 | PIX      | primeira=S | aniversario=S => 1000
+[BRONZE]   |  3000.00 | CARTAO   | primeira=N | aniversario=N => 1000
+[BRONZE]   |  3000.00 | CARTAO   | primeira=N | aniversario=S => 1000
+[BRONZE]   |  3000.00 | CARTAO   | primeira=S | aniversario=N => 1000
+[BRONZE]   |  3000.00 | CARTAO   | primeira=S | aniversario=S => 1000
+[BRONZE]   |  3000.00 | BOLETO   | primeira=N | aniversario=N => 1000
+[BRONZE]   |  3000.00 | BOLETO   | primeira=N | aniversario=S => 1000
+[BRONZE]   |  3000.00 | BOLETO   | primeira=S | aniversario=N => 1000
+[BRONZE]   |  3000.00 | BOLETO   | primeira=S | aniversario=S => 1000
+[BRONZE]   |  3000.00 | DINHEIRO | primeira=N | aniversario=N => 1000
+[BRONZE]   |  3000.00 | DINHEIRO | primeira=N | aniversario=S => 1000
+[BRONZE]   |  3000.00 | DINHEIRO | primeira=S | aniversario=N => 1000
+[BRONZE]   |  3000.00 | DINHEIRO | primeira=S | aniversario=S => 1000
+[PRATA]    |     0.00 | PIX      | primeira=N | aniversario=N => 0
+[PRATA]    |     0.00 | PIX      | primeira=N | aniversario=S => 0
+[PRATA]    |     0.00 | PIX      | primeira=S | aniversario=N => 10
+[PRATA]    |     0.00 | PIX      | primeira=S | aniversario=S => 10
+[PRATA]    |     0.00 | CARTAO   | primeira=N | aniversario=N => 0
+[PRATA]    |     0.00 | CARTAO   | primeira=N | aniversario=S => 0
+[PRATA]    |     0.00 | CARTAO   | primeira=S | aniversario=N => 10
+[PRATA]    |     0.00 | CARTAO   | primeira=S | aniversario=S => 10
+[PRATA]    |     0.00 | BOLETO   | primeira=N | aniversario=N => 0
+[PRATA]    |     0.00 | BOLETO   | primeira=N | aniversario=S => 0
+[PRATA]    |     0.00 | BOLETO   | primeira=S | aniversario=N => 0
+[PRATA]    |     0.00 | BOLETO   | primeira=S | aniversario=S => 0
+[PRATA]    |     0.00 | DINHEIRO | primeira=N | aniversario=N => 0
+[PRATA]    |     0.00 | DINHEIRO | primeira=N | aniversario=S => 0
+[PRATA]    |     0.00 | DINHEIRO | primeira=S | aniversario=N => 10
+[PRATA]    |     0.00 | DINHEIRO | primeira=S | aniversario=S => 10
+[PRATA]    |    49.99 | PIX      | primeira=N | aniversario=N => 0
+[PRATA]    |    49.99 | PIX      | primeira=N | aniversario=S => 0
+[PRATA]    |    49.99 | PIX      | primeira=S | aniversario=N => 10
+[PRATA]    |    49.99 | PIX      | primeira=S | aniversario=S => 10
+[PRATA]    |    49.99 | CARTAO   | primeira=N | aniversario=N => 0
+[PRATA]    |    49.99 | CARTAO   | primeira=N | aniversario=S => 0
+[PRATA]    |    49.99 | CARTAO   | primeira=S | aniversario=N => 10
+[PRATA]    |    49.99 | CARTAO   | primeira=S | aniversario=S => 10
+[PRATA]    |    49.99 | BOLETO   | primeira=N | aniversario=N => 0
+[PRATA]    |    49.99 | BOLETO   | primeira=N | aniversario=S => 0
+[PRATA]    |    49.99 | BOLETO   | primeira=S | aniversario=N => 0
+[PRATA]    |    49.99 | BOLETO   | primeira=S | aniversario=S => 0
+[PRATA]    |    49.99 | DINHEIRO | primeira=N | aniversario=N => 0
+[PRATA]    |    49.99 | DINHEIRO | primeira=N | aniversario=S => 0
+[PRATA]    |    49.99 | DINHEIRO | primeira=S | aniversario=N => 10
+[PRATA]    |    49.99 | DINHEIRO | primeira=S | aniversario=S => 10
+[PRATA]    |    50.00 | PIX      | primeira=N | aniversario=N => 82
+[PRATA]    |    50.00 | PIX      | primeira=N | aniversario=S => 82
+[PRATA]    |    50.00 | PIX      | primeira=S | aniversario=N => 182
+[PRATA]    |    50.00 | PIX      | primeira=S | aniversario=S => 182
+[PRATA]    |    50.00 | CARTAO   | primeira=N | aniversario=N => 75
+[PRATA]    |    50.00 | CARTAO   | primeira=N | aniversario=S => 75
+[PRATA]    |    50.00 | CARTAO   | primeira=S | aniversario=N => 175
+[PRATA]    |    50.00 | CARTAO   | primeira=S | aniversario=S => 175
+[PRATA]    |    50.00 | BOLETO   | primeira=N | aniversario=N => 75
+[PRATA]    |    50.00 | BOLETO   | primeira=N | aniversario=S => 75
+[PRATA]    |    50.00 | BOLETO   | primeira=S | aniversario=N => 175
+[PRATA]    |    50.00 | BOLETO   | primeira=S | aniversario=S => 175
+[PRATA]    |    50.00 | DINHEIRO | primeira=N | aniversario=N => 75
+[PRATA]    |    50.00 | DINHEIRO | primeira=N | aniversario=S => 75
+[PRATA]    |    50.00 | DINHEIRO | primeira=S | aniversario=N => 175
+[PRATA]    |    50.00 | DINHEIRO | primeira=S | aniversario=S => 175
+[PRATA]    |    99.99 | PIX      | primeira=N | aniversario=N => 163
+[PRATA]    |    99.99 | PIX      | primeira=N | aniversario=S => 163
+[PRATA]    |    99.99 | PIX      | primeira=S | aniversario=N => 263
+[PRATA]    |    99.99 | PIX      | primeira=S | aniversario=S => 263
+[PRATA]    |    99.99 | CARTAO   | primeira=N | aniversario=N => 149
+[PRATA]    |    99.99 | CARTAO   | primeira=N | aniversario=S => 149
+[PRATA]    |    99.99 | CARTAO   | primeira=S | aniversario=N => 249
+[PRATA]    |    99.99 | CARTAO   | primeira=S | aniversario=S => 249
+[PRATA]    |    99.99 | BOLETO   | primeira=N | aniversario=N => 149
+[PRATA]    |    99.99 | BOLETO   | primeira=N | aniversario=S => 149
+[PRATA]    |    99.99 | BOLETO   | primeira=S | aniversario=N => 249
+[PRATA]    |    99.99 | BOLETO   | primeira=S | aniversario=S => 249
+[PRATA]    |    99.99 | DINHEIRO | primeira=N | aniversario=N => 149
+[PRATA]    |    99.99 | DINHEIRO | primeira=N | aniversario=S => 149
+[PRATA]    |    99.99 | DINHEIRO | primeira=S | aniversario=N => 249
+[PRATA]    |    99.99 | DINHEIRO | primeira=S | aniversario=S => 249
+[PRATA]    |   100.00 | PIX      | primeira=N | aniversario=N => 165
+[PRATA]    |   100.00 | PIX      | primeira=N | aniversario=S => 330
+[PRATA]    |   100.00 | PIX      | primeira=S | aniversario=N => 265
+[PRATA]    |   100.00 | PIX      | primeira=S | aniversario=S => 430
+[PRATA]    |   100.00 | CARTAO   | primeira=N | aniversario=N => 150
+[PRATA]    |   100.00 | CARTAO   | primeira=N | aniversario=S => 300
+[PRATA]    |   100.00 | CARTAO   | primeira=S | aniversario=N => 250
+[PRATA]    |   100.00 | CARTAO   | primeira=S | aniversario=S => 400
+[PRATA]    |   100.00 | BOLETO   | primeira=N | aniversario=N => 150
+[PRATA]    |   100.00 | BOLETO   | primeira=N | aniversario=S => 300
+[PRATA]    |   100.00 | BOLETO   | primeira=S | aniversario=N => 250
+[PRATA]    |   100.00 | BOLETO   | primeira=S | aniversario=S => 400
+[PRATA]    |   100.00 | DINHEIRO | primeira=N | aniversario=N => 150
+[PRATA]    |   100.00 | DINHEIRO | primeira=N | aniversario=S => 300
+[PRATA]    |   100.00 | DINHEIRO | primeira=S | aniversario=N => 250
+[PRATA]    |   100.00 | DINHEIRO | primeira=S | aniversario=S => 400
+[PRATA]    |   199.99 | PIX      | primeira=N | aniversario=N => 328
+[PRATA]    |   199.99 | PIX      | primeira=N | aniversario=S => 656
+[PRATA]    |   199.99 | PIX      | primeira=S | aniversario=N => 428
+[PRATA]    |   199.99 | PIX      | primeira=S | aniversario=S => 756
+[PRATA]    |   199.99 | CARTAO   | primeira=N | aniversario=N => 299
+[PRATA]    |   199.99 | CARTAO   | primeira=N | aniversario=S => 598
+[PRATA]    |   199.99 | CARTAO   | primeira=S | aniversario=N => 399
+[PRATA]    |   199.99 | CARTAO   | primeira=S | aniversario=S => 698
+[PRATA]    |   199.99 | BOLETO   | primeira=N | aniversario=N => 299
+[PRATA]    |   199.99 | BOLETO   | primeira=N | aniversario=S => 598
+[PRATA]    |   199.99 | BOLETO   | primeira=S | aniversario=N => 399
+[PRATA]    |   199.99 | BOLETO   | primeira=S | aniversario=S => 698
+[PRATA]    |   199.99 | DINHEIRO | primeira=N | aniversario=N => 299
+[PRATA]    |   199.99 | DINHEIRO | primeira=N | aniversario=S => 598
+[PRATA]    |   199.99 | DINHEIRO | primeira=S | aniversario=N => 399
+[PRATA]    |   199.99 | DINHEIRO | primeira=S | aniversario=S => 698
+[PRATA]    |   200.00 | PIX      | primeira=N | aniversario=N => 330
+[PRATA]    |   200.00 | PIX      | primeira=N | aniversario=S => 660
+[PRATA]    |   200.00 | PIX      | primeira=S | aniversario=N => 430
+[PRATA]    |   200.00 | PIX      | primeira=S | aniversario=S => 760
+[PRATA]    |   200.00 | CARTAO   | primeira=N | aniversario=N => 300
+[PRATA]    |   200.00 | CARTAO   | primeira=N | aniversario=S => 600
+[PRATA]    |   200.00 | CARTAO   | primeira=S | aniversario=N => 400
+[PRATA]    |   200.00 | CARTAO   | primeira=S | aniversario=S => 700
+[PRATA]    |   200.00 | BOLETO   | primeira=N | aniversario=N => 300
+[PRATA]    |   200.00 | BOLETO   | primeira=N | aniversario=S => 600
+[PRATA]    |   200.00 | BOLETO   | primeira=S | aniversario=N => 400
+[PRATA]    |   200.00 | BOLETO   | primeira=S | aniversario=S => 700
+[PRATA]    |   200.00 | DINHEIRO | primeira=N | aniversario=N => 300
+[PRATA]    |   200.00 | DINHEIRO | primeira=N | aniversario=S => 600
+[PRATA]    |   200.00 | DINHEIRO | primeira=S | aniversario=N => 400
+[PRATA]    |   200.00 | DINHEIRO | primeira=S | aniversario=S => 700
+[PRATA]    |  1234.56 | PIX      | primeira=N | aniversario=N => 2036
+[PRATA]    |  1234.56 | PIX      | primeira=N | aniversario=S => 3000
+[PRATA]    |  1234.56 | PIX      | primeira=S | aniversario=N => 2136
+[PRATA]    |  1234.56 | PIX      | primeira=S | aniversario=S => 3000
+[PRATA]    |  1234.56 | CARTAO   | primeira=N | aniversario=N => 1851
+[PRATA]    |  1234.56 | CARTAO   | primeira=N | aniversario=S => 3000
+[PRATA]    |  1234.56 | CARTAO   | primeira=S | aniversario=N => 1951
+[PRATA]    |  1234.56 | CARTAO   | primeira=S | aniversario=S => 3000
+[PRATA]    |  1234.56 | BOLETO   | primeira=N | aniversario=N => 1851
+[PRATA]    |  1234.56 | BOLETO   | primeira=N | aniversario=S => 3000
+[PRATA]    |  1234.56 | BOLETO   | primeira=S | aniversario=N => 1951
+[PRATA]    |  1234.56 | BOLETO   | primeira=S | aniversario=S => 3000
+[PRATA]    |  1234.56 | DINHEIRO | primeira=N | aniversario=N => 1851
+[PRATA]    |  1234.56 | DINHEIRO | primeira=N | aniversario=S => 3000
+[PRATA]    |  1234.56 | DINHEIRO | primeira=S | aniversario=N => 1951
+[PRATA]    |  1234.56 | DINHEIRO | primeira=S | aniversario=S => 3000
+[PRATA]    |  3000.00 | PIX      | primeira=N | aniversario=N => 3000
+[PRATA]    |  3000.00 | PIX      | primeira=N | aniversario=S => 3000
+[PRATA]    |  3000.00 | PIX      | primeira=S | aniversario=N => 3000
+[PRATA]    |  3000.00 | PIX      | primeira=S | aniversario=S => 3000
+[PRATA]    |  3000.00 | CARTAO   | primeira=N | aniversario=N => 3000
+[PRATA]    |  3000.00 | CARTAO   | primeira=N | aniversario=S => 3000
+[PRATA]    |  3000.00 | CARTAO   | primeira=S | aniversario=N => 3000
+[PRATA]    |  3000.00 | CARTAO   | primeira=S | aniversario=S => 3000
+[PRATA]    |  3000.00 | BOLETO   | primeira=N | aniversario=N => 3000
+[PRATA]    |  3000.00 | BOLETO   | primeira=N | aniversario=S => 3000
+[PRATA]    |  3000.00 | BOLETO   | primeira=S | aniversario=N => 3000
+[PRATA]    |  3000.00 | BOLETO   | primeira=S | aniversario=S => 3000
+[PRATA]    |  3000.00 | DINHEIRO | primeira=N | aniversario=N => 3000
+[PRATA]    |  3000.00 | DINHEIRO | primeira=N | aniversario=S => 3000
+[PRATA]    |  3000.00 | DINHEIRO | primeira=S | aniversario=N => 3000
+[PRATA]    |  3000.00 | DINHEIRO | primeira=S | aniversario=S => 3000
+[OURO]     |     0.00 | PIX      | primeira=N | aniversario=N => 0
+[OURO]     |     0.00 | PIX      | primeira=N | aniversario=S => 0
+[OURO]     |     0.00 | PIX      | primeira=S | aniversario=N => 10
+[OURO]     |     0.00 | PIX      | primeira=S | aniversario=S => 10
+[OURO]     |     0.00 | CARTAO   | primeira=N | aniversario=N => 0
+[OURO]     |     0.00 | CARTAO   | primeira=N | aniversario=S => 0
+[OURO]     |     0.00 | CARTAO   | primeira=S | aniversario=N => 10
+[OURO]     |     0.00 | CARTAO   | primeira=S | aniversario=S => 10
+[OURO]     |     0.00 | BOLETO   | primeira=N | aniversario=N => 0
+[OURO]     |     0.00 | BOLETO   | primeira=N | aniversario=S => 0
+[OURO]     |     0.00 | BOLETO   | primeira=S | aniversario=N => 0
+[OURO]     |     0.00 | BOLETO   | primeira=S | aniversario=S => 0
+[OURO]     |     0.00 | DINHEIRO | primeira=N | aniversario=N => 0
+[OURO]     |     0.00 | DINHEIRO | primeira=N | aniversario=S => 0
+[OURO]     |     0.00 | DINHEIRO | primeira=S | aniversario=N => 10
+[OURO]     |     0.00 | DINHEIRO | primeira=S | aniversario=S => 10
+[OURO]     |    49.99 | PIX      | primeira=N | aniversario=N => 0
+[OURO]     |    49.99 | PIX      | primeira=N | aniversario=S => 0
+[OURO]     |    49.99 | PIX      | primeira=S | aniversario=N => 10
+[OURO]     |    49.99 | PIX      | primeira=S | aniversario=S => 10
+[OURO]     |    49.99 | CARTAO   | primeira=N | aniversario=N => 0
+[OURO]     |    49.99 | CARTAO   | primeira=N | aniversario=S => 0
+[OURO]     |    49.99 | CARTAO   | primeira=S | aniversario=N => 10
+[OURO]     |    49.99 | CARTAO   | primeira=S | aniversario=S => 10
+[OURO]     |    49.99 | BOLETO   | primeira=N | aniversario=N => 0
+[OURO]     |    49.99 | BOLETO   | primeira=N | aniversario=S => 0
+[OURO]     |    49.99 | BOLETO   | primeira=S | aniversario=N => 0
+[OURO]     |    49.99 | BOLETO   | primeira=S | aniversario=S => 0
+[OURO]     |    49.99 | DINHEIRO | primeira=N | aniversario=N => 0
+[OURO]     |    49.99 | DINHEIRO | primeira=N | aniversario=S => 0
+[OURO]     |    49.99 | DINHEIRO | primeira=S | aniversario=N => 10
+[OURO]     |    49.99 | DINHEIRO | primeira=S | aniversario=S => 10
+[OURO]     |    50.00 | PIX      | primeira=N | aniversario=N => 110
+[OURO]     |    50.00 | PIX      | primeira=N | aniversario=S => 220
+[OURO]     |    50.00 | PIX      | primeira=S | aniversario=N => 210
+[OURO]     |    50.00 | PIX      | primeira=S | aniversario=S => 320
+[OURO]     |    50.00 | CARTAO   | primeira=N | aniversario=N => 105
+[OURO]     |    50.00 | CARTAO   | primeira=N | aniversario=S => 210
+[OURO]     |    50.00 | CARTAO   | primeira=S | aniversario=N => 205
+[OURO]     |    50.00 | CARTAO   | primeira=S | aniversario=S => 310
+[OURO]     |    50.00 | BOLETO   | primeira=N | aniversario=N => 100
+[OURO]     |    50.00 | BOLETO   | primeira=N | aniversario=S => 200
+[OURO]     |    50.00 | BOLETO   | primeira=S | aniversario=N => 200
+[OURO]     |    50.00 | BOLETO   | primeira=S | aniversario=S => 300
+[OURO]     |    50.00 | DINHEIRO | primeira=N | aniversario=N => 100
+[OURO]     |    50.00 | DINHEIRO | primeira=N | aniversario=S => 200
+[OURO]     |    50.00 | DINHEIRO | primeira=S | aniversario=N => 200
+[OURO]     |    50.00 | DINHEIRO | primeira=S | aniversario=S => 300
+[OURO]     |    99.99 | PIX      | primeira=N | aniversario=N => 218
+[OURO]     |    99.99 | PIX      | primeira=N | aniversario=S => 436
+[OURO]     |    99.99 | PIX      | primeira=S | aniversario=N => 318
+[OURO]     |    99.99 | PIX      | primeira=S | aniversario=S => 536
+[OURO]     |    99.99 | CARTAO   | primeira=N | aniversario=N => 208
+[OURO]     |    99.99 | CARTAO   | primeira=N | aniversario=S => 416
+[OURO]     |    99.99 | CARTAO   | primeira=S | aniversario=N => 308
+[OURO]     |    99.99 | CARTAO   | primeira=S | aniversario=S => 516
+[OURO]     |    99.99 | BOLETO   | primeira=N | aniversario=N => 199
+[OURO]     |    99.99 | BOLETO   | primeira=N | aniversario=S => 398
+[OURO]     |    99.99 | BOLETO   | primeira=S | aniversario=N => 299
+[OURO]     |    99.99 | BOLETO   | primeira=S | aniversario=S => 498
+[OURO]     |    99.99 | DINHEIRO | primeira=N | aniversario=N => 199
+[OURO]     |    99.99 | DINHEIRO | primeira=N | aniversario=S => 398
+[OURO]     |    99.99 | DINHEIRO | primeira=S | aniversario=N => 299
+[OURO]     |    99.99 | DINHEIRO | primeira=S | aniversario=S => 498
+[OURO]     |   100.00 | PIX      | primeira=N | aniversario=N => 220
+[OURO]     |   100.00 | PIX      | primeira=N | aniversario=S => 440
+[OURO]     |   100.00 | PIX      | primeira=S | aniversario=N => 320
+[OURO]     |   100.00 | PIX      | primeira=S | aniversario=S => 540
+[OURO]     |   100.00 | CARTAO   | primeira=N | aniversario=N => 210
+[OURO]     |   100.00 | CARTAO   | primeira=N | aniversario=S => 420
+[OURO]     |   100.00 | CARTAO   | primeira=S | aniversario=N => 310
+[OURO]     |   100.00 | CARTAO   | primeira=S | aniversario=S => 520
+[OURO]     |   100.00 | BOLETO   | primeira=N | aniversario=N => 200
+[OURO]     |   100.00 | BOLETO   | primeira=N | aniversario=S => 400
+[OURO]     |   100.00 | BOLETO   | primeira=S | aniversario=N => 300
+[OURO]     |   100.00 | BOLETO   | primeira=S | aniversario=S => 500
+[OURO]     |   100.00 | DINHEIRO | primeira=N | aniversario=N => 200
+[OURO]     |   100.00 | DINHEIRO | primeira=N | aniversario=S => 400
+[OURO]     |   100.00 | DINHEIRO | primeira=S | aniversario=N => 300
+[OURO]     |   100.00 | DINHEIRO | primeira=S | aniversario=S => 500
+[OURO]     |   199.99 | PIX      | primeira=N | aniversario=N => 438
+[OURO]     |   199.99 | PIX      | primeira=N | aniversario=S => 876
+[OURO]     |   199.99 | PIX      | primeira=S | aniversario=N => 538
+[OURO]     |   199.99 | PIX      | primeira=S | aniversario=S => 976
+[OURO]     |   199.99 | CARTAO   | primeira=N | aniversario=N => 418
+[OURO]     |   199.99 | CARTAO   | primeira=N | aniversario=S => 836
+[OURO]     |   199.99 | CARTAO   | primeira=S | aniversario=N => 518
+[OURO]     |   199.99 | CARTAO   | primeira=S | aniversario=S => 936
+[OURO]     |   199.99 | BOLETO   | primeira=N | aniversario=N => 399
+[OURO]     |   199.99 | BOLETO   | primeira=N | aniversario=S => 798
+[OURO]     |   199.99 | BOLETO   | primeira=S | aniversario=N => 499
+[OURO]     |   199.99 | BOLETO   | primeira=S | aniversario=S => 898
+[OURO]     |   199.99 | DINHEIRO | primeira=N | aniversario=N => 399
+[OURO]     |   199.99 | DINHEIRO | primeira=N | aniversario=S => 798
+[OURO]     |   199.99 | DINHEIRO | primeira=S | aniversario=N => 499
+[OURO]     |   199.99 | DINHEIRO | primeira=S | aniversario=S => 898
+[OURO]     |   200.00 | PIX      | primeira=N | aniversario=N => 440
+[OURO]     |   200.00 | PIX      | primeira=N | aniversario=S => 880
+[OURO]     |   200.00 | PIX      | primeira=S | aniversario=N => 540
+[OURO]     |   200.00 | PIX      | primeira=S | aniversario=S => 980
+[OURO]     |   200.00 | CARTAO   | primeira=N | aniversario=N => 420
+[OURO]     |   200.00 | CARTAO   | primeira=N | aniversario=S => 840
+[OURO]     |   200.00 | CARTAO   | primeira=S | aniversario=N => 520
+[OURO]     |   200.00 | CARTAO   | primeira=S | aniversario=S => 940
+[OURO]     |   200.00 | BOLETO   | primeira=N | aniversario=N => 400
+[OURO]     |   200.00 | BOLETO   | primeira=N | aniversario=S => 800
+[OURO]     |   200.00 | BOLETO   | primeira=S | aniversario=N => 500
+[OURO]     |   200.00 | BOLETO   | primeira=S | aniversario=S => 900
+[OURO]     |   200.00 | DINHEIRO | primeira=N | aniversario=N => 400
+[OURO]     |   200.00 | DINHEIRO | primeira=N | aniversario=S => 800
+[OURO]     |   200.00 | DINHEIRO | primeira=S | aniversario=N => 500
+[OURO]     |   200.00 | DINHEIRO | primeira=S | aniversario=S => 900
+[OURO]     |  1234.56 | PIX      | primeira=N | aniversario=N => 2715
+[OURO]     |  1234.56 | PIX      | primeira=N | aniversario=S => 5000
+[OURO]     |  1234.56 | PIX      | primeira=S | aniversario=N => 2815
+[OURO]     |  1234.56 | PIX      | primeira=S | aniversario=S => 5000
+[OURO]     |  1234.56 | CARTAO   | primeira=N | aniversario=N => 2592
+[OURO]     |  1234.56 | CARTAO   | primeira=N | aniversario=S => 5000
+[OURO]     |  1234.56 | CARTAO   | primeira=S | aniversario=N => 2692
+[OURO]     |  1234.56 | CARTAO   | primeira=S | aniversario=S => 5000
+[OURO]     |  1234.56 | BOLETO   | primeira=N | aniversario=N => 2469
+[OURO]     |  1234.56 | BOLETO   | primeira=N | aniversario=S => 4938
+[OURO]     |  1234.56 | BOLETO   | primeira=S | aniversario=N => 2569
+[OURO]     |  1234.56 | BOLETO   | primeira=S | aniversario=S => 5000
+[OURO]     |  1234.56 | DINHEIRO | primeira=N | aniversario=N => 2469
+[OURO]     |  1234.56 | DINHEIRO | primeira=N | aniversario=S => 4938
+[OURO]     |  1234.56 | DINHEIRO | primeira=S | aniversario=N => 2569
+[OURO]     |  1234.56 | DINHEIRO | primeira=S | aniversario=S => 5000
+[OURO]     |  3000.00 | PIX      | primeira=N | aniversario=N => 5000
+[OURO]     |  3000.00 | PIX      | primeira=N | aniversario=S => 5000
+[OURO]     |  3000.00 | PIX      | primeira=S | aniversario=N => 5000
+[OURO]     |  3000.00 | PIX      | primeira=S | aniversario=S => 5000
+[OURO]     |  3000.00 | CARTAO   | primeira=N | aniversario=N => 5000
+[OURO]     |  3000.00 | CARTAO   | primeira=N | aniversario=S => 5000
+[OURO]     |  3000.00 | CARTAO   | primeira=S | aniversario=N => 5000
+[OURO]     |  3000.00 | CARTAO   | primeira=S | aniversario=S => 5000
+[OURO]     |  3000.00 | BOLETO   | primeira=N | aniversario=N => 5000
+[OURO]     |  3000.00 | BOLETO   | primeira=N | aniversario=S => 5000
+[OURO]     |  3000.00 | BOLETO   | primeira=S | aniversario=N => 5000
+[OURO]     |  3000.00 | BOLETO   | primeira=S | aniversario=S => 5000
+[OURO]     |  3000.00 | DINHEIRO | primeira=N | aniversario=N => 5000
+[OURO]     |  3000.00 | DINHEIRO | primeira=N | aniversario=S => 5000
+[OURO]     |  3000.00 | DINHEIRO | primeira=S | aniversario=N => 5000
+[OURO]     |  3000.00 | DINHEIRO | primeira=S | aniversario=S => 5000
+[ ouro ]   |     0.00 | PIX      | primeira=N | aniversario=N => 0
+[ ouro ]   |     0.00 | PIX      | primeira=N | aniversario=S => 0
+[ ouro ]   |     0.00 | PIX      | primeira=S | aniversario=N => 10
+[ ouro ]   |     0.00 | PIX      | primeira=S | aniversario=S => 10
+[ ouro ]   |     0.00 | CARTAO   | primeira=N | aniversario=N => 0
+[ ouro ]   |     0.00 | CARTAO   | primeira=N | aniversario=S => 0
+[ ouro ]   |     0.00 | CARTAO   | primeira=S | aniversario=N => 10
+[ ouro ]   |     0.00 | CARTAO   | primeira=S | aniversario=S => 10
+[ ouro ]   |     0.00 | BOLETO   | primeira=N | aniversario=N => 0
+[ ouro ]   |     0.00 | BOLETO   | primeira=N | aniversario=S => 0
+[ ouro ]   |     0.00 | BOLETO   | primeira=S | aniversario=N => 0
+[ ouro ]   |     0.00 | BOLETO   | primeira=S | aniversario=S => 0
+[ ouro ]   |     0.00 | DINHEIRO | primeira=N | aniversario=N => 0
+[ ouro ]   |     0.00 | DINHEIRO | primeira=N | aniversario=S => 0
+[ ouro ]   |     0.00 | DINHEIRO | primeira=S | aniversario=N => 10
+[ ouro ]   |     0.00 | DINHEIRO | primeira=S | aniversario=S => 10
+[ ouro ]   |    49.99 | PIX      | primeira=N | aniversario=N => 0
+[ ouro ]   |    49.99 | PIX      | primeira=N | aniversario=S => 0
+[ ouro ]   |    49.99 | PIX      | primeira=S | aniversario=N => 10
+[ ouro ]   |    49.99 | PIX      | primeira=S | aniversario=S => 10
+[ ouro ]   |    49.99 | CARTAO   | primeira=N | aniversario=N => 0
+[ ouro ]   |    49.99 | CARTAO   | primeira=N | aniversario=S => 0
+[ ouro ]   |    49.99 | CARTAO   | primeira=S | aniversario=N => 10
+[ ouro ]   |    49.99 | CARTAO   | primeira=S | aniversario=S => 10
+[ ouro ]   |    49.99 | BOLETO   | primeira=N | aniversario=N => 0
+[ ouro ]   |    49.99 | BOLETO   | primeira=N | aniversario=S => 0
+[ ouro ]   |    49.99 | BOLETO   | primeira=S | aniversario=N => 0
+[ ouro ]   |    49.99 | BOLETO   | primeira=S | aniversario=S => 0
+[ ouro ]   |    49.99 | DINHEIRO | primeira=N | aniversario=N => 0
+[ ouro ]   |    49.99 | DINHEIRO | primeira=N | aniversario=S => 0
+[ ouro ]   |    49.99 | DINHEIRO | primeira=S | aniversario=N => 10
+[ ouro ]   |    49.99 | DINHEIRO | primeira=S | aniversario=S => 10
+[ ouro ]   |    50.00 | PIX      | primeira=N | aniversario=N => 110
+[ ouro ]   |    50.00 | PIX      | primeira=N | aniversario=S => 220
+[ ouro ]   |    50.00 | PIX      | primeira=S | aniversario=N => 210
+[ ouro ]   |    50.00 | PIX      | primeira=S | aniversario=S => 320
+[ ouro ]   |    50.00 | CARTAO   | primeira=N | aniversario=N => 105
+[ ouro ]   |    50.00 | CARTAO   | primeira=N | aniversario=S => 210
+[ ouro ]   |    50.00 | CARTAO   | primeira=S | aniversario=N => 205
+[ ouro ]   |    50.00 | CARTAO   | primeira=S | aniversario=S => 310
+[ ouro ]   |    50.00 | BOLETO   | primeira=N | aniversario=N => 100
+[ ouro ]   |    50.00 | BOLETO   | primeira=N | aniversario=S => 200
+[ ouro ]   |    50.00 | BOLETO   | primeira=S | aniversario=N => 200
+[ ouro ]   |    50.00 | BOLETO   | primeira=S | aniversario=S => 300
+[ ouro ]   |    50.00 | DINHEIRO | primeira=N | aniversario=N => 100
+[ ouro ]   |    50.00 | DINHEIRO | primeira=N | aniversario=S => 200
+[ ouro ]   |    50.00 | DINHEIRO | primeira=S | aniversario=N => 200
+[ ouro ]   |    50.00 | DINHEIRO | primeira=S | aniversario=S => 300
+[ ouro ]   |    99.99 | PIX      | primeira=N | aniversario=N => 218
+[ ouro ]   |    99.99 | PIX      | primeira=N | aniversario=S => 436
+[ ouro ]   |    99.99 | PIX      | primeira=S | aniversario=N => 318
+[ ouro ]   |    99.99 | PIX      | primeira=S | aniversario=S => 536
+[ ouro ]   |    99.99 | CARTAO   | primeira=N | aniversario=N => 208
+[ ouro ]   |    99.99 | CARTAO   | primeira=N | aniversario=S => 416
+[ ouro ]   |    99.99 | CARTAO   | primeira=S | aniversario=N => 308
+[ ouro ]   |    99.99 | CARTAO   | primeira=S | aniversario=S => 516
+[ ouro ]   |    99.99 | BOLETO   | primeira=N | aniversario=N => 199
+[ ouro ]   |    99.99 | BOLETO   | primeira=N | aniversario=S => 398
+[ ouro ]   |    99.99 | BOLETO   | primeira=S | aniversario=N => 299
+[ ouro ]   |    99.99 | BOLETO   | primeira=S | aniversario=S => 498
+[ ouro ]   |    99.99 | DINHEIRO | primeira=N | aniversario=N => 199
+[ ouro ]   |    99.99 | DINHEIRO | primeira=N | aniversario=S => 398
+[ ouro ]   |    99.99 | DINHEIRO | primeira=S | aniversario=N => 299
+[ ouro ]   |    99.99 | DINHEIRO | primeira=S | aniversario=S => 498
+[ ouro ]   |   100.00 | PIX      | primeira=N | aniversario=N => 220
+[ ouro ]   |   100.00 | PIX      | primeira=N | aniversario=S => 440
+[ ouro ]   |   100.00 | PIX      | primeira=S | aniversario=N => 320
+[ ouro ]   |   100.00 | PIX      | primeira=S | aniversario=S => 540
+[ ouro ]   |   100.00 | CARTAO   | primeira=N | aniversario=N => 210
+[ ouro ]   |   100.00 | CARTAO   | primeira=N | aniversario=S => 420
+[ ouro ]   |   100.00 | CARTAO   | primeira=S | aniversario=N => 310
+[ ouro ]   |   100.00 | CARTAO   | primeira=S | aniversario=S => 520
+[ ouro ]   |   100.00 | BOLETO   | primeira=N | aniversario=N => 200
+[ ouro ]   |   100.00 | BOLETO   | primeira=N | aniversario=S => 400
+[ ouro ]   |   100.00 | BOLETO   | primeira=S | aniversario=N => 300
+[ ouro ]   |   100.00 | BOLETO   | primeira=S | aniversario=S => 500
+[ ouro ]   |   100.00 | DINHEIRO | primeira=N | aniversario=N => 200
+[ ouro ]   |   100.00 | DINHEIRO | primeira=N | aniversario=S => 400
+[ ouro ]   |   100.00 | DINHEIRO | primeira=S | aniversario=N => 300
+[ ouro ]   |   100.00 | DINHEIRO | primeira=S | aniversario=S => 500
+[ ouro ]   |   199.99 | PIX      | primeira=N | aniversario=N => 438
+[ ouro ]   |   199.99 | PIX      | primeira=N | aniversario=S => 876
+[ ouro ]   |   199.99 | PIX      | primeira=S | aniversario=N => 538
+[ ouro ]   |   199.99 | PIX      | primeira=S | aniversario=S => 976
+[ ouro ]   |   199.99 | CARTAO   | primeira=N | aniversario=N => 418
+[ ouro ]   |   199.99 | CARTAO   | primeira=N | aniversario=S => 836
+[ ouro ]   |   199.99 | CARTAO   | primeira=S | aniversario=N => 518
+[ ouro ]   |   199.99 | CARTAO   | primeira=S | aniversario=S => 936
+[ ouro ]   |   199.99 | BOLETO   | primeira=N | aniversario=N => 399
+[ ouro ]   |   199.99 | BOLETO   | primeira=N | aniversario=S => 798
+[ ouro ]   |   199.99 | BOLETO   | primeira=S | aniversario=N => 499
+[ ouro ]   |   199.99 | BOLETO   | primeira=S | aniversario=S => 898
+[ ouro ]   |   199.99 | DINHEIRO | primeira=N | aniversario=N => 399
+[ ouro ]   |   199.99 | DINHEIRO | primeira=N | aniversario=S => 798
+[ ouro ]   |   199.99 | DINHEIRO | primeira=S | aniversario=N => 499
+[ ouro ]   |   199.99 | DINHEIRO | primeira=S | aniversario=S => 898
+[ ouro ]   |   200.00 | PIX      | primeira=N | aniversario=N => 440
+[ ouro ]   |   200.00 | PIX      | primeira=N | aniversario=S => 880
+[ ouro ]   |   200.00 | PIX      | primeira=S | aniversario=N => 540
+[ ouro ]   |   200.00 | PIX      | primeira=S | aniversario=S => 980
+[ ouro ]   |   200.00 | CARTAO   | primeira=N | aniversario=N => 420
+[ ouro ]   |   200.00 | CARTAO   | primeira=N | aniversario=S => 840
+[ ouro ]   |   200.00 | CARTAO   | primeira=S | aniversario=N => 520
+[ ouro ]   |   200.00 | CARTAO   | primeira=S | aniversario=S => 940
+[ ouro ]   |   200.00 | BOLETO   | primeira=N | aniversario=N => 400
+[ ouro ]   |   200.00 | BOLETO   | primeira=N | aniversario=S => 800
+[ ouro ]   |   200.00 | BOLETO   | primeira=S | aniversario=N => 500
+[ ouro ]   |   200.00 | BOLETO   | primeira=S | aniversario=S => 900
+[ ouro ]   |   200.00 | DINHEIRO | primeira=N | aniversario=N => 400
+[ ouro ]   |   200.00 | DINHEIRO | primeira=N | aniversario=S => 800
+[ ouro ]   |   200.00 | DINHEIRO | primeira=S | aniversario=N => 500
+[ ouro ]   |   200.00 | DINHEIRO | primeira=S | aniversario=S => 900
+[ ouro ]   |  1234.56 | PIX      | primeira=N | aniversario=N => 2715
+[ ouro ]   |  1234.56 | PIX      | primeira=N | aniversario=S => 5000
+[ ouro ]   |  1234.56 | PIX      | primeira=S | aniversario=N => 2815
+[ ouro ]   |  1234.56 | PIX      | primeira=S | aniversario=S => 5000
+[ ouro ]   |  1234.56 | CARTAO   | primeira=N | aniversario=N => 2592
+[ ouro ]   |  1234.56 | CARTAO   | primeira=N | aniversario=S => 5000
+[ ouro ]   |  1234.56 | CARTAO   | primeira=S | aniversario=N => 2692
+[ ouro ]   |  1234.56 | CARTAO   | primeira=S | aniversario=S => 5000
+[ ouro ]   |  1234.56 | BOLETO   | primeira=N | aniversario=N => 2469
+[ ouro ]   |  1234.56 | BOLETO   | primeira=N | aniversario=S => 4938
+[ ouro ]   |  1234.56 | BOLETO   | primeira=S | aniversario=N => 2569
+[ ouro ]   |  1234.56 | BOLETO   | primeira=S | aniversario=S => 5000
+[ ouro ]   |  1234.56 | DINHEIRO | primeira=N | aniversario=N => 2469
+[ ouro ]   |  1234.56 | DINHEIRO | primeira=N | aniversario=S => 4938
+[ ouro ]   |  1234.56 | DINHEIRO | primeira=S | aniversario=N => 2569
+[ ouro ]   |  1234.56 | DINHEIRO | primeira=S | aniversario=S => 5000
+[ ouro ]   |  3000.00 | PIX      | primeira=N | aniversario=N => 5000
+[ ouro ]   |  3000.00 | PIX      | primeira=N | aniversario=S => 5000
+[ ouro ]   |  3000.00 | PIX      | primeira=S | aniversario=N => 5000
+[ ouro ]   |  3000.00 | PIX      | primeira=S | aniversario=S => 5000
+[ ouro ]   |  3000.00 | CARTAO   | primeira=N | aniversario=N => 5000
+[ ouro ]   |  3000.00 | CARTAO   | primeira=N | aniversario=S => 5000
+[ ouro ]   |  3000.00 | CARTAO   | primeira=S | aniversario=N => 5000
+[ ouro ]   |  3000.00 | CARTAO   | primeira=S | aniversario=S => 5000
+[ ouro ]   |  3000.00 | BOLETO   | primeira=N | aniversario=N => 5000
+[ ouro ]   |  3000.00 | BOLETO   | primeira=N | aniversario=S => 5000
+[ ouro ]   |  3000.00 | BOLETO   | primeira=S | aniversario=N => 5000
+[ ouro ]   |  3000.00 | BOLETO   | primeira=S | aniversario=S => 5000
+[ ouro ]   |  3000.00 | DINHEIRO | primeira=N | aniversario=N => 5000
+[ ouro ]   |  3000.00 | DINHEIRO | primeira=N | aniversario=S => 5000
+[ ouro ]   |  3000.00 | DINHEIRO | primeira=S | aniversario=N => 5000
+[ ouro ]   |  3000.00 | DINHEIRO | primeira=S | aniversario=S => 5000
+[XPTO]     |     0.00 | PIX      | primeira=N | aniversario=N => 0
+[XPTO]     |     0.00 | PIX      | primeira=N | aniversario=S => 0
+[XPTO]     |     0.00 | PIX      | primeira=S | aniversario=N => 10
+[XPTO]     |     0.00 | PIX      | primeira=S | aniversario=S => 10
+[XPTO]     |     0.00 | CARTAO   | primeira=N | aniversario=N => 0
+[XPTO]     |     0.00 | CARTAO   | primeira=N | aniversario=S => 0
+[XPTO]     |     0.00 | CARTAO   | primeira=S | aniversario=N => 10
+[XPTO]     |     0.00 | CARTAO   | primeira=S | aniversario=S => 10
+[XPTO]     |     0.00 | BOLETO   | primeira=N | aniversario=N => 0
+[XPTO]     |     0.00 | BOLETO   | primeira=N | aniversario=S => 0
+[XPTO]     |     0.00 | BOLETO   | primeira=S | aniversario=N => 0
+[XPTO]     |     0.00 | BOLETO   | primeira=S | aniversario=S => 0
+[XPTO]     |     0.00 | DINHEIRO | primeira=N | aniversario=N => 0
+[XPTO]     |     0.00 | DINHEIRO | primeira=N | aniversario=S => 0
+[XPTO]     |     0.00 | DINHEIRO | primeira=S | aniversario=N => 10
+[XPTO]     |     0.00 | DINHEIRO | primeira=S | aniversario=S => 10
+[XPTO]     |    49.99 | PIX      | primeira=N | aniversario=N => 0
+[XPTO]     |    49.99 | PIX      | primeira=N | aniversario=S => 0
+[XPTO]     |    49.99 | PIX      | primeira=S | aniversario=N => 10
+[XPTO]     |    49.99 | PIX      | primeira=S | aniversario=S => 10
+[XPTO]     |    49.99 | CARTAO   | primeira=N | aniversario=N => 0
+[XPTO]     |    49.99 | CARTAO   | primeira=N | aniversario=S => 0
+[XPTO]     |    49.99 | CARTAO   | primeira=S | aniversario=N => 10
+[XPTO]     |    49.99 | CARTAO   | primeira=S | aniversario=S => 10
+[XPTO]     |    49.99 | BOLETO   | primeira=N | aniversario=N => 0
+[XPTO]     |    49.99 | BOLETO   | primeira=N | aniversario=S => 0
+[XPTO]     |    49.99 | BOLETO   | primeira=S | aniversario=N => 0
+[XPTO]     |    49.99 | BOLETO   | primeira=S | aniversario=S => 0
+[XPTO]     |    49.99 | DINHEIRO | primeira=N | aniversario=N => 0
+[XPTO]     |    49.99 | DINHEIRO | primeira=N | aniversario=S => 0
+[XPTO]     |    49.99 | DINHEIRO | primeira=S | aniversario=N => 10
+[XPTO]     |    49.99 | DINHEIRO | primeira=S | aniversario=S => 10
+[XPTO]     |    50.00 | PIX      | primeira=N | aniversario=N => 55
+[XPTO]     |    50.00 | PIX      | primeira=N | aniversario=S => 55
+[XPTO]     |    50.00 | PIX      | primeira=S | aniversario=N => 155
+[XPTO]     |    50.00 | PIX      | primeira=S | aniversario=S => 155
+[XPTO]     |    50.00 | CARTAO   | primeira=N | aniversario=N => 50
+[XPTO]     |    50.00 | CARTAO   | primeira=N | aniversario=S => 50
+[XPTO]     |    50.00 | CARTAO   | primeira=S | aniversario=N => 150
+[XPTO]     |    50.00 | CARTAO   | primeira=S | aniversario=S => 150
+[XPTO]     |    50.00 | BOLETO   | primeira=N | aniversario=N => 50
+[XPTO]     |    50.00 | BOLETO   | primeira=N | aniversario=S => 50
+[XPTO]     |    50.00 | BOLETO   | primeira=S | aniversario=N => 150
+[XPTO]     |    50.00 | BOLETO   | primeira=S | aniversario=S => 150
+[XPTO]     |    50.00 | DINHEIRO | primeira=N | aniversario=N => 50
+[XPTO]     |    50.00 | DINHEIRO | primeira=N | aniversario=S => 50
+[XPTO]     |    50.00 | DINHEIRO | primeira=S | aniversario=N => 150
+[XPTO]     |    50.00 | DINHEIRO | primeira=S | aniversario=S => 150
+[XPTO]     |    99.99 | PIX      | primeira=N | aniversario=N => 108
+[XPTO]     |    99.99 | PIX      | primeira=N | aniversario=S => 108
+[XPTO]     |    99.99 | PIX      | primeira=S | aniversario=N => 208
+[XPTO]     |    99.99 | PIX      | primeira=S | aniversario=S => 208
+[XPTO]     |    99.99 | CARTAO   | primeira=N | aniversario=N => 99
+[XPTO]     |    99.99 | CARTAO   | primeira=N | aniversario=S => 99
+[XPTO]     |    99.99 | CARTAO   | primeira=S | aniversario=N => 199
+[XPTO]     |    99.99 | CARTAO   | primeira=S | aniversario=S => 199
+[XPTO]     |    99.99 | BOLETO   | primeira=N | aniversario=N => 99
+[XPTO]     |    99.99 | BOLETO   | primeira=N | aniversario=S => 99
+[XPTO]     |    99.99 | BOLETO   | primeira=S | aniversario=N => 199
+[XPTO]     |    99.99 | BOLETO   | primeira=S | aniversario=S => 199
+[XPTO]     |    99.99 | DINHEIRO | primeira=N | aniversario=N => 99
+[XPTO]     |    99.99 | DINHEIRO | primeira=N | aniversario=S => 99
+[XPTO]     |    99.99 | DINHEIRO | primeira=S | aniversario=N => 199
+[XPTO]     |    99.99 | DINHEIRO | primeira=S | aniversario=S => 199
+[XPTO]     |   100.00 | PIX      | primeira=N | aniversario=N => 110
+[XPTO]     |   100.00 | PIX      | primeira=N | aniversario=S => 110
+[XPTO]     |   100.00 | PIX      | primeira=S | aniversario=N => 210
+[XPTO]     |   100.00 | PIX      | primeira=S | aniversario=S => 210
+[XPTO]     |   100.00 | CARTAO   | primeira=N | aniversario=N => 100
+[XPTO]     |   100.00 | CARTAO   | primeira=N | aniversario=S => 100
+[XPTO]     |   100.00 | CARTAO   | primeira=S | aniversario=N => 200
+[XPTO]     |   100.00 | CARTAO   | primeira=S | aniversario=S => 200
+[XPTO]     |   100.00 | BOLETO   | primeira=N | aniversario=N => 100
+[XPTO]     |   100.00 | BOLETO   | primeira=N | aniversario=S => 100
+[XPTO]     |   100.00 | BOLETO   | primeira=S | aniversario=N => 200
+[XPTO]     |   100.00 | BOLETO   | primeira=S | aniversario=S => 200
+[XPTO]     |   100.00 | DINHEIRO | primeira=N | aniversario=N => 100
+[XPTO]     |   100.00 | DINHEIRO | primeira=N | aniversario=S => 100
+[XPTO]     |   100.00 | DINHEIRO | primeira=S | aniversario=N => 200
+[XPTO]     |   100.00 | DINHEIRO | primeira=S | aniversario=S => 200
+[XPTO]     |   199.99 | PIX      | primeira=N | aniversario=N => 218
+[XPTO]     |   199.99 | PIX      | primeira=N | aniversario=S => 218
+[XPTO]     |   199.99 | PIX      | primeira=S | aniversario=N => 318
+[XPTO]     |   199.99 | PIX      | primeira=S | aniversario=S => 318
+[XPTO]     |   199.99 | CARTAO   | primeira=N | aniversario=N => 199
+[XPTO]     |   199.99 | CARTAO   | primeira=N | aniversario=S => 199
+[XPTO]     |   199.99 | CARTAO   | primeira=S | aniversario=N => 299
+[XPTO]     |   199.99 | CARTAO   | primeira=S | aniversario=S => 299
+[XPTO]     |   199.99 | BOLETO   | primeira=N | aniversario=N => 199
+[XPTO]     |   199.99 | BOLETO   | primeira=N | aniversario=S => 199
+[XPTO]     |   199.99 | BOLETO   | primeira=S | aniversario=N => 299
+[XPTO]     |   199.99 | BOLETO   | primeira=S | aniversario=S => 299
+[XPTO]     |   199.99 | DINHEIRO | primeira=N | aniversario=N => 199
+[XPTO]     |   199.99 | DINHEIRO | primeira=N | aniversario=S => 199
+[XPTO]     |   199.99 | DINHEIRO | primeira=S | aniversario=N => 299
+[XPTO]     |   199.99 | DINHEIRO | primeira=S | aniversario=S => 299
+[XPTO]     |   200.00 | PIX      | primeira=N | aniversario=N => 220
+[XPTO]     |   200.00 | PIX      | primeira=N | aniversario=S => 440
+[XPTO]     |   200.00 | PIX      | primeira=S | aniversario=N => 320
+[XPTO]     |   200.00 | PIX      | primeira=S | aniversario=S => 540
+[XPTO]     |   200.00 | CARTAO   | primeira=N | aniversario=N => 200
+[XPTO]     |   200.00 | CARTAO   | primeira=N | aniversario=S => 400
+[XPTO]     |   200.00 | CARTAO   | primeira=S | aniversario=N => 300
+[XPTO]     |   200.00 | CARTAO   | primeira=S | aniversario=S => 500
+[XPTO]     |   200.00 | BOLETO   | primeira=N | aniversario=N => 200
+[XPTO]     |   200.00 | BOLETO   | primeira=N | aniversario=S => 400
+[XPTO]     |   200.00 | BOLETO   | primeira=S | aniversario=N => 300
+[XPTO]     |   200.00 | BOLETO   | primeira=S | aniversario=S => 500
+[XPTO]     |   200.00 | DINHEIRO | primeira=N | aniversario=N => 200
+[XPTO]     |   200.00 | DINHEIRO | primeira=N | aniversario=S => 400
+[XPTO]     |   200.00 | DINHEIRO | primeira=S | aniversario=N => 300
+[XPTO]     |   200.00 | DINHEIRO | primeira=S | aniversario=S => 500
+[XPTO]     |  1234.56 | PIX      | primeira=N | aniversario=N => 1000
+[XPTO]     |  1234.56 | PIX      | primeira=N | aniversario=S => 1000
+[XPTO]     |  1234.56 | PIX      | primeira=S | aniversario=N => 1000
+[XPTO]     |  1234.56 | PIX      | primeira=S | aniversario=S => 1000
+[XPTO]     |  1234.56 | CARTAO   | primeira=N | aniversario=N => 1000
+[XPTO]     |  1234.56 | CARTAO   | primeira=N | aniversario=S => 1000
+[XPTO]     |  1234.56 | CARTAO   | primeira=S | aniversario=N => 1000
+[XPTO]     |  1234.56 | CARTAO   | primeira=S | aniversario=S => 1000
+[XPTO]     |  1234.56 | BOLETO   | primeira=N | aniversario=N => 1000
+[XPTO]     |  1234.56 | BOLETO   | primeira=N | aniversario=S => 1000
+[XPTO]     |  1234.56 | BOLETO   | primeira=S | aniversario=N => 1000
+[XPTO]     |  1234.56 | BOLETO   | primeira=S | aniversario=S => 1000
+[XPTO]     |  1234.56 | DINHEIRO | primeira=N | aniversario=N => 1000
+[XPTO]     |  1234.56 | DINHEIRO | primeira=N | aniversario=S => 1000
+[XPTO]     |  1234.56 | DINHEIRO | primeira=S | aniversario=N => 1000
+[XPTO]     |  1234.56 | DINHEIRO | primeira=S | aniversario=S => 1000
+[XPTO]     |  3000.00 | PIX      | primeira=N | aniversario=N => 1000
+[XPTO]     |  3000.00 | PIX      | primeira=N | aniversario=S => 1000
+[XPTO]     |  3000.00 | PIX      | primeira=S | aniversario=N => 1000
+[XPTO]     |  3000.00 | PIX      | primeira=S | aniversario=S => 1000
+[XPTO]     |  3000.00 | CARTAO   | primeira=N | aniversario=N => 1000
+[XPTO]     |  3000.00 | CARTAO   | primeira=N | aniversario=S => 1000
+[XPTO]     |  3000.00 | CARTAO   | primeira=S | aniversario=N => 1000
+[XPTO]     |  3000.00 | CARTAO   | primeira=S | aniversario=S => 1000
+[XPTO]     |  3000.00 | BOLETO   | primeira=N | aniversario=N => 1000
+[XPTO]     |  3000.00 | BOLETO   | primeira=N | aniversario=S => 1000
+[XPTO]     |  3000.00 | BOLETO   | primeira=S | aniversario=N => 1000
+[XPTO]     |  3000.00 | BOLETO   | primeira=S | aniversario=S => 1000
+[XPTO]     |  3000.00 | DINHEIRO | primeira=N | aniversario=N => 1000
+[XPTO]     |  3000.00 | DINHEIRO | primeira=N | aniversario=S => 1000
+[XPTO]     |  3000.00 | DINHEIRO | primeira=S | aniversario=N => 1000
+[XPTO]     |  3000.00 | DINHEIRO | primeira=S | aniversario=S => 1000

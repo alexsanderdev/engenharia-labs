@@ -480,3 +480,11 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Verify (approval tests): só os .verified.* são versionados
+*.received.*
+
+# Stryker.NET e relatórios de cobertura
+StrykerOutput/
+coveragereport/
+.sonarqube/

@@ -21,6 +21,7 @@ dotnet test EngenhariaLabs.slnx
 
 - .NET SDK 10 (ver `global.json`)
 - Docker Desktop (a partir da Fase 2, para Testcontainers)
+- Ferramentas locais: `dotnet tool restore` (Stryker, SonarScanner, ReportGenerator)
 
 ## Labs
 
@@ -37,5 +38,19 @@ dotnet test EngenhariaLabs.slnx
 | `F1-M08-config-options-logging` | Configuração, Options e Logging | 18 |
 | `P-M01-estruturas-de-dados` | Estruturas de Dados (paralelo) | 32 |
 | `P-M02-leetcode` | LeetCode — 12 semanas (paralelo) | 72 |
+| `F2-M01-clean-code` | Clean Code | 45 |
+| `F2-M02-solid` | SOLID | 45 |
+| `F2-M03-code-smells` | Code Smells | 56 |
+| `F2-M04-refatoracao` | Refatoração (approval tests) | 20 |
+| `F2-M05-tdd` | TDD (aceitação + seus testes) | 17 |
+| `F2-M06-testes-unitarios` | Testes Unitários | 33 |
+| `F2-M07-testes-integracao` | Testes de Integração (Docker/SQL Server) | 19 |
+| `F2-M08-arquitetura-mutacao` | Arquitetura (NetArchTest) e Mutation (Stryker) | 18 |
+
+## Projetos abertos
+
+| Projeto | Mini-projeto |
+|---|---|
+| `projetos/MP2-ordercalc-legado` | MP2 — Refatoração de Legado (testes de exemplo já passam; meta é caracterizar e refatorar) |
 
 A tabela cresce a cada onda de produção. Veja `CONVENCOES.md`.
